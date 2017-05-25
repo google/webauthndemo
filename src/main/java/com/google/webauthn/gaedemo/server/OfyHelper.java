@@ -14,11 +14,22 @@
 // [START all]
 package com.google.webauthn.gaedemo.server;
 
-import com.googlecode.objectify.*;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import com.example.guestbook.Greeting;
 import com.example.guestbook.Guestbook;
-import com.google.webauthn.gaedemo.storage.*;
-import javax.servlet.*;
+import com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement;
+import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
+import com.google.webauthn.gaedemo.objects.EccKey;
+import com.google.webauthn.gaedemo.objects.FidoU2fAttestationStatement;
+import com.google.webauthn.gaedemo.objects.RsaKey;
+import com.google.webauthn.gaedemo.storage.AssertionSessionData;
+import com.google.webauthn.gaedemo.storage.AttestationSessionData;
+import com.google.webauthn.gaedemo.storage.Credential;
+import com.google.webauthn.gaedemo.storage.User;
+import com.googlecode.objectify.ObjectifyService;
+
 
 /**
  * OfyHelper, a ServletContextListener, is setup in web.xml to run before a JSP is run. This is
@@ -35,6 +46,11 @@ public class OfyHelper implements ServletContextListener {
     ObjectifyService.register(Credential.class);
     ObjectifyService.register(AttestationSessionData.class);
     ObjectifyService.register(AssertionSessionData.class);
+    ObjectifyService.register(AuthenticatorAttestationResponse.class);
+    ObjectifyService.register(RsaKey.class);
+    ObjectifyService.register(EccKey.class);
+    ObjectifyService.register(FidoU2fAttestationStatement.class);
+    ObjectifyService.register(AndroidSafetyNetAttestationStatement.class);
   }
 
   @Override

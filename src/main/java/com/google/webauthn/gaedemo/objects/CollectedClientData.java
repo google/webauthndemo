@@ -2,6 +2,8 @@ package com.google.webauthn.gaedemo.objects;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.google.webauthn.gaedemo.crypto.Crypto;
+import java.security.NoSuchAlgorithmException;
 
 public class CollectedClientData {
   String challenge;
@@ -35,6 +37,15 @@ public class CollectedClientData {
   public String encode() {
     Gson gson = new Gson();
     return gson.toJson(this);
+  }
+  
+  public byte[] getHash() {
+    String json = encode();
+    try {
+      return Crypto.digest(json.getBytes(), hashAlg);
+    } catch (NoSuchAlgorithmException e) {
+      return Crypto.sha256Digest(json.getBytes());
+    }
   }
 
   /**
@@ -87,4 +98,6 @@ public class CollectedClientData {
     }
     return false;
   }
+  
+  
 }

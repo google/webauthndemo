@@ -6,10 +6,12 @@ import co.nstant.in.cbor.model.ByteString;
 import co.nstant.in.cbor.model.DataItem;
 import co.nstant.in.cbor.model.Map;
 import co.nstant.in.cbor.model.UnicodeString;
+import com.googlecode.objectify.annotation.Subclass;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Subclass
 public class FidoU2fAttestationStatement extends AttestationStatement {
   public byte[] sig;
   public byte[] attestnCert;

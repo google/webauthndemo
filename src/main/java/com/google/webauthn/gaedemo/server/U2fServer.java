@@ -3,8 +3,8 @@ package com.google.webauthn.gaedemo.server;
 import com.google.common.io.BaseEncoding;
 import com.google.gson.Gson;
 import com.google.webauthn.gaedemo.crypto.Crypto;
+import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
-import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.CollectedClientData;
 import com.google.webauthn.gaedemo.objects.EccKey;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 
-public class U2fServer {
+public class U2fServer extends Server {
 
   private static final Logger Log = Logger.getLogger(U2fServer.class.getName());
 
@@ -29,37 +29,23 @@ public class U2fServer {
   public static void verifyAssertion(PublicKeyCredential cred, String currentUser, String sessionId)
       throws ServletException {
 
-    if (!(cred.getResponse() instanceof AuthenticatorAssertionResponse)) {
+    if (!(cred.getResponse() instanceof AuthenticatorAttestationResponse)) {
       throw new ServletException("Invalid authenticator response");
     }
 
-    AuthenticatorAssertionResponse assertionResponse =
-        (AuthenticatorAssertionResponse) cred.getResponse();
+    AuthenticatorAttestationResponse attestationResponse =
+        (AuthenticatorAttestationResponse) cred.getResponse();
 
-    Log.info("-- Verifying provided session and challenge data --");
     List<Credential> savedCreds = Credential.load(currentUser);
     if (savedCreds == null || savedCreds.size() == 0) {
       throw new ServletException("No credentials registered for this user");
     }
 
-    long id = 0;
     try {
-      id = Long.valueOf(sessionId);
-    } catch (NumberFormatException e) {
-      throw new ServletException("Provided session id invalid");
+      verifySessionAndChallenge(attestationResponse, currentUser, sessionId);
+    } catch (ResponseException e1) {
+      throw new ServletException("Unable to verify session and challenge data");
     }
-
-    AssertionSessionData session = AssertionSessionData.load(currentUser, Long.valueOf(id));
-    if (session == null) {
-      throw new ServletException("Session invalid");
-    }
-
-    byte[] sessionChallenge = BaseEncoding.base64().decode(session.getChallenge());
-    if (!Arrays.equals(sessionChallenge,
-        assertionResponse.getClientData().getChallenge().getBytes())) {
-      throw new ServletException("Returned challenge incorrect");
-    }
-    Log.info("Successfully verified session and challenge data");
 
     Credential credential = null;
     for (Credential saved : savedCreds) {
@@ -74,9 +60,8 @@ public class U2fServer {
       throw new ServletException("Received response from credential not associated with user");
     }
 
-
     Gson gson = new Gson();
-    String clientDataJson = gson.toJson(assertionResponse.getClientData());
+    String clientDataJson = gson.toJson(attestationResponse.getClientData());
     byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
 
     Log.info("-- Verifying signature --");
@@ -95,18 +80,20 @@ public class U2fServer {
         (EccKey) storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
     try {
       if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()),
-          clientDataHash, assertionResponse.getClientData().getChallenge().getBytes())) {
+          clientDataHash, attestationResponse.getClientData().getChallenge().getBytes())) {
         throw new ServletException("Signature invalid");
       }
     } catch (WebAuthnException e) {
       throw new ServletException("Failure while verifying signature");
     }
 
-    if (assertionResponse.getAuthenticatorData().getSignCount() <= credential.getSignCount()) {
+    if (attestationResponse.getAttestationObject().getAuthenticatorData()
+        .getSignCount() <= credential.getSignCount()) {
       throw new ServletException("Sign count invalid");
     }
 
-    credential.updateSignCount(assertionResponse.getAuthenticatorData().getSignCount());
+    credential.updateSignCount(
+        attestationResponse.getAttestationObject().getAuthenticatorData().getSignCount());
 
     Log.info("Signature verified");
   }
@@ -173,11 +160,13 @@ public class U2fServer {
       throw new ServletException("RPID hash incorrect");
     }
 
-    if (!(attResponse.decodedObject.getAuthenticatorData().getAttData().getPublicKey() instanceof EccKey)) {
+    if (!(attResponse.decodedObject.getAuthenticatorData().getAttData()
+        .getPublicKey() instanceof EccKey)) {
       throw new ServletException("U2f-capable key not provided");
     }
 
-    EccKey publicKey = (EccKey) attResponse.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
+    EccKey publicKey =
+        (EccKey) attResponse.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
     try {
       if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()),
           clientDataHash, attResponse.getClientData().getChallenge().getBytes())) {

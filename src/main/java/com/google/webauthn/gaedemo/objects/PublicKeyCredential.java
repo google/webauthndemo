@@ -22,6 +22,11 @@ public class PublicKeyCredential {
   }
 
   /**
+   * 
+   */
+  public PublicKeyCredential() {}
+
+  /**
    * @return the id
    */
   public String getId() {
@@ -40,6 +45,21 @@ public class PublicKeyCredential {
    */
   public byte[] getRawId() {
     return rawId;
+  }
+
+  public AttestationStatementEnum getAttestationType() {
+    try {
+      AuthenticatorAttestationResponse attRsp = (AuthenticatorAttestationResponse) response;
+      AttestationStatement attStmt = attRsp.decodedObject.getAttestationStatement();
+      if (attStmt instanceof AndroidSafetyNetAttestationStatement) {
+        return AttestationStatementEnum.ANDROIDSAFETYNET;
+      } else if (attStmt instanceof FidoU2fAttestationStatement) {
+        return AttestationStatementEnum.FIDOU2F;
+      }
+    } catch (ClassCastException e) {
+      return null;
+    }
+    return null;
   }
 
   /**

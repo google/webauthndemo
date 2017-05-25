@@ -5,6 +5,12 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.io.BaseEncoding;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.webauthn.gaedemo.crypto.Crypto;
+import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
+import com.google.webauthn.gaedemo.objects.AttestationObject;
+import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
+import com.google.webauthn.gaedemo.objects.EccKey;
+import com.google.webauthn.gaedemo.objects.FidoU2fAttestationStatement;
 import com.google.webauthn.gaedemo.storage.Credential;
 import java.io.IOException;
 import java.util.List;
@@ -28,6 +34,7 @@ public class RegisteredKeys extends HttpServlet {
   /**
    * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
    */
+  @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     String currentUser = userService.getCurrentUser().getUserId();
@@ -37,8 +44,24 @@ public class RegisteredKeys extends HttpServlet {
     response.setContentType("text/json");
     for (Credential c : savedCreds) {
       JsonObject cJson = new JsonObject();
-      cJson.addProperty("id", c.getCredential().id);
       cJson.addProperty("handle", BaseEncoding.base64().encode(c.getCredential().rawId));
+      EccKey ecc = (EccKey) ((AuthenticatorAttestationResponse) c.getCredential()
+          .getResponse()).decodedObject.getAuthenticatorData().getAttData().getPublicKey();
+      try {
+        cJson.addProperty("publicKey",
+            Integer.toHexString(Crypto.decodePublicKey(ecc.getX(), ecc.getY()).hashCode()));
+      } catch (WebAuthnException e) {
+        // TODO(piperc): Auto-generated catch block
+        e.printStackTrace();
+      }
+      AttestationObject attObj =
+          ((AuthenticatorAttestationResponse) c.getCredential().getResponse())
+              .getAttestationObject();
+      if (attObj.getAttestationStatement() instanceof FidoU2fAttestationStatement) {
+        cJson.addProperty("name", "FIDO U2F Authenticator");
+      }
+      cJson.addProperty("date", c.getDate().toString());
+      cJson.addProperty("id", c.id);
       result.add(cJson);
     }
     response.getWriter().print(result.toString());
@@ -47,6 +70,7 @@ public class RegisteredKeys extends HttpServlet {
   /**
    * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
    */
+  @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     doGet(request, response);

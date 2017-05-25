@@ -5,10 +5,12 @@ import com.google.common.io.BaseEncoding;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
+import com.googlecode.objectify.annotation.Subclass;
 
 /**
  *
  */
+@Subclass
 public class AuthenticatorAttestationResponse extends AuthenticatorResponse {
   /**
    *
@@ -19,6 +21,11 @@ public class AuthenticatorAttestationResponse extends AuthenticatorResponse {
   }
 
   public AttestationObject decodedObject;
+
+  /**
+   * 
+   */
+  public AuthenticatorAttestationResponse() {}
 
   /**
    * @param data

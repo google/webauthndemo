@@ -4,19 +4,26 @@ import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECPoint;
 
 public class Crypto {
+  
+  static {
+    Security.addProvider(new BouncyCastleProvider());
+  }
 
   public static byte[] sha256Digest(byte[] input) {
     SHA256Digest digest = new SHA256Digest();
@@ -24,6 +31,11 @@ public class Crypto {
     byte[] result = new byte[digest.getDigestSize()];
     digest.doFinal(result, 0);
     return result;
+  }
+  
+  public static byte[] digest(byte[] input, String alg) throws NoSuchAlgorithmException {
+    MessageDigest digest = MessageDigest.getInstance(alg);
+    return digest.digest(input);
   }
 
   public static boolean verifySignature(PublicKey publicKey, byte[] signedBytes,
@@ -51,7 +63,7 @@ public class Crypto {
       } catch (RuntimeException e) {
         throw new WebAuthnException("Couldn't parse user public key", e);
       }
-
+      
       return KeyFactory.getInstance("ECDSA").generatePublic(
           new ECPublicKeySpec(point,
               new ECParameterSpec(

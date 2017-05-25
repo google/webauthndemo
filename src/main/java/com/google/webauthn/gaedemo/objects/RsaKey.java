@@ -6,10 +6,12 @@ import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.ByteString;
 import co.nstant.in.cbor.model.DataItem;
 import co.nstant.in.cbor.model.UnicodeString;
+import com.googlecode.objectify.annotation.Subclass;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.List;
 
+@Subclass
 public class RsaKey extends CredentialPublicKey {
   byte[] n, e;
 

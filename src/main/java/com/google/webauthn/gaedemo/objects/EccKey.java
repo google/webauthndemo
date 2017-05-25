@@ -5,11 +5,13 @@ import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.ByteString;
 import co.nstant.in.cbor.model.Map;
 import co.nstant.in.cbor.model.UnicodeString;
+import com.googlecode.objectify.annotation.Subclass;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Subclass
 public class EccKey extends CredentialPublicKey {
   byte[] x, y;
 
@@ -17,6 +19,16 @@ public class EccKey extends CredentialPublicKey {
     x = null;
     y = null;
     alg = Algorithm.UNDEFINED;
+  }
+
+  /**
+   * @param x
+   * @param y
+   */
+  public EccKey(byte[] x, byte[] y) {
+    super();
+    this.x = x;
+    this.y = y;
   }
 
   @Override

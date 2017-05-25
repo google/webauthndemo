@@ -24,6 +24,18 @@ public class AttestationData {
   }
 
   /**
+   * @param aaguid
+   * @param credentialId
+   * @param publicKey
+   */
+  public AttestationData(byte[] aaguid, byte[] credentialId, CredentialPublicKey publicKey) {
+    super();
+    this.aaguid = aaguid;
+    this.credentialId = credentialId;
+    this.publicKey = publicKey;
+  }
+
+  /**
    * @param data
    * @return AttestationData object created from the byte sequence
    * @throws ResponseException

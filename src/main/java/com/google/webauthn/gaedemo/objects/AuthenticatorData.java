@@ -98,8 +98,7 @@ public class AuthenticatorData {
    * @return Encoded byte array
    * @throws CborException
    */
-  @VisibleForTesting
-  byte[] encode() throws CborException {
+  public byte[] encode() throws CborException {
     byte[] flags = {this.flags};
     byte[] signCount = ByteBuffer.allocate(4).putInt(this.signCount).array();
     byte[] attData = this.attData.encode();

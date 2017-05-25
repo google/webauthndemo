@@ -20,10 +20,7 @@ public class RemoveCredential extends HttpServlet {
   /**
    * @see HttpServlet#HttpServlet()
    */
-  public RemoveCredential() {
-    super();
-    // TODO Auto-generated constructor stub
-  }
+  public RemoveCredential() {}
 
   /**
    * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -33,7 +30,7 @@ public class RemoveCredential extends HttpServlet {
       throws ServletException, IOException {
     String currentUser = userService.getCurrentUser().getUserId();
     Credential.remove(currentUser, request.getParameter("id"));
-    
+
 
     List<Credential> savedCreds = Credential.load(currentUser);
 
@@ -50,8 +47,11 @@ public class RemoveCredential extends HttpServlet {
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    // TODO Auto-generated method stub
-    doGet(request, response);
+    String currentUser = userService.getCurrentUser().getUserId();
+    Credential.remove(currentUser, request.getParameter("credentialId"));
+
+    response.setContentType("text/json");
+    response.getWriter().println("{}");
   }
 
 }

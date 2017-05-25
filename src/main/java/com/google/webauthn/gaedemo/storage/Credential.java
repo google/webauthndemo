@@ -7,6 +7,7 @@ import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.googlecode.objectify.*;
 import com.googlecode.objectify.annotation.*;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -16,22 +17,26 @@ public class Credential {
   @Id
   public Long id;
 
+  private Date date;
   private int signCount;
   private PublicKeyCredential credential;
 
   public Credential() {
     signCount = 0;
+    date = new Date();
   }
 
   public Credential(String json) {
     signCount = 0;
     Gson gson = new Gson();
     credential = gson.fromJson(json, PublicKeyCredential.class);
+    date = new Date();
   }
 
   public Credential(PublicKeyCredential credential) {
-    signCount = 0;
+    this.signCount = 0;
     this.credential = credential;
+    this.date = new Date();
   }
 
   public void validate() throws ResponseException {
@@ -42,7 +47,7 @@ public class Credential {
 
   public String toJson() {
     Gson gson = new Gson();
-    return gson.toJson(credential);
+    return gson.toJson(this);
   }
 
   public void save(String currentUser) {
@@ -82,6 +87,13 @@ public class Credential {
   public void updateSignCount(int signCount) {
     this.signCount = signCount;
     ofy().save().entity(this).now();
+  }
+
+  /**
+   * @return the date
+   */
+  public Date getDate() {
+    return date;
   }
 
 }

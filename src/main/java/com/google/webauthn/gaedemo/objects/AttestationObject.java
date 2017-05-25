@@ -17,8 +17,22 @@ public class AttestationObject {
   String fmt;
   AttestationStatement attStmt;
 
+  /**
+   * 
+   */
   public AttestationObject() {
 
+  }
+
+  /**
+   * @param authData
+   * @param fmt
+   * @param attStmt
+   */
+  public AttestationObject(AuthenticatorData authData, String fmt, AttestationStatement attStmt) {
+    this.authData = authData;
+    this.fmt = fmt;
+    this.attStmt = attStmt;
   }
 
   /**
