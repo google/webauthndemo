@@ -9,57 +9,11 @@
   href="https://code.getmdl.io/1.3.0/material.teal-pink.min.css" />
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
   rel="stylesheet">
-<script src="js/jquery-3.2.1.min.js"></script>
+<link href="stylesheets/webauthn.css"
+  rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
 <script src="js/webauthn.js"></script>
-<style>
-.mdl-cell {
-  padding: 30px;
-  text-align: left;
-}
-
-.mdl-card__subtitle-text {
-  padding-left: .2cm;
-  font-weight: bold;
-}
-
-.auth-button {
-  margin-left: .25cm;
-  margin-right: .25cm;
-}
-
-.make-button {
-  margin-left: .25cm;
-  margin-right: .25cm;
-}
-
-.logout-button {
-  margin-left: .25cm;
-  margin-right: .25cm;
-  color: white;
-}
-
-.hidden {
-  display: none;
-}
-
-.activity-bar {
-  padding-top: 0;
-  padding-bottom: .2cm;
-  margin: 0;
-}
-
-.page-width {
-  width: 100%;
-}
-
-.active-text {
-  margin: 0;
-  background-color: white;
-  text-align: center;
-  font-size: medium;
-}
-</style>
 <title>WebAuthN Demo</title>
 </head>
 <body>

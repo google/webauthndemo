@@ -1,0 +1,46 @@
+.mdl-cell {
+  padding: 30px;
+  text-align: left;
+}
+
+.mdl-card__subtitle-text {
+  padding-left: .2cm;
+  font-weight: bold;
+}
+
+.auth-button {
+  margin-left: .25cm;
+  margin-right: .25cm;
+}
+
+.make-button {
+  margin-left: .25cm;
+  margin-right: .25cm;
+}
+
+.logout-button {
+  margin-left: .25cm;
+  margin-right: .25cm;
+  color: white;
+}
+
+.hidden {
+  display: none;
+}
+
+.activity-bar {
+  padding-top: 0;
+  padding-bottom: .2cm;
+  margin: 0;
+}
+
+.page-width {
+  width: 100%;
+}
+
+.active-text {
+  margin: 0;
+  background-color: white;
+  text-align: center;
+  font-size: medium;
+}

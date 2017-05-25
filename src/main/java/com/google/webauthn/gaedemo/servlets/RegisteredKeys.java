@@ -7,6 +7,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.webauthn.gaedemo.crypto.Crypto;
 import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
+import com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement;
 import com.google.webauthn.gaedemo.objects.AttestationObject;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.EccKey;
@@ -46,19 +47,21 @@ public class RegisteredKeys extends HttpServlet {
       JsonObject cJson = new JsonObject();
       cJson.addProperty("handle", BaseEncoding.base64().encode(c.getCredential().rawId));
       EccKey ecc = (EccKey) ((AuthenticatorAttestationResponse) c.getCredential()
-          .getResponse()).decodedObject.getAuthenticatorData().getAttData().getPublicKey();
+          .getResponse()).getAttestationObject().getAuthenticatorData().getAttData().getPublicKey();
       try {
         cJson.addProperty("publicKey",
             Integer.toHexString(Crypto.decodePublicKey(ecc.getX(), ecc.getY()).hashCode()));
       } catch (WebAuthnException e) {
-        // TODO(piperc): Auto-generated catch block
         e.printStackTrace();
+        continue;
       }
       AttestationObject attObj =
           ((AuthenticatorAttestationResponse) c.getCredential().getResponse())
               .getAttestationObject();
       if (attObj.getAttestationStatement() instanceof FidoU2fAttestationStatement) {
         cJson.addProperty("name", "FIDO U2F Authenticator");
+      } else if (attObj.getAttestationStatement() instanceof AndroidSafetyNetAttestationStatement) {
+        cJson.addProperty("name", "Android SafetyNet");
       }
       cJson.addProperty("date", c.getDate().toString());
       cJson.addProperty("id", c.id);
