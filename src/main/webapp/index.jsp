@@ -5,11 +5,12 @@
 <head>
 <link rel="shortcut icon" href="favicon.ico">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link rel="stylesheet" href="material/material.deep_purple-pink.min.css">
+<link rel="stylesheet"
+  href="https://code.getmdl.io/1.3.0/material.teal-pink.min.css" />
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
   rel="stylesheet">
 <script src="js/jquery-3.2.1.min.js"></script>
-<script src="material/material.min.js"></script>
+<script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
 <script src="js/webauthn.js"></script>
 <style>
 .mdl-cell {
@@ -79,8 +80,7 @@
         <button
           class="mdl-button mdl-js-button logout-button mdl-js-ripple-effect">
           Logout</button>
-      </a>
-      </nav>
+      </a> </nav>
     </div>
     </header>
     <main class="mdl-layout__content mdl-color--grey-100">
