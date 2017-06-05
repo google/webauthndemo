@@ -37,7 +37,7 @@ import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECPoint;
 
 public class Crypto {
-  
+
   static {
     Security.addProvider(new BouncyCastleProvider());
   }
@@ -49,14 +49,14 @@ public class Crypto {
     digest.doFinal(result, 0);
     return result;
   }
-  
+
   public static byte[] digest(byte[] input, String alg) throws NoSuchAlgorithmException {
     MessageDigest digest = MessageDigest.getInstance(alg);
     return digest.digest(input);
   }
 
-  public static boolean verifySignature(PublicKey publicKey, byte[] signedBytes,
-      byte[] signature) throws WebAuthnException {
+  public static boolean verifySignature(PublicKey publicKey, byte[] signedBytes, byte[] signature)
+      throws WebAuthnException {
     try {
       Signature ecdsaSignature = Signature.getInstance("SHA256withECDSA");
       ecdsaSignature.initVerify(publicKey);
@@ -80,14 +80,12 @@ public class Crypto {
       } catch (RuntimeException e) {
         throw new WebAuthnException("Couldn't parse user public key", e);
       }
-      
-      return KeyFactory.getInstance("ECDSA").generatePublic(
-          new ECPublicKeySpec(point,
-              new ECParameterSpec(
-                  curve.getCurve(),
-                  curve.getG(),
-                  curve.getN(),
-                  curve.getH())));
+
+      return KeyFactory.getInstance("ECDSA")
+          .generatePublic(
+              new ECPublicKeySpec(
+                  point,
+                  new ECParameterSpec(curve.getCurve(), curve.getG(), curve.getN(), curve.getH())));
     } catch (InvalidKeySpecException e) {
       throw new WebAuthnException("Error when decoding public key", e);
     } catch (NoSuchAlgorithmException e) {

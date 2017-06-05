@@ -1,10 +1,22 @@
+// Copyright 2017 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.webauthn.gaedemo.servlets;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.webauthn.gaedemo.storage.Credential;
 import java.io.IOException;
-import java.util.List;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,19 +30,18 @@ public class Home extends HttpServlet {
   private static final long serialVersionUID = 1L;
   private final UserService userService = UserServiceFactory.getUserService();
 
-  public Home() {
-  }
+  public Home() {}
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    // TODO Auto-generated method stub
-    response.setContentType("text/html;charset=UTF-8");
-    RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/home.jsp");
-    String currentUser = userService.getCurrentUser().getUserId();
-    List<Credential> savedCreds = Credential.load(currentUser);
+    String nickname = userService.getCurrentUser().getNickname();
+    String logoutUrl = userService.createLogoutURL(request.getRequestURI());
 
-    request.setAttribute("credentialList", savedCreds);
+    request.setAttribute("nickname", nickname);
+    request.setAttribute("logoutUrl", logoutUrl);
+    RequestDispatcher dispatcher =
+        getServletContext().getRequestDispatcher("/index.jsp");
     dispatcher.forward(request, response);
   }
 

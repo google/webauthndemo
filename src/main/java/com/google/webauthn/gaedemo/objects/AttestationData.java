@@ -1,3 +1,17 @@
+// Copyright 2017 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.webauthn.gaedemo.objects;
 
 import co.nstant.in.cbor.CborException;
@@ -7,16 +21,13 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 /**
- *
+ * Object representation of the attestation data
  */
 public class AttestationData {
   byte[] aaguid;
   byte[] credentialId;
   CredentialPublicKey publicKey;
 
-  /**
-   * 
-   */
   public AttestationData() {
     aaguid = new byte[16];
     credentialId = new byte[] {};
@@ -24,18 +35,19 @@ public class AttestationData {
   }
 
   /**
-   * @param aaguid
-   * @param credentialId
-   * @param publicKey
+   * @param aaguid Authenticator Attestation GUID
+   * @param credentialId Credential ID
+   * @param publicKey CredentialPublicKey
    */
   public AttestationData(byte[] aaguid, byte[] credentialId, CredentialPublicKey publicKey) {
-    super();
     this.aaguid = aaguid;
     this.credentialId = credentialId;
     this.publicKey = publicKey;
   }
 
   /**
+   * Decodes the input byte array into the AttestationData object
+   * 
    * @param data
    * @return AttestationData object created from the byte sequence
    * @throws ResponseException

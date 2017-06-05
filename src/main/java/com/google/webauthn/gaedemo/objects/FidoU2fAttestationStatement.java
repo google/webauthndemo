@@ -1,3 +1,17 @@
+// Copyright 2017 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.webauthn.gaedemo.objects;
 
 import co.nstant.in.cbor.CborException;
@@ -28,9 +42,9 @@ public class FidoU2fAttestationStatement extends AttestationStatement {
     this.attestnCert = attestnCert;
     this.caCert = caCert;
   }
-  
+
   public FidoU2fAttestationStatement() {
-    
+
   }
 
   /**
@@ -46,11 +60,11 @@ public class FidoU2fAttestationStatement extends AttestationStatement {
           Array array = (Array) given.get(data);
           List<DataItem> list = array.getDataItems();
           if (list.size() > 0) {
-            result.attestnCert = ((ByteString)list.get(0)).getBytes();
+            result.attestnCert = ((ByteString) list.get(0)).getBytes();
           }
           result.caCert = new ArrayList<byte[]>();
           for (int i = 1; i < list.size(); i++) {
-            result.caCert.add(((ByteString)list.get(i)).getBytes());
+            result.caCert.add(((ByteString) list.get(i)).getBytes());
           }
         } else if (((UnicodeString) data).getString().equals("sig")) {
           result.sig = ((ByteString) (given.get(data))).getBytes();
@@ -70,19 +84,19 @@ public class FidoU2fAttestationStatement extends AttestationStatement {
     }
     result.put(new UnicodeString("x5c"), x5c);
     result.put(new UnicodeString("sig"), new ByteString(sig));
-    
+
     return result;
   }
 
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof FidoU2fAttestationStatement) {
-      FidoU2fAttestationStatement other = (FidoU2fAttestationStatement)obj;
+      FidoU2fAttestationStatement other = (FidoU2fAttestationStatement) obj;
       if (Arrays.equals(attestnCert, other.attestnCert)) {
-        if (Arrays.equals(sig, other.sig)){
+        if (Arrays.equals(sig, other.sig)) {
           if (caCert.size() == other.caCert.size()) {
             for (int i = 0; i < caCert.size(); i++) {
-              if(!Arrays.equals(caCert.get(i), other.caCert.get(i))) {
+              if (!Arrays.equals(caCert.get(i), other.caCert.get(i))) {
                 return false;
               }
             }

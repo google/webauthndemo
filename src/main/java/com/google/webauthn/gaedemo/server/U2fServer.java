@@ -1,15 +1,27 @@
+// Copyright 2017 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.webauthn.gaedemo.server;
 
-import com.google.common.io.BaseEncoding;
 import com.google.gson.Gson;
 import com.google.webauthn.gaedemo.crypto.Crypto;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
+import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
-import com.google.webauthn.gaedemo.objects.CollectedClientData;
 import com.google.webauthn.gaedemo.objects.EccKey;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
-import com.google.webauthn.gaedemo.storage.AssertionSessionData;
 import com.google.webauthn.gaedemo.storage.Credential;
 import java.util.Arrays;
 import java.util.List;
@@ -29,12 +41,12 @@ public class U2fServer extends Server {
   public static void verifyAssertion(PublicKeyCredential cred, String currentUser, String sessionId)
       throws ServletException {
 
-    if (!(cred.getResponse() instanceof AuthenticatorAttestationResponse)) {
+    if (!(cred.getResponse() instanceof AuthenticatorAssertionResponse)) {
       throw new ServletException("Invalid authenticator response");
     }
 
-    AuthenticatorAttestationResponse attestationResponse =
-        (AuthenticatorAttestationResponse) cred.getResponse();
+    AuthenticatorAssertionResponse assertionResponse =
+        (AuthenticatorAssertionResponse) cred.getResponse();
 
     List<Credential> savedCreds = Credential.load(currentUser);
     if (savedCreds == null || savedCreds.size() == 0) {
@@ -42,7 +54,7 @@ public class U2fServer extends Server {
     }
 
     try {
-      verifySessionAndChallenge(attestationResponse, currentUser, sessionId);
+      verifySessionAndChallenge(assertionResponse, currentUser, sessionId);
     } catch (ResponseException e1) {
       throw new ServletException("Unable to verify session and challenge data");
     }
@@ -61,7 +73,7 @@ public class U2fServer extends Server {
     }
 
     Gson gson = new Gson();
-    String clientDataJson = gson.toJson(attestationResponse.getClientData());
+    String clientDataJson = gson.toJson(assertionResponse.getClientData());
     byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
 
     Log.info("-- Verifying signature --");
@@ -80,20 +92,18 @@ public class U2fServer extends Server {
         (EccKey) storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
     try {
       if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()),
-          clientDataHash, attestationResponse.getClientData().getChallenge().getBytes())) {
+          clientDataHash, assertionResponse.getClientData().getChallenge().getBytes())) {
         throw new ServletException("Signature invalid");
       }
     } catch (WebAuthnException e) {
       throw new ServletException("Failure while verifying signature");
     }
 
-    if (attestationResponse.getAttestationObject().getAuthenticatorData()
-        .getSignCount() <= credential.getSignCount()) {
+    if (assertionResponse.getAuthenticatorData().getSignCount() <= credential.getSignCount()) {
       throw new ServletException("Sign count invalid");
     }
 
-    credential.updateSignCount(
-        attestationResponse.getAttestationObject().getAuthenticatorData().getSignCount());
+    credential.updateSignCount(assertionResponse.getAuthenticatorData().getSignCount());
 
     Log.info("Signature verified");
   }
@@ -122,36 +132,18 @@ public class U2fServer extends Server {
       }
     }
 
-    Log.info("-- Verifying provided session and challenge data --");
-    long id = 0;
     try {
-      id = Long.valueOf(session);
-    } catch (NumberFormatException e) {
-      throw new ServletException("Provided session id invalid");
+      verifySessionAndChallenge(attResponse, currentUser, session);
+    } catch (ResponseException e1) {
+      throw new ServletException("Unable to verify session and challenge data");
     }
 
-    AssertionSessionData sessionData = AssertionSessionData.load(currentUser, Long.valueOf(id));
-    if (session == null) {
-      throw new ServletException("Session invalid");
-    }
-
-    CollectedClientData clientData = attResponse.getClientData();
-    if (clientData == null) {
-      throw new ServletException("No client data present");
-    }
-
-    byte[] sessionChallenge = BaseEncoding.base64().decode(sessionData.getChallenge());
-    if (!Arrays.equals(sessionChallenge, attResponse.getClientData().getChallenge().getBytes())) {
-      throw new ServletException("Returned challenge incorrect");
-    }
-    Log.info("Successfully verified session and challenge data");
-
-    if (!clientData.getOrigin().equals(origin)) {
+    if (!attResponse.getClientData().getOrigin().equals(origin)) {
       throw new ServletException("Couldn't verify client data");
     }
 
     Gson gson = new Gson();
-    String clientDataJson = gson.toJson(clientData);
+    String clientDataJson = gson.toJson(attResponse.getClientData());
     byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
 
     byte[] rpIdHash = Crypto.sha256Digest(origin.getBytes());

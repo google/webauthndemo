@@ -128,7 +128,7 @@ function finishAssertion(publicKeyCredential) {
   $.post('/FinishGetAssertion', { data: JSON.stringify(publicKeyCredential) },
     null, 'json')
     .done(function(parameters) {
-      
+      // TODO Validate response and display success/error message
     });
 }
 
@@ -140,7 +140,16 @@ function removeSpinner() {
   $("#active").hide();
 }
 
+function addErrorMsg() {
+  $("#error").show();
+}
+
+function removeErrorMsg() {
+  $("#error").hide();
+}
+
 function getAssertion() {
+  removeErrorMsg();
   addSpinner();
   $.post('/BeginGetAssertion', {}, null, 'json')
   .done(function(parameters) {
@@ -191,6 +200,7 @@ function getAssertion() {
       }
     }).catch(function (err) {
       removeSpinner();
+      addErrorMsg();
     });
   });
 }

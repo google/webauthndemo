@@ -21,21 +21,45 @@ import com.google.gson.JsonObject;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Parent;
+import java.util.Date;
+import java.util.List;
 
 @Entity
-public class AttestationSessionData {
+public class SessionData {
   @Parent
   Key<User> user;
   @Id
   public Long id;
 
-  String challenge;
-  String origin;
+  private String challenge;
+  private String origin;
+  @Index
+  private Date created;
 
-  public AttestationSessionData(byte[] challenge, String origin) {
+  public SessionData() {
+    this.created = new Date();
+  }
+
+  public SessionData(byte[] challenge, String origin) {
     this.challenge = BaseEncoding.base64().encode(challenge);
     this.origin = origin;
+    this.created = new Date();
+  }
+
+  /**
+   * @return the challenge
+   */
+  public String getChallenge() {
+    return challenge;
+  }
+
+  /**
+   * @return the origin
+   */
+  public String getOrigin() {
+    return origin;
   }
 
   boolean equals(AttestationSessionData other) {
@@ -49,12 +73,39 @@ public class AttestationSessionData {
     this.user = user;
     ofy().save().entity(this).now();
   }
+
+  public static List<SessionData> load(String currentUser) {
+    Key<User> user = Key.create(User.class, currentUser);
+    List<SessionData> sessions =
+        ofy().load().type(SessionData.class).ancestor(user).list();
+    return sessions;
+  }
+
+  public static void removeOldSessions(String currentUser) {
+    Key<User> user = Key.create(User.class, currentUser);
+    Date date = new Date(System.currentTimeMillis() - (1 * 60 * 60 * 1000));
+    List<Key<SessionData>> keys = ofy().load().type(SessionData.class)
+        .ancestor(user).filter("created < ", date).keys().list();
+    ofy().delete().keys(keys).now();
+  }
+
+  public static SessionData load(String currentUser, Long id) {
+    Key<User> user = Key.create(User.class, currentUser);
+    Key<SessionData> session = Key.create(user, SessionData.class, id);
+    return ofy().load().key(session).now();
+  }
   
+  public static void remove(String currentUser, Long id) {
+    Key<User> user = Key.create(User.class, currentUser);
+    Key<SessionData> session = Key.create(user, SessionData.class, id);
+    ofy().delete().key(session).now();
+  }
+
   public JsonObject getJsonObject() {
     JsonObject result = new JsonObject();
+    result.addProperty("id", id);
     result.addProperty("challenge", challenge);
     result.addProperty("origin", origin);
     return result;
   }
-
 }
