@@ -47,7 +47,7 @@
     </div>
     <div id="credentials" class="mdl-grid mdl-grid--no-spacing"></div>
     <div id="github" class="github-link">
-      <a href="https://github.com/google">GitHub</a>
+      <a href="https://github.com/google/webauthndemo">GitHub</a>
     </div>
     </main>
   </div>
