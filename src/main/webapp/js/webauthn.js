@@ -101,9 +101,21 @@ function credentialListConversion(list) {
   return result;
 }
 
+function finishAddCredential(publicKeyCredential) {
+  $.post('/FinishMakeCredential', { data: JSON.stringify(publicKeyCredential) },
+    null, 'json')
+    .done(function(parameters) {
+      console.log(parameters);
+      if ('success' in parameters && 'message' in parameters) {
+        addErrorMsg(parameters.message);
+      }
+      // TODO Validate response and display success/error message
+    });
+}
+
 function addCredential() {
   $.post('/BeginMakeCredential', {}, null, 'json')
-  .done(function(options) {    
+  .done(function(options) {
     var makeCredentialOptions = {};
     makeCredentialOptions.rp = options.rp;
     makeCredentialOptions.user = options.user;
@@ -119,8 +131,45 @@ function addCredential() {
     
     var createParams = {};
     createParams.publicKey = makeCredentialOptions;
-    
+
     console.log(makeCredentialOptions);
+
+    if (typeof navigator.credentials.create !== "function") {
+      addErrorMsg("Browser does not support credential creation");
+      return;
+    }
+
+    navigator.credentials.create({"publicKey": makeCredentialOptions})
+    .then(function (attestation) {
+      removeSpinner();
+      var publicKeyCredential = {};
+      if ('id' in attestation) {
+        publicKeyCredential.id = assertion.id;
+      }
+      if ('type' in attestation) {
+        publicKeyCredential.type = assertion.type;
+      }
+      if ('rawId' in attestation) {
+        publicKeyCredential.rawId = btoa(
+          new Uint8Array(assertion.rawId).reduce((s, byte) =>
+          s + String.fromCharCode(byte), ''));
+        publicKeyCredential.rawId = assertion.rawId;
+      }
+      if ('response' in assertion) {
+        var response = {};
+        response.clientDataJSON = assertion.response.clientDataJSON;
+        response.attestationObject = btoa(
+          new Uint8Array(assertion.response.attestationObject)
+          .reduce((s, byte) => s + String.fromCharCode(byte), ''));
+        publicKeyCredential.response = response;
+        finishAddCredential(publicKeyCredential);
+      }
+    }).catch(function (err) {
+      removeSpinner();
+      console.log(err.toString());
+      addErrorMsg("An error occurred during Make Credential operation ["
+        + err.toString() + "]");
+    });
   });
 }
 
@@ -128,6 +177,10 @@ function finishAssertion(publicKeyCredential) {
   $.post('/FinishGetAssertion', { data: JSON.stringify(publicKeyCredential) },
     null, 'json')
     .done(function(parameters) {
+      console.log(parameters);
+      if ('success' in parameters && 'message' in parameters) {
+        addErrorMsg(parameters.message);
+      }
       // TODO Validate response and display success/error message
     });
 }
@@ -140,7 +193,8 @@ function removeSpinner() {
   $("#active").hide();
 }
 
-function addErrorMsg() {
+function addErrorMsg(msg) {
+  document.getElementById("error-text").innerHTML = msg;
   $("#error").show();
 }
 
@@ -167,9 +221,13 @@ function getAssertion() {
     
     var credentialRequest = {};
     credentialRequest.publicKey = requestOptions;
-    
     console.log(credentialRequest);
-    
+
+    if (typeof navigator.credentials.get !== "function") {
+      addErrorMsg("Browser does not support credential lookup");
+      return;
+    }
+
     navigator.credentials.get({"publicKey": requestOptions})
       .then(function (assertion) {
         removeSpinner();
@@ -200,7 +258,9 @@ function getAssertion() {
       }
     }).catch(function (err) {
       removeSpinner();
-      addErrorMsg();
+      console.log(err.toString());
+      addErrorMsg("An error occurred during Assertion request ["
+        + err.toString() + "]");
     });
   });
 }

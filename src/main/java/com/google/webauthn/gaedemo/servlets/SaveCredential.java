@@ -19,7 +19,6 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.webauthn.gaedemo.crypto.Crypto;
 import com.google.webauthn.gaedemo.objects.AttestationData;
 import com.google.webauthn.gaedemo.objects.AttestationObject;
-import com.google.webauthn.gaedemo.objects.AttestationStatement;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.AuthenticatorData;
 import com.google.webauthn.gaedemo.objects.EccKey;
@@ -56,7 +55,6 @@ public class SaveCredential extends HttpServlet {
    */
   public SaveCredential() {
     super();
-    // TODO Auto-generated constructor stub
   }
 
   static {

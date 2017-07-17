@@ -24,6 +24,7 @@ import com.google.gson.JsonParser;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
+import com.google.webauthn.gaedemo.server.PublicKeyCredentialResponse;
 import com.google.webauthn.gaedemo.server.U2fServer;
 import com.google.webauthn.gaedemo.storage.Credential;
 import java.io.IOException;
@@ -46,7 +47,6 @@ public class FinishGetAssertion extends HttpServlet {
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     doPost(request, response);
-
   }
 
   @Override
@@ -88,16 +88,17 @@ public class FinishGetAssertion extends HttpServlet {
     } catch (ResponseException e) {
       throw new ServletException(e.toString());
     }
-    
+
     PublicKeyCredential cred = new PublicKeyCredential(credentialId, type,
         BaseEncoding.base64().decode(credentialId), assertion);
-    
+
     U2fServer.verifyAssertion(cred, currentUser, session);
     Credential credential = new Credential(cred);
     credential.save(currentUser);
 
     response.setContentType("application/json");
-    response.getWriter().println(credential.toJson());
+    PublicKeyCredentialResponse rsp = new PublicKeyCredentialResponse(true, "Successful assertion");
+    response.getWriter().println(rsp.toJson());
   }
 
 }

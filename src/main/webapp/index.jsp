@@ -43,7 +43,7 @@
         class="mdl-progress mdl-js-progress mdl-progress__indeterminate page-width"></div>
     </div>
     <div id="error" class="hidden">
-      <h3 class="error-text">An error has occurred</h3>
+      <h3 class="error-text" id="error-text">An error has occurred</h3>
     </div>
     <div id="credentials" class="mdl-grid mdl-grid--no-spacing"></div>
     <div id="github" class="github-link">

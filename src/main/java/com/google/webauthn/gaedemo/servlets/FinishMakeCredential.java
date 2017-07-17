@@ -25,6 +25,7 @@ import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.google.webauthn.gaedemo.server.AndroidSafetyNetServer;
+import com.google.webauthn.gaedemo.server.PublicKeyCredentialResponse;
 import com.google.webauthn.gaedemo.server.U2fServer;
 import com.google.webauthn.gaedemo.storage.Credential;
 import java.io.IOException;
@@ -86,7 +87,7 @@ public class FinishMakeCredential extends HttpServlet {
 
     PublicKeyCredential cred = new PublicKeyCredential(credentialId, type,
         BaseEncoding.base64().decode(credentialId), attestation);
-    
+
     String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
     switch (cred.getAttestationType()) {
       case FIDOU2F:
@@ -96,12 +97,15 @@ public class FinishMakeCredential extends HttpServlet {
         AndroidSafetyNetServer.registerCredential(cred, currentUser, session, rpId);
         break;
     }
-    
+
     Credential credential = new Credential(cred);
     credential.save(currentUser);
 
+    PublicKeyCredentialResponse rsp =
+        new PublicKeyCredentialResponse(true, "Successfully created credential");
+
     response.setContentType("application/json");
-    response.getWriter().println(credential.toJson());
+    response.getWriter().println(rsp.toJson());
   }
 
 }
