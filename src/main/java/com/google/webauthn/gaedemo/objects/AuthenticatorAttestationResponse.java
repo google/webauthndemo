@@ -17,9 +17,12 @@ package com.google.webauthn.gaedemo.objects;
 import co.nstant.in.cbor.CborException;
 import com.google.common.io.BaseEncoding;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.googlecode.objectify.annotation.Subclass;
+
+import java.util.Map;
 
 /**
  *
@@ -30,7 +33,7 @@ public class AuthenticatorAttestationResponse extends AuthenticatorResponse {
    *
    */
   private class AttestationResponseJson {
-    String clientDataJSON;
+    Map<String, Byte> clientDataJSON;
     String attestationObject;
   }
 
@@ -45,13 +48,18 @@ public class AuthenticatorAttestationResponse extends AuthenticatorResponse {
    * @param data
    * @throws ResponseException
    */
-  public AuthenticatorAttestationResponse(String data) throws ResponseException {
+  public AuthenticatorAttestationResponse(JsonElement data) throws ResponseException {
     Gson gson = new Gson();
     AttestationResponseJson parsedObject = gson.fromJson(data, AttestationResponseJson.class);
 
-    String clientDataString =
-        new String(BaseEncoding.base64Url().decode(parsedObject.clientDataJSON));
-    clientData = gson.fromJson(clientDataString, CollectedClientData.class);
+    StringBuffer decodedData = new StringBuffer();
+    // This should probably need some kind of sort to be stable, but for now
+    // values() seems to walk through this crazy map alright
+    for (byte b : parsedObject.clientDataJSON.values()) {
+      decodedData.appendCodePoint(b);
+    }
+    System.out.println("Decoded data: " + decodedData.toString());
+    clientData = gson.fromJson(decodedData.toString(), CollectedClientData.class);
 
     byte[] attestationObject = BaseEncoding.base64().decode(parsedObject.attestationObject);
 

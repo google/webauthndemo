@@ -54,7 +54,7 @@ public class FinishMakeCredential extends HttpServlet {
 
     String credentialId = null;
     String type = null;
-    String makeCredentialResponse = null;
+    JsonElement makeCredentialResponse = null;
 
     try {
       JsonObject json = new JsonParser().parse(data).getAsJsonObject();
@@ -66,10 +66,7 @@ public class FinishMakeCredential extends HttpServlet {
       if (typeJson != null) {
         type = typeJson.getAsString();
       }
-      JsonElement assertionJson = json.get("response");
-      if (assertionJson != null) {
-        makeCredentialResponse = assertionJson.getAsString();
-      }
+      makeCredentialResponse = json.get("response");
     } catch (IllegalStateException e) {
       throw new ServletException("Passed data not a json object");
     } catch (ClassCastException e) {
