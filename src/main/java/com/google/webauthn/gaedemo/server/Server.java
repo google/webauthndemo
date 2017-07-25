@@ -44,9 +44,12 @@ public abstract class Server {
     }
     SessionData.remove(currentUser, Long.valueOf(id));
 
+    // Session.getChallenge is a base64-encoded string
     byte[] sessionChallenge = BaseEncoding.base64().decode(session.getChallenge());
-    if (!Arrays.equals(sessionChallenge,
-        assertionResponse.getClientData().getChallenge().getBytes())) {
+    // assertionResponse.getClientData().getChallenge() is a base64url-encoded string
+    byte[] clientSessionChallenge = BaseEncoding.base64Url().omitPadding().decode(
+                                      assertionResponse.getClientData().getChallenge());
+    if (!Arrays.equals(sessionChallenge, clientSessionChallenge)) {
       throw new ResponseException("Returned challenge incorrect");
     }
     Log.info("Successfully verified session and challenge data");
