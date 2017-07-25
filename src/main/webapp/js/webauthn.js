@@ -102,7 +102,8 @@ function credentialListConversion(list) {
 }
 
 function finishAddCredential(publicKeyCredential) {
-  $.post('/FinishMakeCredential', { data: JSON.stringify(publicKeyCredential) },
+  let dataStr = JSON.stringify(publicKeyCredential);
+  $.post('/FinishMakeCredential', { data: dataStr },
     null, 'json')
     .done(function(parameters) {
       console.log(parameters);
@@ -144,22 +145,22 @@ function addCredential() {
       removeSpinner();
       var publicKeyCredential = {};
       if ('id' in attestation) {
-        publicKeyCredential.id = assertion.id;
+        publicKeyCredential.id = attestation.id;
       }
       if ('type' in attestation) {
-        publicKeyCredential.type = assertion.type;
+        publicKeyCredential.type = attestation.type;
       }
       if ('rawId' in attestation) {
         publicKeyCredential.rawId = btoa(
-          new Uint8Array(assertion.rawId).reduce((s, byte) =>
+          new Uint8Array(attestation.rawId).reduce((s, byte) =>
           s + String.fromCharCode(byte), ''));
-        publicKeyCredential.rawId = assertion.rawId;
+        publicKeyCredential.rawId = attestation.rawId;
       }
-      if ('response' in assertion) {
+      if ('response' in attestation) {
         var response = {};
-        response.clientDataJSON = assertion.response.clientDataJSON;
+        response.clientDataJSON = attestation.response.clientDataJSON;
         response.attestationObject = btoa(
-          new Uint8Array(assertion.response.attestationObject)
+          new Uint8Array(attestation.response.attestationObject)
           .reduce((s, byte) => s + String.fromCharCode(byte), ''));
         publicKeyCredential.response = response;
         finishAddCredential(publicKeyCredential);
