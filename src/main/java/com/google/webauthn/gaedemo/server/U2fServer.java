@@ -135,7 +135,7 @@ public class U2fServer extends Server {
     try {
       verifySessionAndChallenge(attResponse, currentUser, session);
     } catch (ResponseException e1) {
-      throw new ServletException("Unable to verify session and challenge data");
+      throw new ServletException("Unable to verify session and challenge data", e1);
     }
 
     if (!attResponse.getClientData().getOrigin().equals(origin)) {
