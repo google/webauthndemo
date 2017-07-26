@@ -83,7 +83,7 @@ public class FinishMakeCredential extends HttpServlet {
     }
 
     PublicKeyCredential cred = new PublicKeyCredential(credentialId, type,
-        BaseEncoding.base64().decode(credentialId), attestation);
+        BaseEncoding.base64Url().decode(credentialId), attestation);
 
     String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
     switch (cred.getAttestationType()) {
