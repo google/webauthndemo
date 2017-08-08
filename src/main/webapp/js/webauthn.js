@@ -101,8 +101,9 @@ function credentialListConversion(list) {
   return result;
 }
 
-function finishAddCredential(publicKeyCredential) {
-  $.post('/FinishMakeCredential', { data: JSON.stringify(publicKeyCredential) },
+function finishAddCredential(publicKeyCredential, sessionId) {
+  let dataStr = JSON.stringify(publicKeyCredential);
+  $.post('/FinishMakeCredential', { data: dataStr, session: sessionId },
     null, 'json')
     .done(function(parameters) {
       console.log(parameters);
@@ -144,25 +145,25 @@ function addCredential() {
       removeSpinner();
       var publicKeyCredential = {};
       if ('id' in attestation) {
-        publicKeyCredential.id = assertion.id;
+        publicKeyCredential.id = attestation.id;
       }
       if ('type' in attestation) {
-        publicKeyCredential.type = assertion.type;
+        publicKeyCredential.type = attestation.type;
       }
       if ('rawId' in attestation) {
         publicKeyCredential.rawId = btoa(
-          new Uint8Array(assertion.rawId).reduce((s, byte) =>
+          new Uint8Array(attestation.rawId).reduce((s, byte) =>
           s + String.fromCharCode(byte), ''));
-        publicKeyCredential.rawId = assertion.rawId;
+        publicKeyCredential.rawId = attestation.rawId;
       }
-      if ('response' in assertion) {
+      if ('response' in attestation) {
         var response = {};
-        response.clientDataJSON = assertion.response.clientDataJSON;
+        response.clientDataJSON = attestation.response.clientDataJSON;
         response.attestationObject = btoa(
-          new Uint8Array(assertion.response.attestationObject)
+          new Uint8Array(attestation.response.attestationObject)
           .reduce((s, byte) => s + String.fromCharCode(byte), ''));
         publicKeyCredential.response = response;
-        finishAddCredential(publicKeyCredential);
+        finishAddCredential(publicKeyCredential, options.session.id);
       }
     }).catch(function (err) {
       removeSpinner();
@@ -173,8 +174,8 @@ function addCredential() {
   });
 }
 
-function finishAssertion(publicKeyCredential) {
-  $.post('/FinishGetAssertion', { data: JSON.stringify(publicKeyCredential) },
+function finishAssertion(publicKeyCredential, sessionId) {
+  $.post('/FinishGetAssertion', { data: JSON.stringify(publicKeyCredential), session: sessionId },
     null, 'json')
     .done(function(parameters) {
       console.log(parameters);
@@ -254,7 +255,7 @@ function getAssertion() {
           new Uint8Array(assertion.response.signature)
           .reduce((s, byte) => s + String.fromCharCode(byte), ''));
         publicKeyCredential.response = response;
-        finishAssertion(publicKeyCredential);
+        finishAssertion(publicKeyCredential, parameters.session.id);
       }
     }).catch(function (err) {
       removeSpinner();

@@ -46,7 +46,7 @@ public class MakeCredentialOptions {
 
     challenge = new byte[CHALLENGE_LENGTH];
     random.nextBytes(challenge);
-    parameters.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, "none"));
+    parameters.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, "ES256"));
   }
 
   PublicKeyCredentialEntity rp;

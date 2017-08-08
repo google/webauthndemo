@@ -61,8 +61,8 @@ public class AttestationData {
     System.arraycopy(data, 0, result.aaguid, 0, 16);
     index += 16;
 
-    int length = data[index++] << 8;
-    length |= data[index++];
+    int length = (data[index++] << 8) & 0xFF;
+    length += data[index++] & 0xFF;
 
     result.credentialId = new byte[length];
     System.arraycopy(data, index, result.credentialId, 0, length);

@@ -76,7 +76,7 @@ public class Crypto {
       X9ECParameters curve = SECNamedCurves.getByName("secp256r1");
       ECPoint point;
       try {
-        point = curve.getCurve().createPoint(new BigInteger(x), new BigInteger(y));
+        point = curve.getCurve().createPoint(new BigInteger(x), new BigInteger(y), true);
       } catch (RuntimeException e) {
         throw new WebAuthnException("Couldn't parse user public key", e);
       }
