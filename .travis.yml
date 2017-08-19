@@ -1,9 +1,9 @@
 language: java
 before_script:
-- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && openssl aes-256-cbc -K $encrypted_abed99774422_key
+- 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then openssl aes-256-cbc -K $encrypted_abed99774422_key
   -iv $encrypted_abed99774422_iv -in client-secret.json.enc -out client-secret.json
-  -d'
+  -d; fi'
 # Don't deploy if a pull request
 script:
 - mvn test -B
-- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && mvn appengine:update -Dappengine.additionalParams="--service_account_json_key_file=client-secret.json"'
+- 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then mvn appengine:update -Dappengine.additionalParams="--service_account_json_key_file=client-secret.json"; fi'
