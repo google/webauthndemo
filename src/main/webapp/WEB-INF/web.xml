@@ -19,7 +19,7 @@
 
   <security-constraint>
     <web-resource-collection>
-      <url-pattern>/_ah/spi/*</url-pattern>
+      <url-pattern>/_ah/api/*</url-pattern>
     </web-resource-collection>
     <user-data-constraint>
       <transport-guarantee>CONFIDENTIAL</transport-guarantee>
@@ -145,15 +145,19 @@
   </servlet-mapping>
 
   <servlet>
-    <servlet-name>SystemServiceServlet</servlet-name>
-    <servlet-class>com.google.api.server.spi.SystemServiceServlet</servlet-class>
+    <servlet-name>EndpointsServlet</servlet-name>
+    <servlet-class>com.google.api.server.spi.EndpointsServlet</servlet-class>
     <init-param>
       <param-name>services</param-name>
       <param-value>com.google.webauthn.gaedemo.endpoints.Fido2RequestHandler</param-value>
     </init-param>
+    <init-param>
+      <param-name>restricted</param-name>
+      <param-value>false</param-value>
+    </init-param>
   </servlet>
   <servlet-mapping>
-    <servlet-name>SystemServiceServlet</servlet-name>
-    <url-pattern>/_ah/spi/*</url-pattern>
+    <servlet-name>EndpointsServlet</servlet-name>
+    <url-pattern>/_ah/api/*</url-pattern>
   </servlet-mapping>
 </web-app>
