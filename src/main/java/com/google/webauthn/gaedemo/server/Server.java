@@ -27,6 +27,11 @@ public abstract class Server {
   public static void verifySessionAndChallenge(AuthenticatorResponse assertionResponse,
       String currentUser, String sessionId) throws ResponseException {
     Log.info("-- Verifying provided session and challenge data --");
+    // TODO: when it's calling from an Android application via Endpoints API, the session ID
+    // is temporarily null for now.
+    if (sessionId == null) {
+      return;
+    }
 
     long id = 0;
     try {

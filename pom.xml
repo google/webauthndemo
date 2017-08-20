@@ -29,6 +29,11 @@
     <!-- Compile/runtime dependencies -->
     <dependency>
       <groupId>com.google.appengine</groupId>
+      <artifactId>appengine-endpoints</artifactId>
+      <version>1.9.53</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.appengine</groupId>
       <artifactId>appengine-api-1.0-sdk</artifactId>
       <version>${appengine.sdk.version}</version>
     </dependency>

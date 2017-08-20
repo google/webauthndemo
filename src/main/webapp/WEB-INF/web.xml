@@ -16,9 +16,19 @@
   <listener>
     <listener-class>com.google.webauthn.gaedemo.server.OfyHelper</listener-class>
   </listener>
+
   <security-constraint>
     <web-resource-collection>
-      <web-resource-name>all</web-resource-name>
+      <url-pattern>/_ah/spi/*</url-pattern>
+    </web-resource-collection>
+    <user-data-constraint>
+      <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+    </user-data-constraint>
+  </security-constraint>
+
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>all-others</web-resource-name>
       <url-pattern>/*</url-pattern>
     </web-resource-collection>
     <auth-constraint>
@@ -28,6 +38,7 @@
       <transport-guarantee>CONFIDENTIAL</transport-guarantee>
     </user-data-constraint>
   </security-constraint>
+
   <context-param>
     <param-name>name</param-name>
     <param-value>webauthn-demo</param-value>
@@ -131,5 +142,18 @@
   <servlet-mapping>
     <servlet-name>SaveCredential</servlet-name>
     <url-pattern>/SaveCredential</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>SystemServiceServlet</servlet-name>
+    <servlet-class>com.google.api.server.spi.SystemServiceServlet</servlet-class>
+    <init-param>
+      <param-name>services</param-name>
+      <param-value>com.google.webauthn.gaedemo.endpoints.Fido2RequestHandler</param-value>
+    </init-param>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>SystemServiceServlet</servlet-name>
+    <url-pattern>/_ah/spi/*</url-pattern>
   </servlet-mapping>
 </web-app>
