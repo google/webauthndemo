@@ -12,9 +12,9 @@
   <!-- [START set_versions] -->
   <properties>
     <appengine.app.version>1</appengine.app.version>
-    <appengine.sdk.version>1.9.48</appengine.sdk.version>
+    <appengine.sdk.version>1.9.54</appengine.sdk.version>
 
-    <objectify.version>5.1.5</objectify.version>
+    <objectify.version>5.1.21</objectify.version>
     <guava.version>18.0</guava.version>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -45,7 +45,7 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
-      <version>2.5</version>
+      <version>3.0-alpha-1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -104,7 +104,7 @@
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.8.0</version>
+      <version>2.8.1</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -119,7 +119,7 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
-      <version>2.8.8</version>
+      <version>2.9.0.pr4</version>
     </dependency>
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
