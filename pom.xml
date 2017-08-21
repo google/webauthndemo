@@ -56,12 +56,12 @@
     <dependency>
       <groupId>com.google.endpoints</groupId>
       <artifactId>endpoints-management-control-appengine</artifactId>
-      <version>1.0.0-beta.11</version>
+      <version>1.0.4</version>
     </dependency>
     <dependency>
       <groupId>com.google.endpoints</groupId>
       <artifactId>endpoints-framework-auth</artifactId>
-      <version>1.0.0-beta.11</version>
+      <version>1.0.4</version>
     </dependency>
     <dependency>
       <groupId>javax.inject</groupId>
