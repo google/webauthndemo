@@ -15,7 +15,7 @@
     <appengine.sdk.version>1.9.54</appengine.sdk.version>
 
     <objectify.version>5.1.21</objectify.version>
-    <guava.version>18.0</guava.version>
+    <guava.version>19.0</guava.version>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
