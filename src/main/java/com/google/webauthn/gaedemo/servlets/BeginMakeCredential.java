@@ -50,7 +50,7 @@ public class BeginMakeCredential extends HttpServlet {
     MakeCredentialOptions options = new MakeCredentialOptions(user.getNickname(), rpId, rpName);
     SessionData session = new SessionData(options.challenge, rpId);
     
-    session.save(userService.getCurrentUser().getUserId());
+    session.save(userService.getCurrentUser().getEmail());
     JsonObject sessionJson = session.getJsonObject();
     JsonObject optionsJson = options.getJsonObject();
     optionsJson.add("session", sessionJson);

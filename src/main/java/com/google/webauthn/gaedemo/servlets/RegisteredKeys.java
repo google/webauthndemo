@@ -52,7 +52,7 @@ public class RegisteredKeys extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    String currentUser = userService.getCurrentUser().getUserId();
+    String currentUser = userService.getCurrentUser().getEmail();
     List<Credential> savedCreds = Credential.load(currentUser);
 
     JsonArray result = new JsonArray();

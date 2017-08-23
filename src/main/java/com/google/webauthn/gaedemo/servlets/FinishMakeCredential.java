@@ -48,7 +48,7 @@ public class FinishMakeCredential extends HttpServlet {
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    String currentUser = userService.getCurrentUser().getUserId();
+    String currentUser = userService.getCurrentUser().getEmail();
     String data = request.getParameter("data");
     String session = request.getParameter("session");
 

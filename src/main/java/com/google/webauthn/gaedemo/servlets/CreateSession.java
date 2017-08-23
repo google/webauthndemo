@@ -46,7 +46,7 @@ public class CreateSession extends HttpServlet {
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     // TODO Auto-generated method stub
-    String currentUser = userService.getCurrentUser().getUserId();
+    String currentUser = userService.getCurrentUser().getEmail();
     String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
     PublicKeyCredentialRequestOptions assertion = new PublicKeyCredentialRequestOptions(rpId);
     SessionData session = new SessionData(assertion.challenge, rpId);

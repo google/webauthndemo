@@ -66,7 +66,7 @@ public class Fido2RequestHandler {
     MakeCredentialOptions options = new MakeCredentialOptions(
         user.getNickname(), Constants.APP_ID, Constants.APP_ID);
     SessionData session = new SessionData(options.challenge, Constants.APP_ID);
-    session.save(user.getUserId());
+    session.save(user.getEmail());
     JsonObject sessionJson = session.getJsonObject();
     JsonObject optionsJson = options.getJsonObject();
     optionsJson.add("session", sessionJson);
@@ -100,11 +100,11 @@ public class Fido2RequestHandler {
     try {
       switch (cred.getAttestationType()) {
         case FIDOU2F:
-          U2fServer.registerCredential(cred, user.getUserId(), session, Constants.APP_ID);
+          U2fServer.registerCredential(cred, user.getEmail(), session, Constants.APP_ID);
           break;
         case ANDROIDSAFETYNET:
           AndroidSafetyNetServer.registerCredential(
-              cred, user.getUserId(), session, Constants.APP_ID);
+              cred, user.getEmail(), session, Constants.APP_ID);
           break;
         default:
           // This should never happen.
@@ -114,7 +114,7 @@ public class Fido2RequestHandler {
     }
 
     Credential credential = new Credential(cred);
-    credential.save(user.getUserId());
+    credential.save(user.getEmail());
 
     List<String> resultList = new ArrayList<String>();
     resultList.add(credential.toJson());
@@ -130,7 +130,7 @@ public class Fido2RequestHandler {
     PublicKeyCredentialRequestOptions assertion =
         new PublicKeyCredentialRequestOptions(Constants.APP_ID);
     SessionData session = new SessionData(assertion.challenge, Constants.APP_ID);
-    assertion.populateAllowList(user.getUserId());
+    assertion.populateAllowList(user.getEmail());
     JsonObject assertionJson = assertion.getJsonObject();
 
     List<String> resultList = new ArrayList<String>();
@@ -159,13 +159,13 @@ public class Fido2RequestHandler {
         BaseEncoding.base64Url().decode(credentialId), assertion);
 
     try {
-      U2fServer.verifyAssertion(cred, user.getUserId(), session);
+      U2fServer.verifyAssertion(cred, user.getEmail(), session);
     } catch (ServletException e) {
       // TODO
     }
 
     Credential credential = new Credential(cred);
-    credential.save(user.getUserId());
+    credential.save(user.getEmail());
 
     List<String> resultList = new ArrayList<String>();
     resultList.add(credential.toJson());
@@ -178,7 +178,7 @@ public class Fido2RequestHandler {
       throw new OAuthRequestException("User is not authenticated");
     }
 
-    List<Credential> savedCreds = Credential.load(user.getUserId());
+    List<Credential> savedCreds = Credential.load(user.getEmail());
     JsonArray result = new JsonArray();
 
     for (Credential c : savedCreds) {
@@ -220,8 +220,8 @@ public class Fido2RequestHandler {
     // TODO
     String id = null;
     String credentialId = null;
-    Credential.remove(user.getUserId(), id);
-    Credential.remove(user.getUserId(), credentialId);
+    Credential.remove(user.getEmail(), id);
+    Credential.remove(user.getEmail(), credentialId);
 
     return new String[] {"OK"};
   }
