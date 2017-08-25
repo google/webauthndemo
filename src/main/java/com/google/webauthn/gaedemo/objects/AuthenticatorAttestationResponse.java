@@ -24,15 +24,9 @@ import com.googlecode.objectify.annotation.Subclass;
 
 import java.util.Map;
 
-/**
- *
- */
 @Subclass
 public class AuthenticatorAttestationResponse extends AuthenticatorResponse {
-  /**
-   *
-   */
-  private class AttestationResponseJson {
+  private static class AttestationResponseJson {
     Map<String, Byte> clientDataJSON;
     String attestationObject;
   }

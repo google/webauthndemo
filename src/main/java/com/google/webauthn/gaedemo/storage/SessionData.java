@@ -76,16 +76,15 @@ public class SessionData {
 
   public static List<SessionData> load(String currentUser) {
     Key<User> user = Key.create(User.class, currentUser);
-    List<SessionData> sessions =
-        ofy().load().type(SessionData.class).ancestor(user).list();
+    List<SessionData> sessions = ofy().load().type(SessionData.class).ancestor(user).list();
     return sessions;
   }
 
   public static void removeOldSessions(String currentUser) {
     Key<User> user = Key.create(User.class, currentUser);
     Date date = new Date(System.currentTimeMillis() - (1 * 60 * 60 * 1000));
-    List<Key<SessionData>> keys = ofy().load().type(SessionData.class)
-        .ancestor(user).filter("created < ", date).keys().list();
+    List<Key<SessionData>> keys = ofy().load().type(SessionData.class).ancestor(user)
+        .filter("created < ", date).keys().list();
     ofy().delete().keys(keys).now();
   }
 
@@ -94,7 +93,7 @@ public class SessionData {
     Key<SessionData> session = Key.create(user, SessionData.class, id);
     return ofy().load().key(session).now();
   }
-  
+
   public static void remove(String currentUser, Long id) {
     Key<User> user = Key.create(User.class, currentUser);
     Key<SessionData> session = Key.create(user, SessionData.class, id);

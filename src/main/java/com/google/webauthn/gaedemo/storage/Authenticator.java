@@ -22,9 +22,11 @@ import com.googlecode.objectify.Key;
 
 @Entity
 public class Authenticator {
-  @Parent Key<User> theUser;
-  @Id public Long id;
-  
+  @Parent
+  Key<User> theUser;
+  @Id
+  public Long id;
+
   public ShortBlob keyHandle;
   public ShortBlob publicKey;
 }

@@ -14,25 +14,29 @@
 
 package com.google.webauthn.gaedemo.objects;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-public class PublicKeyCredentialUserEntity {
+public class PublicKeyCredentialUserEntity extends PublicKeyCredentialEntity {
+  @SuppressWarnings("unused")
   private String displayName;
 
   /**
    * @param displayName
    */
-  public PublicKeyCredentialUserEntity(String displayName) {
+  public PublicKeyCredentialUserEntity(String displayName, String id) {
+    super();
     this.displayName = displayName;
+    this.name = displayName;
+    this.id = id;
   }
 
   /**
    * @return
    */
+  @Override
   public JsonObject getJsonObject() {
-    JsonObject result = new JsonObject();
-    result.addProperty("displayName", displayName);
-
-    return result;
+    Gson gson = new Gson();
+    return (JsonObject) gson.toJsonTree(this);
   }
 }

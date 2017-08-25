@@ -114,5 +114,4 @@ public class CollectedClientData {
     return false;
   }
 
-
 }

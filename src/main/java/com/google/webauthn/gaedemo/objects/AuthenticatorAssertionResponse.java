@@ -20,8 +20,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 
 public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
-  @SuppressWarnings("hiding")
-  class AssertionResponseJson {
+  private static class AssertionResponseJson {
     String clientDataJSON;
     String authenticatorData;
     String signature;
