@@ -86,8 +86,12 @@ public class Fido2RequestHandler {
 
     Gson gson = new Gson();
     JsonElement element = gson.fromJson(responseData, JsonElement.class);
+    JsonObject object = element.getAsJsonObject();
+    String clientDataJSON = object.get("clientDataJSON").getAsString();
+    String attestationObject = object.get("attestationObject").getAsString();
+    
     AuthenticatorAttestationResponse attestation =
-        new AuthenticatorAttestationResponse(element);
+        new AuthenticatorAttestationResponse(clientDataJSON, attestationObject);
 
     // TODO
     String credentialId = BaseEncoding.base64Url().encode(
@@ -130,8 +134,12 @@ public class Fido2RequestHandler {
     PublicKeyCredentialRequestOptions assertion =
         new PublicKeyCredentialRequestOptions(Constants.APP_ID);
     SessionData session = new SessionData(assertion.challenge, Constants.APP_ID);
+    session.save(user.getEmail());
+
     assertion.populateAllowList(user.getEmail());
     JsonObject assertionJson = assertion.getJsonObject();
+    JsonObject sessionJson = session.getJsonObject();
+    assertionJson.add("session", sessionJson);
 
     List<String> resultList = new ArrayList<String>();
     resultList.add(assertionJson.toString());
@@ -146,8 +154,15 @@ public class Fido2RequestHandler {
       throw new OAuthRequestException("User is not authenticated");
     }
 
+    Gson gson = new Gson();
+    JsonElement element = gson.fromJson(responseData, JsonElement.class);
+    JsonObject object = element.getAsJsonObject();
+    String clientDataJSON = object.get("clientDataJSON").getAsString();
+    String authenticatorData = object.get("authenticatorData").getAsString();
+    String signature = object.get("signature").getAsString();
+
     AuthenticatorAssertionResponse assertion =
-        new AuthenticatorAssertionResponse(responseData);
+        new AuthenticatorAssertionResponse(clientDataJSON, authenticatorData, signature);
 
     // TODO
     String credentialId = BaseEncoding.base64Url().encode(

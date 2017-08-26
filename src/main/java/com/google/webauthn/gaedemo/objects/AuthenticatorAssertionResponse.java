@@ -30,6 +30,13 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
   AuthenticatorData authData;
   byte[] signature;
 
+  public AuthenticatorAssertionResponse(String clientDataJSON, String authenticatorData,
+      String signatureString) throws ResponseException {
+    clientData = CollectedClientData.decode(clientDataJSON);
+    authData = AuthenticatorData.decode(BaseEncoding.base64().decode(authenticatorData));
+    signature = BaseEncoding.base64().decode(signatureString);
+  }
+
   /**
    * @param data
    * @throws ResponseException
