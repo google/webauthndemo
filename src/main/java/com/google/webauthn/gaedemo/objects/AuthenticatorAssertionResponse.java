@@ -32,6 +32,8 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
   AuthenticatorData authData;
   byte[] signature;
 
+  public AuthenticatorAssertionResponse() {}
+
   public AuthenticatorAssertionResponse(String clientDataJSON, String authenticatorData,
       String signatureString) throws ResponseException {
     clientData = CollectedClientData.decode(clientDataJSON);
