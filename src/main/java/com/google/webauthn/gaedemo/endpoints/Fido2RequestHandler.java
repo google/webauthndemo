@@ -89,7 +89,7 @@ public class Fido2RequestHandler {
     JsonObject object = element.getAsJsonObject();
     String clientDataJSON = object.get("clientDataJSON").getAsString();
     String attestationObject = object.get("attestationObject").getAsString();
-    
+
     AuthenticatorAttestationResponse attestation =
         new AuthenticatorAttestationResponse(clientDataJSON, attestationObject);
 
@@ -159,14 +159,13 @@ public class Fido2RequestHandler {
     JsonObject object = element.getAsJsonObject();
     String clientDataJSON = object.get("clientDataJSON").getAsString();
     String authenticatorData = object.get("authenticatorData").getAsString();
+    String credentialId = object.get("credentialId").getAsString();
     String signature = object.get("signature").getAsString();
 
     AuthenticatorAssertionResponse assertion =
         new AuthenticatorAssertionResponse(clientDataJSON, authenticatorData, signature);
 
     // TODO
-    String credentialId = BaseEncoding.base64Url().encode(
-        assertion.getAuthenticatorData().getAttData().getCredentialId());
     String type = null;
     String session = null;
 
@@ -201,6 +200,8 @@ public class Fido2RequestHandler {
       cJson.addProperty("handle", BaseEncoding.base64().encode(c.getCredential().rawId));
       EccKey ecc = (EccKey) ((AuthenticatorAttestationResponse) c.getCredential().getResponse())
           .getAttestationObject().getAuthenticatorData().getAttData().getPublicKey();
+      // TODO
+/*
       try {
         cJson.addProperty("publicKey", Integer.toHexString(
             Crypto.decodePublicKey(ecc.getX(), ecc.getY()).hashCode()));
@@ -208,7 +209,7 @@ public class Fido2RequestHandler {
         e.printStackTrace();
         continue;
       }
-
+*/
       AttestationObject attObj =
           ((AuthenticatorAttestationResponse) c.getCredential().getResponse())
               .getAttestationObject();
