@@ -18,7 +18,9 @@ import com.google.common.io.BaseEncoding;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
+import com.googlecode.objectify.annotation.Subclass;
 
+@Subclass
 public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
   @SuppressWarnings("hiding")
   class AssertionResponseJson {
