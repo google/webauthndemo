@@ -58,6 +58,10 @@ public enum Algorithm {
         return t;
       }
     }
+    // Support legacy ES256 algorithm identifier
+    if (s.equals("ES256")) {
+      return ES256;
+    }
     throw new IllegalArgumentException(s + " not a valid Algorithm");
   }
 
