@@ -1,10 +1,9 @@
-# WebAuthNDemo
-An example Java Relying Party implementation of the [WebAuthN
+# WebAuthnDemo
+An example Java Relying Party implementation of the [WebAuthn
 specification](https://w3c.github.io/webauthn/).
 
 ### Install
-The demo is written on top of Google App Engine. With Google App Engine
-installed, run
+The demo is written on top of Google App Engine. Run
 ```sh
 $ mvn appengine:devserver
 ```
