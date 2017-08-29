@@ -14,12 +14,14 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import co.nstant.in.cbor.CborException;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Ints;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
+
+import co.nstant.in.cbor.CborException;
 
 public class AuthenticatorData {
   private byte[] rpIdHash;
@@ -58,6 +60,34 @@ public class AuthenticatorData {
    */
   public byte getFlags() {
     return flags;
+  }
+
+  /**
+   * @return the UP bit of the flags
+   */
+  public boolean isUP() {
+    return (flags & 1) != 0;
+  }
+
+  /**
+   * @return the UP bit of the flags
+   */
+  public boolean isUV() {
+    return (flags & 1 << 2) != 0;
+  }
+
+  /**
+   * @return the UP bit of the flags
+   */
+  public boolean hasAttestationData() {
+    return (flags & 1 << 6) != 0;
+  }
+
+  /**
+   * @return the UP bit of the flags
+   */
+  public boolean hasExtensionData() {
+    return (flags & 1 << 7) != 0;
   }
 
   /**
