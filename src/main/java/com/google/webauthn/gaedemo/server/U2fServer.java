@@ -38,50 +38,22 @@ public class U2fServer extends Server {
    * @param sessionId
    * @throws ServletException
    */
-  public static void verifyAssertion(PublicKeyCredential cred, String currentUser, String sessionId)
-      throws ServletException {
-
-    if (!(cred.getResponse() instanceof AuthenticatorAssertionResponse)) {
-      throw new ServletException("Invalid authenticator response");
-    }
-
+  public static void verifyAssertion(PublicKeyCredential cred, String currentUser, String sessionId,
+      Credential savedCredential) throws ServletException {
     AuthenticatorAssertionResponse assertionResponse =
         (AuthenticatorAssertionResponse) cred.getResponse();
-
-    List<Credential> savedCreds = Credential.load(currentUser);
-    if (savedCreds == null || savedCreds.size() == 0) {
-      throw new ServletException("No credentials registered for this user");
-    }
-
-    try {
-      verifySessionAndChallenge(assertionResponse, currentUser, sessionId);
-    } catch (ResponseException e1) {
-      throw new ServletException("Unable to verify session and challenge data");
-    }
-
-    Credential credential = null;
-    for (Credential saved : savedCreds) {
-      if (saved.getCredential().getId().equals(cred.getId())) {
-        credential = saved;
-        break;
-      }
-    }
-
-    if (credential == null) {
-      Log.info("Credential not registered with this user");
-      throw new ServletException("Received response from credential not associated with user");
-    }
 
     Gson gson = new Gson();
     String clientDataJson = gson.toJson(assertionResponse.getClientData());
     byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
 
     Log.info("-- Verifying signature --");
-    if (!(credential.getCredential().getResponse() instanceof AuthenticatorAttestationResponse)) {
+    if (!(savedCredential.getCredential()
+        .getResponse() instanceof AuthenticatorAttestationResponse)) {
       throw new ServletException("Stored attestation missing");
     }
     AuthenticatorAttestationResponse storedAttData =
-        (AuthenticatorAttestationResponse) credential.getCredential().getResponse();
+        (AuthenticatorAttestationResponse) savedCredential.getCredential().getResponse();
 
     if (!(storedAttData.decodedObject.getAuthenticatorData().getAttData()
         .getPublicKey() instanceof EccKey)) {
@@ -99,11 +71,11 @@ public class U2fServer extends Server {
       throw new ServletException("Failure while verifying signature");
     }
 
-    if (assertionResponse.getAuthenticatorData().getSignCount() <= credential.getSignCount()) {
+    if (assertionResponse.getAuthenticatorData().getSignCount() <= savedCredential.getSignCount()) {
       throw new ServletException("Sign count invalid");
     }
 
-    credential.updateSignCount(assertionResponse.getAuthenticatorData().getSignCount());
+    savedCredential.updateSignCount(assertionResponse.getAuthenticatorData().getSignCount());
 
     Log.info("Signature verified");
   }

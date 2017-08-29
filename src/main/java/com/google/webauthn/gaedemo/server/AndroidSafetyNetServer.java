@@ -16,11 +16,16 @@ package com.google.webauthn.gaedemo.server;
 
 import co.nstant.in.cbor.CborException;
 import com.google.common.primitives.Bytes;
+import com.google.gson.Gson;
+import com.google.webauthn.gaedemo.crypto.Crypto;
 import com.google.webauthn.gaedemo.crypto.OfflineVerify;
 import com.google.webauthn.gaedemo.crypto.OfflineVerify.AttestationStatement;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
+import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
 import com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement;
+import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
+import com.google.webauthn.gaedemo.objects.EccKey;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.google.webauthn.gaedemo.storage.Credential;
 import java.util.Arrays;
@@ -88,6 +93,59 @@ public class AndroidSafetyNetServer extends Server {
     if (!stmt.isCtsProfileMatch()) {
       throw new ServletException("No cts profile match");
     }
+  }
 
+  /**
+   * @param cred
+   * @param currentUser
+   * @param sessionId
+   * @throws ServletException
+   */
+  public static void verifyAssertion(PublicKeyCredential cred, String currentUser, String sessionId,
+      Credential savedCredential) throws ServletException {
+
+    AuthenticatorAssertionResponse assertionResponse =
+        (AuthenticatorAssertionResponse) cred.getResponse();
+
+    Gson gson = new Gson();
+    String clientDataJson = gson.toJson(assertionResponse.getClientData());
+    byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
+
+    Log.info("-- Verifying signature --");
+    if (!(savedCredential.getCredential()
+        .getResponse() instanceof AuthenticatorAttestationResponse)) {
+      throw new ServletException("Stored attestation missing");
+    }
+    AuthenticatorAttestationResponse storedAttData =
+        (AuthenticatorAttestationResponse) savedCredential.getCredential().getResponse();
+
+    if (!(storedAttData.decodedObject.getAuthenticatorData().getAttData()
+        .getPublicKey() instanceof EccKey)) {
+      throw new ServletException("Ecc key not provided");
+    }
+
+    EccKey publicKey =
+        (EccKey) storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
+    try {
+      byte[] signedBytes =
+          Bytes.concat(assertionResponse.getAuthenticatorData().encode(), clientDataHash);
+      if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()),
+          signedBytes, assertionResponse.getSignature())) {
+        throw new ServletException("Signature invalid");
+      }
+    } catch (WebAuthnException e) {
+      throw new ServletException("Failure while verifying signature");
+    } catch (CborException e) {
+      throw new ServletException("Failure while verifying authenticator data");
+    }
+
+    if (assertionResponse.getAuthenticatorData().getSignCount() <= savedCredential.getSignCount()
+        && savedCredential.getSignCount() != 0) {
+      throw new ServletException("Sign count invalid");
+    }
+
+    savedCredential.updateSignCount(assertionResponse.getAuthenticatorData().getSignCount());
+
+    Log.info("Signature verified");
   }
 }
