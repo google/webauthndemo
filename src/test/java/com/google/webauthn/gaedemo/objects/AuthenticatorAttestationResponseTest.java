@@ -54,7 +54,7 @@ public class AuthenticatorAttestationResponseTest {
     random.nextBytes(attData.credentialId);
 
     EccKey ecc = new EccKey();
-    ecc.alg = Algorithm.decode("ES256");
+    ecc.alg = Algorithm.decode("-7");
     ecc.x = new byte[4];
     ecc.y = new byte[4];
     random.nextBytes(ecc.x);

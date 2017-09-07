@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class BeginGetAssertion extends HttpServlet {
 
+  private static final long serialVersionUID = 1L;
   private final UserService userService = UserServiceFactory.getUserService();
 
   public BeginGetAssertion() {}

@@ -26,9 +26,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
 public class BeginMakeCredential extends HttpServlet {
 
+  private static final long serialVersionUID = 1L;
   private final UserService userService = UserServiceFactory.getUserService();
 
   public BeginMakeCredential() {}
@@ -47,9 +47,10 @@ public class BeginMakeCredential extends HttpServlet {
     String rpName = getServletContext().getInitParameter("name");
     rpName = (rpName == null ? "" : rpName);
 
-    MakeCredentialOptions options = new MakeCredentialOptions(user.getNickname(), rpId, rpName);
+    MakeCredentialOptions options =
+        new MakeCredentialOptions(user.getNickname(), user.getUserId(), rpId, rpName);
     SessionData session = new SessionData(options.challenge, rpId);
-    
+
     session.save(userService.getCurrentUser().getUserId());
     JsonObject sessionJson = session.getJsonObject();
     JsonObject optionsJson = options.getJsonObject();

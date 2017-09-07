@@ -60,8 +60,8 @@ public class RegisteredKeys extends HttpServlet {
     for (Credential c : savedCreds) {
       JsonObject cJson = new JsonObject();
       cJson.addProperty("handle", BaseEncoding.base64().encode(c.getCredential().rawId));
-      EccKey ecc = (EccKey) ((AuthenticatorAttestationResponse) c.getCredential()
-          .getResponse()).getAttestationObject().getAuthenticatorData().getAttData().getPublicKey();
+      EccKey ecc = (EccKey) ((AuthenticatorAttestationResponse) c.getCredential().getResponse())
+          .getAttestationObject().getAuthenticatorData().getAttData().getPublicKey();
       try {
         cJson.addProperty("publicKey",
             Integer.toHexString(Crypto.decodePublicKey(ecc.getX(), ecc.getY()).hashCode()));

@@ -81,11 +81,8 @@ public class Crypto {
         throw new WebAuthnException("Couldn't parse user public key", e);
       }
 
-      return KeyFactory.getInstance("ECDSA")
-          .generatePublic(
-              new ECPublicKeySpec(
-                  point,
-                  new ECParameterSpec(curve.getCurve(), curve.getG(), curve.getN(), curve.getH())));
+      return KeyFactory.getInstance("ECDSA").generatePublic(new ECPublicKeySpec(point,
+          new ECParameterSpec(curve.getCurve(), curve.getG(), curve.getN(), curve.getH())));
     } catch (InvalidKeySpecException e) {
       throw new WebAuthnException("Error when decoding public key", e);
     } catch (NoSuchAlgorithmException e) {

@@ -14,12 +14,17 @@
 
 package com.google.webauthn.gaedemo.server;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Logger;
+
 import com.google.common.io.BaseEncoding;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
+import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
 import com.google.webauthn.gaedemo.objects.AuthenticatorResponse;
+import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
+import com.google.webauthn.gaedemo.storage.Credential;
 import com.google.webauthn.gaedemo.storage.SessionData;
-import java.util.Arrays;
-import java.util.logging.Logger;
 
 public abstract class Server {
   private static final Logger Log = Logger.getLogger(U2fServer.class.getName());
@@ -47,11 +52,47 @@ public abstract class Server {
     // Session.getChallenge is a base64-encoded string
     byte[] sessionChallenge = BaseEncoding.base64().decode(session.getChallenge());
     // assertionResponse.getClientData().getChallenge() is a base64url-encoded string
-    byte[] clientSessionChallenge = BaseEncoding.base64Url().omitPadding().decode(
-                                      assertionResponse.getClientData().getChallenge());
+    byte[] clientSessionChallenge = BaseEncoding.base64Url().omitPadding()
+        .decode(assertionResponse.getClientData().getChallenge());
     if (!Arrays.equals(sessionChallenge, clientSessionChallenge)) {
       throw new ResponseException("Returned challenge incorrect");
     }
     Log.info("Successfully verified session and challenge data");
+  }
+
+  public static Credential validateAndFindCredential(PublicKeyCredential cred, String currentUser,
+      String sessionId) throws ResponseException {
+    if (!(cred.getResponse() instanceof AuthenticatorAssertionResponse)) {
+      throw new ResponseException("Invalid authenticator response");
+    }
+
+    AuthenticatorAssertionResponse assertionResponse =
+        (AuthenticatorAssertionResponse) cred.getResponse();
+
+    List<Credential> savedCreds = Credential.load(currentUser);
+    if (savedCreds == null || savedCreds.size() == 0) {
+      throw new ResponseException("No credentials registered for this user");
+    }
+
+    try {
+      verifySessionAndChallenge(assertionResponse, currentUser, sessionId);
+    } catch (ResponseException e1) {
+      throw new ResponseException("Unable to verify session and challenge data");
+    }
+
+    Credential credential = null;
+    for (Credential saved : savedCreds) {
+      if (saved.getCredential().getId().equals(cred.getId())) {
+        credential = saved;
+        break;
+      }
+    }
+
+    if (credential == null) {
+      Log.info("Credential not registered with this user");
+      throw new ResponseException("Received response from credential not associated with user");
+    }
+
+    return credential;
   }
 }

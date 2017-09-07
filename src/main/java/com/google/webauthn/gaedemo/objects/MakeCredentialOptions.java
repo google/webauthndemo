@@ -38,15 +38,16 @@ public class MakeCredentialOptions {
    * @param rpId
    * @param rpName
    */
-  public MakeCredentialOptions(String userId, String rpId, String rpName) {
+  public MakeCredentialOptions(String userName, String userId, String rpId, String rpName) {
     parameters = new ArrayList<PublicKeyCredentialParameters>();
     excludeList = new ArrayList<PublicKeyCredentialDescriptor>();
-    rp = new PublicKeyCredentialEntity(rpId, rpName, "");
-    user = new PublicKeyCredentialUserEntity(userId);
+    rp = new PublicKeyCredentialEntity(rpId, rpName, null);
+    user = new PublicKeyCredentialUserEntity(userName, userId);
 
     challenge = new byte[CHALLENGE_LENGTH];
     random.nextBytes(challenge);
-    parameters.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, "ES256"));
+    parameters.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.ES256));
   }
 
   PublicKeyCredentialEntity rp;

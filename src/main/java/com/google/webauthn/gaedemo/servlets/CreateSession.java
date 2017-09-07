@@ -36,8 +36,7 @@ public class CreateSession extends HttpServlet {
   /**
    * @see HttpServlet#HttpServlet()
    */
-  public CreateSession() {
-  }
+  public CreateSession() {}
 
   /**
    * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -54,7 +53,7 @@ public class CreateSession extends HttpServlet {
 
     JsonObject assertionJson = new JsonObject();
     assertionJson.add("session", session.getJsonObject());
-    
+
 
     response.setContentType("application/json");
     response.getWriter().println(assertionJson.toString());
@@ -63,6 +62,7 @@ public class CreateSession extends HttpServlet {
   /**
    * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
    */
+  @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     // TODO Auto-generated method stub

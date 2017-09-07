@@ -14,12 +14,13 @@
 
 package com.google.webauthn.gaedemo.objects;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 public class PublicKeyCredentialEntity {
-  private String id;
-  private String name;
-  private String icon;
+  protected String id;
+  protected String name;
+  protected String icon;
 
   /**
    * @param id
@@ -32,15 +33,17 @@ public class PublicKeyCredentialEntity {
     this.icon = icon;
   }
 
+  PublicKeyCredentialEntity() {
+    this.id = null;
+    this.name = null;
+    this.icon = null;
+  }
+
   /**
    * @return Encoded JsonObject representation of PublicKeyCredentialEntity
    */
-  JsonObject getJsonObject() {
-    JsonObject result = new JsonObject();
-    result.addProperty("id", id);
-    result.addProperty("name", name);
-    result.addProperty("icon", icon);
-
-    return result;
+  public JsonObject getJsonObject() {
+    Gson gson = new Gson();
+    return (JsonObject) gson.toJsonTree(this);
   }
 }

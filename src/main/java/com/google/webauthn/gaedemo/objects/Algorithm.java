@@ -18,7 +18,7 @@ package com.google.webauthn.gaedemo.objects;
  * Algorithm enum differentiating between the supported asymmetric key algorithms
  */
 public enum Algorithm {
-  ES256("ES256"), ES384("ES384"), ES512("ES512"), RS256("RS256"), RS384("RS384"), RS512(
+  ES256("-7"), ES384("ES384"), ES512("ES512"), RS256("RS256"), RS384("RS384"), RS512(
       "RS512"), PS256("PS256"), PS384("PS384"), PS512("PS512"), UNDEFINED("undefined");
 
   private String name;
@@ -30,7 +30,7 @@ public enum Algorithm {
     this.name = name;
   }
 
-  
+
   /**
    * @param alg The Algorithm to check
    * @return If the Algorithm is an ECC Algorithm
@@ -57,6 +57,10 @@ public enum Algorithm {
       if (t.name.equals(s)) {
         return t;
       }
+    }
+    // Support legacy ES256 algorithm identifier
+    if (s.equals("ES256")) {
+      return ES256;
     }
     throw new IllegalArgumentException(s + " not a valid Algorithm");
   }

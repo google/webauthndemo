@@ -51,23 +51,23 @@ public class AuthenticatorAssertionResponseTest {
     random.nextBytes(attData.aaguid);
     attData.credentialId = new byte[16];
     random.nextBytes(attData.credentialId);
-    
+
     EccKey ecc = new EccKey();
-    ecc.alg = Algorithm.decode("ES256");
+    ecc.alg = Algorithm.decode("-7");
     ecc.x = new byte[4];
     ecc.y = new byte[4];
     random.nextBytes(ecc.x);
     random.nextBytes(ecc.y);
     attData.publicKey = ecc;
-    
+
     AuthenticatorData authData = null;
     {
       byte flags = 1 << 6;
       byte[] rpIdHash = new byte[32];
-      
+
       authData = new AuthenticatorData(rpIdHash, flags, 0, attData);
     }
-    
+
     String authenticatorBase64 = null;
     try {
       authenticatorBase64 = BaseEncoding.base64().encode(authData.encode());
