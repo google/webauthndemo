@@ -17,10 +17,21 @@ package com.google.webauthn.gaedemo.objects;
 public class AuthenticatorResponse {
   protected CollectedClientData clientData;
 
+  // Temporary until fix clientData ordering issue.
+  protected String clientDataString;
+
   /**
    * @return the clientData
    */
   public CollectedClientData getClientData() {
     return clientData;
   }
+
+  /**
+   * @return the clientData string
+   */
+  public String getClientDataString() {
+    return clientDataString;
+  }
+
 }
