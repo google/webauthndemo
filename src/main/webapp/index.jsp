@@ -45,6 +45,9 @@
     <div id="error" class="hidden">
       <h3 class="error-text" id="error-text">An error has occurred</h3>
     </div>
+    <div id="success" class="hidden">
+      <h3 class="success-text" id="success-text">Success</h3>
+    </div>
     <div id="credentials" class="mdl-grid mdl-grid--no-spacing"></div>
     <div id="github" class="github-link">
       <a href="https://github.com/google/webauthndemo">GitHub</a>
