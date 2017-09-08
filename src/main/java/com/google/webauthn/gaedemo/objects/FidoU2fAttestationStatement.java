@@ -14,6 +14,7 @@
 
 package com.google.webauthn.gaedemo.objects;
 
+import co.nstant.in.cbor.CborDecoder;
 import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.Array;
 import co.nstant.in.cbor.model.ByteString;
@@ -53,7 +54,19 @@ public class FidoU2fAttestationStatement extends AttestationStatement {
    */
   public static FidoU2fAttestationStatement decode(DataItem attStmt) {
     FidoU2fAttestationStatement result = new FidoU2fAttestationStatement();
-    Map given = (Map) attStmt;
+    Map given = null;
+
+    if (attStmt instanceof ByteString) {
+      byte[] temp = ((ByteString)attStmt).getBytes();
+      List<DataItem> dataItems = null;
+      try {
+        dataItems = CborDecoder.decode(temp);
+      } catch (Exception e) {}
+      given = (Map) dataItems.get(0);
+    } else {
+      given = (Map) attStmt;
+    }
+
     for (DataItem data : given.getKeys()) {
       if (data instanceof UnicodeString) {
         if (((UnicodeString) data).getString().equals("x5c")) {
