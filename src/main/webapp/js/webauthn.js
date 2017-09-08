@@ -109,6 +109,7 @@ function finishAddCredential(publicKeyCredential, sessionId) {
       console.log(parameters);
       if ('success' in parameters && 'message' in parameters) {
         addErrorMsg(parameters.message);
+        fetchCredentials();
       }
       // TODO Validate response and display success/error message
     });
