@@ -69,6 +69,14 @@
   font-size: medium;
 }
 
+.success-text {
+  margin: 0;
+  background-color: white;
+  color: #336eff;
+  text-align: center;
+  font-size: medium;
+}
+
 .github-link {
   background-color: white;
   padding-top: .2cm;

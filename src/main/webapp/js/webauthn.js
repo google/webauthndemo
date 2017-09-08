@@ -108,7 +108,7 @@ function finishAddCredential(publicKeyCredential, sessionId) {
     .done(function(parameters) {
       console.log(parameters);
       if ('success' in parameters && 'message' in parameters) {
-        addErrorMsg(parameters.message);
+        addSuccessMsg(parameters.message);
         fetchCredentials();
       }
       // TODO Validate response and display success/error message
@@ -116,6 +116,8 @@ function finishAddCredential(publicKeyCredential, sessionId) {
 }
 
 function addCredential() {
+  removeMsgs();
+  addSpinner();
   $.post('/BeginMakeCredential', {}, null, 'json')
   .done(function(options) {
     var makeCredentialOptions = {};
@@ -204,8 +206,22 @@ function removeErrorMsg() {
   $("#error").hide();
 }
 
-function getAssertion() {
+function addSuccessMsg(msg) {
+  document.getElementById("success-text").innerHTML = msg;
+  $("#success").show();
+}
+
+function removeSuccessMsg() {
+  $("#success").hide();
+}
+
+function removeMsgs() {
   removeErrorMsg();
+  removeSuccessMsg();
+}
+
+function getAssertion() {
+  removeMsgs();
   addSpinner();
   $.post('/BeginGetAssertion', {}, null, 'json')
   .done(function(parameters) {
