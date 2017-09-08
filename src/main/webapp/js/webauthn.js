@@ -56,17 +56,25 @@ function fetchCredentials() {
         ';
     }
     $("#credentials").html(credentials);
-    for (var i in rsp) {
-      var id = "#delete" + i;
-      $(id).click(function() {
+    deleteCred = [];
+    for(let i = 0; i < rsp.length; ++i){
+      deleteCred[i] = function() {
         console.log(rsp[i].id);
         $.post('/RemoveCredential', {credentialId : rsp[i].id}, null, 'json')
         .done(function(rsp) {
           fetchCredentials();
         });
+      }
+      var id = "#delete" + i;
+      $(id).click(function() {
+        deleteCred[i]();
       });
     }
   });
+}
+
+function getFunction(f) {
+    return function() { return val; };
 }
 
 function assignButtons() {

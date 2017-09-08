@@ -100,4 +100,9 @@ public class AndroidSafetyNetAttestationStatement extends AttestationStatement {
   public byte[] getResponse() {
     return response;
   }
+
+  @Override
+  public String getName() {
+    return "Android SafetyNet";
+  }
 }
