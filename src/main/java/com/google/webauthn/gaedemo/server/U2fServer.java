@@ -14,13 +14,19 @@
 
 package com.google.webauthn.gaedemo.server;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.nio.ByteBuffer;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 
+import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.Bytes;
 import com.google.gson.Gson;
 import com.google.webauthn.gaedemo.crypto.Crypto;
@@ -32,6 +38,7 @@ import com.google.webauthn.gaedemo.objects.EccKey;
 import com.google.webauthn.gaedemo.objects.FidoU2fAttestationStatement;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.google.webauthn.gaedemo.storage.Credential;
+
 
 public class U2fServer extends Server {
 
@@ -66,18 +73,17 @@ public class U2fServer extends Server {
     try {
       /*
        * U2F authentication signatures are signed over the concatenation of
-       * 
+       *
        * 32 byte application parameter hash
-       * 
+       *
        * 1 byte user presence
-       * 
+       *
        * 4 byte big-endian representation of the counter
-       * 
+       *
        * 32 byte challenge parameter
        */
       byte[] signedBytes = Bytes.concat(
-          Crypto.sha256Digest(
-              storedAttData.getAttestationObject().getAuthenticatorData().getRpIdHash()),
+          storedAttData.getAttestationObject().getAuthenticatorData().getRpIdHash(),
           new byte[] {
               (assertionResponse.getAuthenticatorData().isUP() == true ? (byte) 1 : (byte) 0)},
           ByteBuffer.allocate(4).putInt(assertionResponse.getAuthenticatorData().getSignCount())
@@ -135,7 +141,8 @@ public class U2fServer extends Server {
     }
 
     Gson gson = new Gson();
-    String clientDataJson = gson.toJson(attResponse.getClientData());
+    String clientDataJson = attResponse.getClientDataString();
+    System.out.println(clientDataJson);
     byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
 
     byte[] rpIdHash = Crypto.sha256Digest(origin.getBytes());
@@ -154,29 +161,39 @@ public class U2fServer extends Server {
 
     EccKey publicKey =
         (EccKey) attResponse.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
+
     try {
       /*
        * U2F registration signatures are signed over the concatenation of
-       * 
+       *
        * 1 byte RFU (0)
-       * 
+       *
        * 32 byte application parameter hash
-       * 
+       *
        * 32 byte challenge parameter
-       * 
+       *
        * key handle
-       * 
+       *
        * 65 byte user public key represented as {0x4, X, Y}
        */
       byte[] signedBytes = Bytes.concat(new byte[] {0}, rpIdHash,
-          attResponse.getClientData().getChallenge().getBytes(), cred.rawId, new byte[] {0x04},
+          clientDataHash, cred.rawId, new byte[] {0x04},
           publicKey.getX(), publicKey.getY());
-      if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()),
-          signedBytes, attStmt.sig)) {
+
+      // TODO Make attStmt.attestnCert an X509Certificate right off the bat.
+      DataInputStream inputStream = new DataInputStream(
+          new ByteArrayInputStream(attStmt.attestnCert));
+      X509Certificate attestationCertificate = (X509Certificate)
+        CertificateFactory.getInstance("X.509").
+        generateCertificate(inputStream);
+      if (!Crypto.verifySignature(attestationCertificate, signedBytes,
+            attStmt.sig)) {
         throw new ServletException("Signature invalid");
       }
+    } catch (CertificateException e) {
+        throw new ServletException("Error when parsing attestationCertificate");
     } catch (WebAuthnException e) {
-      throw new ServletException("Failure while verifying signature");
+      throw new ServletException("Failure while verifying signature", e);
     }
 
     // TODO Check trust anchors
