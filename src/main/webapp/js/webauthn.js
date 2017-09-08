@@ -122,15 +122,15 @@ function addCredential() {
     makeCredentialOptions.rp = options.rp;
     makeCredentialOptions.user = options.user;
     makeCredentialOptions.challenge = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
-    
+
     makeCredentialOptions.parameters = options.parameters;
     if ('timeout' in options) {
-      makeCredentialOptions.timeout = options.timeout; 
+      makeCredentialOptions.timeout = options.timeout;
     }
     if ('excludeList' in options) {
       makeCredentialOptions.excludeList = credentialListConversion(parameters.excludeList);
     }
-    
+
     var createParams = {};
     createParams.publicKey = makeCredentialOptions;
 
@@ -159,7 +159,7 @@ function addCredential() {
       }
       if ('response' in attestation) {
         var response = {};
-        response.clientDataJSON = attestation.response.clientDataJSON;
+        response.clientDataJSON = new Uint8Array(attestation.response.clientDataJSON);
         response.attestationObject = btoa(
           new Uint8Array(attestation.response.attestationObject)
           .reduce((s, byte) => s + String.fromCharCode(byte), ''));
@@ -220,7 +220,7 @@ function getAssertion() {
     if ('allowList' in parameters) {
       requestOptions.allowList = credentialListConversion(parameters.allowList);
     }
-    
+
     var credentialRequest = {};
     credentialRequest.publicKey = requestOptions;
     console.log(credentialRequest);
@@ -238,7 +238,7 @@ function getAssertion() {
         publicKeyCredential.id = assertion.id;
       }
       if ('type' in assertion) {
-        publicKeyCredential.type = assertion.type;        
+        publicKeyCredential.type = assertion.type;
       }
       if ('rawId' in assertion) {
         publicKeyCredential.rawId = btoa(

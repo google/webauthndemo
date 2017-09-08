@@ -17,6 +17,7 @@
 
 package com.google.webauthn.gaedemo.crypto;
 
+import com.google.common.primitives.Bytes;
 import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -27,6 +28,7 @@ import java.security.PublicKey;
 import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
@@ -71,12 +73,19 @@ public class Crypto {
     }
   }
 
+  // TODO add test for this.
+  public static boolean verifySignature(X509Certificate attestationCertificate, byte[] signedBytes, byte[] signature)
+      throws WebAuthnException {
+    return verifySignature(attestationCertificate.getPublicKey(), signedBytes, signature);
+  }
+
   public static PublicKey decodePublicKey(byte[] x, byte[] y) throws WebAuthnException {
     try {
       X9ECParameters curve = SECNamedCurves.getByName("secp256r1");
       ECPoint point;
       try {
-        point = curve.getCurve().createPoint(new BigInteger(x), new BigInteger(y), true);
+        byte[] encodedPublicKey = Bytes.concat(new byte[]{0x04}, x, y);
+        point = curve.getCurve().decodePoint(encodedPublicKey);
       } catch (RuntimeException e) {
         throw new WebAuthnException("Couldn't parse user public key", e);
       }
