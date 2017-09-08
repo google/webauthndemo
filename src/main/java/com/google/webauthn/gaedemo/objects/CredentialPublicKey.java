@@ -32,6 +32,11 @@ public abstract class CredentialPublicKey {
   public abstract byte[] encode() throws CborException;
 
   /**
+   * @return human-readable hex string of the key
+   */
+  public abstract String toString();
+
+  /**
    * @param cbor
    * @return CredentialPublicKey object decoded from cbor byte array
    * @throws CborException

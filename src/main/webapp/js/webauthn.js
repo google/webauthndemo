@@ -42,9 +42,9 @@ function fetchCredentials() {
              <div class="mdl-card__title mdl-card--border">' + name + '</div>\
              <div class="mdl-card__supporting-text">Enrolled ' + date +'</div>\
              <div class="mdl-card__subtitle-text">Public Key</div>\
-             <div class="mdl-card__supporting-text"><em>' + publicKey + '</em></div>\
+             <div class="mdl-card__supporting-text">' + publicKey + '</div>\
              <div class="mdl-card__subtitle-text">Key Handle</div>\
-             <div class="mdl-card__supporting-text"><em>' + handle + '</em></div>\
+             <div class="mdl-card__supporting-text">' + handle + '</div>\
              <div class="mdl-card__menu">\
                <button id="' + buttonId + '" \
                  class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">\
@@ -56,17 +56,25 @@ function fetchCredentials() {
         ';
     }
     $("#credentials").html(credentials);
-    for (var i in rsp) {
-      var id = "#delete" + i;
-      $(id).click(function() {
+    deleteCred = [];
+    for(let i = 0; i < rsp.length; ++i){
+      deleteCred[i] = function() {
         console.log(rsp[i].id);
         $.post('/RemoveCredential', {credentialId : rsp[i].id}, null, 'json')
         .done(function(rsp) {
           fetchCredentials();
         });
+      }
+      var id = "#delete" + i;
+      $(id).click(function() {
+        deleteCred[i]();
       });
     }
   });
+}
+
+function getFunction(f) {
+    return function() { return val; };
 }
 
 function assignButtons() {
@@ -108,7 +116,7 @@ function finishAddCredential(publicKeyCredential, sessionId) {
     .done(function(parameters) {
       console.log(parameters);
       if ('success' in parameters && 'message' in parameters) {
-        addErrorMsg(parameters.message);
+        addSuccessMsg(parameters.message);
         fetchCredentials();
       }
       // TODO Validate response and display success/error message
@@ -116,6 +124,8 @@ function finishAddCredential(publicKeyCredential, sessionId) {
 }
 
 function addCredential() {
+  removeMsgs();
+  addSpinner();
   $.post('/BeginMakeCredential', {}, null, 'json')
   .done(function(options) {
     var makeCredentialOptions = {};
@@ -204,8 +214,22 @@ function removeErrorMsg() {
   $("#error").hide();
 }
 
-function getAssertion() {
+function addSuccessMsg(msg) {
+  document.getElementById("success-text").innerHTML = msg;
+  $("#success").show();
+}
+
+function removeSuccessMsg() {
+  $("#success").hide();
+}
+
+function removeMsgs() {
   removeErrorMsg();
+  removeSuccessMsg();
+}
+
+function getAssertion() {
+  removeMsgs();
   addSpinner();
   $.post('/BeginGetAssertion', {}, null, 'json')
   .done(function(parameters) {

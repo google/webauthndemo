@@ -120,4 +120,9 @@ public class FidoU2fAttestationStatement extends AttestationStatement {
     }
     return false;
   }
+
+  @Override
+  public String getName() {
+    return "FIDO U2F Authenticator";
+  }
 }
