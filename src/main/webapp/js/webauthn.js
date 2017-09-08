@@ -42,9 +42,9 @@ function fetchCredentials() {
              <div class="mdl-card__title mdl-card--border">' + name + '</div>\
              <div class="mdl-card__supporting-text">Enrolled ' + date +'</div>\
              <div class="mdl-card__subtitle-text">Public Key</div>\
-             <div class="mdl-card__supporting-text"><em>' + publicKey + '</em></div>\
+             <div class="mdl-card__supporting-text">' + publicKey + '</div>\
              <div class="mdl-card__subtitle-text">Key Handle</div>\
-             <div class="mdl-card__supporting-text"><em>' + handle + '</em></div>\
+             <div class="mdl-card__supporting-text">' + handle + '</div>\
              <div class="mdl-card__menu">\
                <button id="' + buttonId + '" \
                  class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">\
