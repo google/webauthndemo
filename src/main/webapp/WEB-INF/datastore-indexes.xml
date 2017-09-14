@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<datastore-indexes autoGenerate="true">
+  <datastore-index kind="SessionData" ancestor="true"
+    source="manual">
+    <property name="created" direction="asc" />
+  </datastore-index>
+</datastore-indexes>
