@@ -48,5 +48,7 @@ public abstract class AttestationStatement {
    */
   abstract DataItem encode() throws CborException;
 
+  public abstract String getName();
+
 
 }

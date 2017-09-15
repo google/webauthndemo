@@ -69,4 +69,12 @@ public enum Algorithm {
   public String toString() {
     return name;
   }
+
+
+  public Object toReadableString() {
+    if (name.equals("-7")) {
+      return "ES256";
+    }
+    return name;
+  }
 }

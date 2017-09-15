@@ -14,16 +14,20 @@
 
 package com.google.webauthn.gaedemo.objects;
 
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.xml.bind.DatatypeConverter;
+
+import com.googlecode.objectify.annotation.Subclass;
+
 import co.nstant.in.cbor.CborBuilder;
 import co.nstant.in.cbor.CborEncoder;
 import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.ByteString;
 import co.nstant.in.cbor.model.DataItem;
 import co.nstant.in.cbor.model.UnicodeString;
-import com.googlecode.objectify.annotation.Subclass;
-import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
-import java.util.List;
 
 @Subclass
 public class RsaKey extends CredentialPublicKey {
@@ -58,5 +62,17 @@ public class RsaKey extends CredentialPublicKey {
             .put(new UnicodeString("e"), new ByteString(e)).end().build();
     new CborEncoder(output).encode(dataItems);
     return output.toByteArray();
+  }
+
+  @Override
+  public String toString() {
+    StringBuffer b = new StringBuffer();
+    b.append("alg:");
+    b.append(alg.toReadableString());
+    b.append(" n:");
+    b.append(DatatypeConverter.printHexBinary(n));
+    b.append(" e:");
+    b.append(DatatypeConverter.printHexBinary(e));
+    return b.toString();
   }
 }

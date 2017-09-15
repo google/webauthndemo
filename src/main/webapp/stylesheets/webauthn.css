@@ -24,6 +24,12 @@
   font-weight: bold;
 }
 
+.mdl-card__supporting-text {
+  font-style: italic;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
 .auth-button {
   margin-left: .25cm;
   margin-right: .25cm;
