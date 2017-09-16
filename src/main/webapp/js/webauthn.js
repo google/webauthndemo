@@ -272,7 +272,7 @@ function getAssertion() {
       }
       if ('response' in assertion) {
         var response = {};
-        response.clientDataJSON = assertion.response.clientDataJSON;
+        response.clientDataJSON = new Uint8Array(assertion.response.clientDataJSON);
         response.authenticatorData = btoa(
           new Uint8Array(assertion.response.authenticatorData)
           .reduce((s, byte) => s + String.fromCharCode(byte), ''));

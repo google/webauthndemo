@@ -48,6 +48,15 @@ public class AuthenticatorData {
     attData = new AttestationData();
   }
 
+
+AuthenticatorData(byte[] rpIdHash, byte flags, int signCount) {
+    this.rpIdHash = rpIdHash;
+    this.flags = flags;
+    this.signCount = signCount;
+    this.attData = null;
+  }
+
+
   /**
    * @return the rpIdHash
    */
@@ -144,8 +153,13 @@ public class AuthenticatorData {
   public byte[] encode() throws CborException {
     byte[] flags = {this.flags};
     byte[] signCount = ByteBuffer.allocate(4).putInt(this.signCount).array();
-    byte[] attData = this.attData.encode();
-    byte[] result = Bytes.concat(rpIdHash, flags, signCount, attData);
+    byte[] result;
+    if (this.attData != null) {
+      byte[] attData = this.attData.encode();
+      result = Bytes.concat(rpIdHash, flags, signCount, attData);
+    } else {
+      result = Bytes.concat(rpIdHash, flags, signCount);
+    }
     return result;
   }
 
