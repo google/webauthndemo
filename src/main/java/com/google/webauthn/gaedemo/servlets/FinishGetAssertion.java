@@ -92,7 +92,7 @@ public class FinishGetAssertion extends HttpServlet {
     }
 
     PublicKeyCredential cred = new PublicKeyCredential(credentialId, type,
-        BaseEncoding.base64().decode(credentialId), assertion);
+        BaseEncoding.base64Url().decode(credentialId), assertion);
 
     Credential savedCredential;
     try {

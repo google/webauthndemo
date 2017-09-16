@@ -19,9 +19,11 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
+import com.googlecode.objectify.annotation.Subclass;
 
 import java.util.Map;
 
+@Subclass
 public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
   private static class AssertionResponseJson {
     Map<String, Byte> clientDataJSON;
