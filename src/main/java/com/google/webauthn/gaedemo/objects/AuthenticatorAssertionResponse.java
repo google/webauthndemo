@@ -34,12 +34,6 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
   AuthenticatorData authData;
   byte[] signature;
 
-
-  /**
-   *
-   */
-  public AuthenticatorAssertionResponse() {}
-
   /**
    * @param data
    * @throws ResponseException
