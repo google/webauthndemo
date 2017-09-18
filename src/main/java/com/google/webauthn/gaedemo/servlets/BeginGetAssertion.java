@@ -49,9 +49,11 @@ public class BeginGetAssertion extends HttpServlet {
     PublicKeyCredentialRequestOptions assertion = new PublicKeyCredentialRequestOptions(rpId);
     SessionData session = new SessionData(assertion.challenge, rpId);
     session.save(currentUser);
+    JsonObject sessionJson = session.getJsonObject();
     assertion.populateAllowList(currentUser);
 
     JsonObject assertionJson = assertion.getJsonObject();
+    assertionJson.add("session", sessionJson);
 
     response.setContentType("application/json");
     response.getWriter().println(assertionJson.toString());

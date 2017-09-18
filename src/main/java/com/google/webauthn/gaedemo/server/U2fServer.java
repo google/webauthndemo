@@ -80,15 +80,18 @@ public class U2fServer extends Server {
        *
        * 4 byte big-endian representation of the counter
        *
-       * 32 byte challenge parameter
+       * 32 byte challenge parameter (ie SHA256 hash of clientData)
        */
+      String clientDataJson = assertionResponse.getClientDataString();
+      byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
+
       byte[] signedBytes = Bytes.concat(
           storedAttData.getAttestationObject().getAuthenticatorData().getRpIdHash(),
           new byte[] {
               (assertionResponse.getAuthenticatorData().isUP() == true ? (byte) 1 : (byte) 0)},
           ByteBuffer.allocate(4).putInt(assertionResponse.getAuthenticatorData().getSignCount())
               .array(),
-          assertionResponse.getClientData().getChallenge().getBytes());
+          clientDataHash);
       if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()),
           signedBytes, assertionResponse.getSignature())) {
         throw new ServletException("Signature invalid");
