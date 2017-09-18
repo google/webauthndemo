@@ -110,9 +110,6 @@ public class FinishGetAssertion extends HttpServlet {
         break;
     }
 
-    Credential credential = new Credential(cred);
-    credential.save(currentUser);
-
     response.setContentType("application/json");
     PublicKeyCredentialResponse rsp = new PublicKeyCredentialResponse(true, "Successful assertion");
     response.getWriter().println(rsp.toJson());
