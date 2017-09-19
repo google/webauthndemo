@@ -14,17 +14,20 @@
 
 package com.google.webauthn.gaedemo.servlets;
 
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
-import com.google.gson.JsonObject;
-import com.google.webauthn.gaedemo.objects.MakeCredentialOptions;
-import com.google.webauthn.gaedemo.storage.SessionData;
 import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
+import com.google.gson.JsonObject;
+import com.google.webauthn.gaedemo.objects.AuthenticatorSelectionCriteria;
+import com.google.webauthn.gaedemo.objects.MakeCredentialOptions;
+import com.google.webauthn.gaedemo.storage.SessionData;
 
 public class BeginMakeCredential extends HttpServlet {
 
@@ -49,6 +52,14 @@ public class BeginMakeCredential extends HttpServlet {
 
     MakeCredentialOptions options =
         new MakeCredentialOptions(user.getNickname(), user.getUserId(), rpId, rpName);
+
+    String hasAdvanced = request.getParameter("advanced");
+    if (hasAdvanced.equals("true")) {
+      AuthenticatorSelectionCriteria criteria =
+          AuthenticatorSelectionCriteria.parse(request.getParameter("advancedOptions"));
+      options.setCriteria(criteria);
+    }
+
     SessionData session = new SessionData(options.challenge, rpId);
 
     session.save(userService.getCurrentUser().getUserId());
