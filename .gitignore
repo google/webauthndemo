@@ -2,3 +2,4 @@ target/
 .settings/
 .classpath
 .project
+src/main/java/META-INF/
