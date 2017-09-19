@@ -25,6 +25,7 @@ import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.google.webauthn.gaedemo.server.AndroidSafetyNetServer;
+import com.google.webauthn.gaedemo.server.PackedServer;
 import com.google.webauthn.gaedemo.server.PublicKeyCredentialResponse;
 import com.google.webauthn.gaedemo.server.Server;
 import com.google.webauthn.gaedemo.server.U2fServer;
@@ -107,6 +108,9 @@ public class FinishGetAssertion extends HttpServlet {
         break;
       case ANDROIDSAFETYNET:
         AndroidSafetyNetServer.verifyAssertion(cred, currentUser, session, savedCredential);
+        break;
+      case PACKED:
+        PackedServer.verifyAssertion(cred, currentUser, session, savedCredential);
         break;
     }
 

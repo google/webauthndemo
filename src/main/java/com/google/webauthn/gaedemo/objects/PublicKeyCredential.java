@@ -69,6 +69,8 @@ public class PublicKeyCredential {
         return AttestationStatementEnum.ANDROIDSAFETYNET;
       } else if (attStmt instanceof FidoU2fAttestationStatement) {
         return AttestationStatementEnum.FIDOU2F;
+      } else if (attStmt instanceof PackedAttestationStatement) {
+        return AttestationStatementEnum.PACKED;
       }
     } catch (ClassCastException e) {
       return null;
