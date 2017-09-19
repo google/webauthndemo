@@ -141,6 +141,9 @@ function addCredential() {
     if ($("#switch-uv").is(":checked")) {
       advancedOptions.uv = $("#switch-uv").is(":checked");
     }
+    if ($('#attachment').val() != "none") {
+      advancedOptions.attachment = $('#attachment').val();
+    }
   }
   $.post('/BeginMakeCredential',
 		  { advanced: $("#switch-advanced").is(":checked"), advancedOptions: JSON.stringify(advancedOptions) },

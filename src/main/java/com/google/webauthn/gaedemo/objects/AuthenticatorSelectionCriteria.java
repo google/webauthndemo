@@ -14,8 +14,12 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import com.google.gson.Gson;
+import java.util.Map;
+import java.util.Set;
+
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class AuthenticatorSelectionCriteria {
   public AuthenticatorAttachment attachment;
@@ -28,15 +32,30 @@ public class AuthenticatorSelectionCriteria {
     uv = false;
   }
 
-  public AuthenticatorSelectionCriteria(String attachment, boolean requireResidentKey, boolean uv) {
-    this.attachment = AuthenticatorAttachment.decode(attachment);
+  public AuthenticatorSelectionCriteria(AuthenticatorAttachment attachment, boolean requireResidentKey, boolean uv) {
+    this.attachment = attachment;
     this.rk = requireResidentKey;
     this.uv = uv;
   }
 
   public static AuthenticatorSelectionCriteria parse(String jsonString) {
-    Gson gson = new Gson();
-    return gson.fromJson(jsonString, AuthenticatorSelectionCriteria.class);
+	JsonElement jsonElement = new JsonParser().parse(jsonString);
+	JsonObject  jsonObject = jsonElement.getAsJsonObject();
+    Set<Map.Entry<String, JsonElement>> entries = jsonObject.entrySet();
+    boolean rk = false;
+    boolean uv = false;
+    AuthenticatorAttachment attachment = null;
+    for (Map.Entry<String, JsonElement> entry: entries) {
+      if (entry.getKey().equals("rk")) {
+        rk = entry.getValue().getAsBoolean();
+      } else if (entry.getKey().equals("uv")) {
+        uv = entry.getValue().getAsBoolean();
+      } else if (entry.getKey().equals("attachment")) {
+        attachment = AuthenticatorAttachment.decode(entry.getValue().getAsString());
+      }
+    }
+
+    return new AuthenticatorSelectionCriteria(attachment, rk , uv);
   }
 
   public JsonObject getJsonObject() {

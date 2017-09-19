@@ -47,6 +47,10 @@
   border-color: #009688;
 }
 
+.attachment {
+  font-size: medium;
+}
+
 .auth-button {
   margin-left: .25cm;
   margin-right: .25cm;

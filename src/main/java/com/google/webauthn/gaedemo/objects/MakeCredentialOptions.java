@@ -20,6 +20,8 @@ import com.google.webauthn.gaedemo.storage.Attachment;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import com.google.common.io.BaseEncoding;
+import com.google.webauthn.gaedemo.objects.AuthenticationExtensions;
+import com.google.webauthn.gaedemo.objects.AuthenticatorSelectionCriteria;
 
 public class MakeCredentialOptions {
   private static final int CHALLENGE_LENGTH = 32;

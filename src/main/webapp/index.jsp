@@ -55,6 +55,12 @@
       </label>
     </div>
     <div id="advanced" class="advanced hidden">
+      <label for="attachment" class="attachment">Attachment type</label>
+      <select id="attachment" class="attachment">
+        <option value="none">None</option>
+        <option value="platform">Platform</option>
+        <option value="cross-platform">Cross-Platform</option>
+      </select>
       <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-rk">
         <input type="checkbox" id="switch-rk" class="mdl-switch__input">
         <span class="mdl-switch__label">Require resident key</span>
