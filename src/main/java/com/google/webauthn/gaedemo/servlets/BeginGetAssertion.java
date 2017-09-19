@@ -45,7 +45,8 @@ public class BeginGetAssertion extends HttpServlet {
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     String currentUser = userService.getCurrentUser().getUserId();
-    String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
+    String rpId = request.getHeader("Host").split(":")[0];
+    //String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
     PublicKeyCredentialRequestOptions assertion = new PublicKeyCredentialRequestOptions(rpId);
     SessionData session = new SessionData(assertion.challenge, rpId);
     session.save(currentUser);
