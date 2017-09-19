@@ -87,7 +87,8 @@ public class FinishMakeCredential extends HttpServlet {
     PublicKeyCredential cred = new PublicKeyCredential(credentialId, type,
         BaseEncoding.base64Url().decode(credentialId), attestation);
 
-    String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
+    //String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
+    String rpId = request.getHeader("Host").split(":")[0];
     switch (cred.getAttestationType()) {
       case FIDOU2F:
         U2fServer.registerCredential(cred, currentUser, session, rpId);

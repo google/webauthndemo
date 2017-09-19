@@ -37,6 +37,8 @@ public abstract class AttestationStatement {
         return null;
       }
       return stmt;
+    } else if (fmt.equals("packed")) {
+      return PackedAttestationStatement.decode(attStmt);
     }
 
     return null;
