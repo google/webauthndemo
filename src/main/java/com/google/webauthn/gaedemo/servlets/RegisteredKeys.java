@@ -25,7 +25,6 @@ import javax.xml.bind.DatatypeConverter;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.common.io.BaseEncoding;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.webauthn.gaedemo.objects.AttestationObject;

@@ -26,7 +26,6 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 
-import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.Bytes;
 import com.google.gson.Gson;
 import com.google.webauthn.gaedemo.crypto.Crypto;

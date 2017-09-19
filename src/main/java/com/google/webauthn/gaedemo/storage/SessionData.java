@@ -85,7 +85,9 @@ public class SessionData {
     Date date = new Date(System.currentTimeMillis() - (1 * 60 * 60 * 1000));
     List<Key<SessionData>> keys = ofy().load().type(SessionData.class).ancestor(user)
         .filter("created < ", date).keys().list();
-    ofy().delete().keys(keys).now();
+    if (keys.size() > 0) {
+      ofy().delete().keys(keys).now();
+    }
   }
 
   public static SessionData load(String currentUser, Long id) {

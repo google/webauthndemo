@@ -24,6 +24,8 @@ import com.google.common.io.BaseEncoding;
 public class MakeCredentialOptions {
   private static final int CHALLENGE_LENGTH = 32;
   private final SecureRandom random = new SecureRandom();
+  private AuthenticationExtensions extensions;
+  private AuthenticatorSelectionCriteria criteria;
 
   /**
    * 
@@ -31,6 +33,8 @@ public class MakeCredentialOptions {
   public MakeCredentialOptions() {
     parameters = new ArrayList<PublicKeyCredentialParameters>();
     excludeList = new ArrayList<PublicKeyCredentialDescriptor>();
+    extensions = null;
+    criteria = null;
   }
 
   /**
@@ -48,6 +52,15 @@ public class MakeCredentialOptions {
     random.nextBytes(challenge);
     parameters.add(
         new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.ES256));
+    extensions = null;
+  }
+
+  public void setExtensions(AuthenticationExtensions extensions) {
+    this.extensions = extensions;
+  }
+
+  public void setCriteria(AuthenticatorSelectionCriteria criteria) {
+    this.criteria = criteria;
   }
 
   PublicKeyCredentialEntity rp;
@@ -86,6 +99,12 @@ public class MakeCredentialOptions {
     }
     if (attachment != null) {
       result.addProperty("attachment", attachment.toString());
+    }
+    if (extensions != null) {
+      result.add("extensions", extensions.getJsonObject());
+    }
+    if (criteria != null) {
+      result.add("authenticatorSelection", criteria.getJsonObject());
     }
     return result;
   }

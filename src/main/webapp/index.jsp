@@ -48,6 +48,22 @@
     <div id="success" class="hidden">
       <h3 class="success-text" id="success-text">Success</h3>
     </div>
+    <div id="advanced-switch" class="advanced-switch">
+      <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-advanced">
+        <input type="checkbox" id="switch-advanced" class="mdl-switch__input">
+        <span class="mdl-switch__label">Advanced Options</span>
+      </label>
+    </div>
+    <div id="advanced" class="advanced hidden">
+      <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-rk">
+        <input type="checkbox" id="switch-rk" class="mdl-switch__input">
+        <span class="mdl-switch__label">Require resident key</span>
+      </label>
+      <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-uv">
+        <input type="checkbox" id="switch-uv" class="mdl-switch__input">
+        <span class="mdl-switch__label">Require user verification</span>
+      </label>
+    </div>
     <div id="credentials" class="mdl-grid mdl-grid--no-spacing"></div>
     <div id="github" class="github-link">
       <a href="https://github.com/google/webauthndemo">GitHub</a>
