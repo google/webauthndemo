@@ -25,6 +25,7 @@ import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.google.webauthn.gaedemo.server.AndroidSafetyNetServer;
+import com.google.webauthn.gaedemo.server.PackedServer;
 import com.google.webauthn.gaedemo.server.PublicKeyCredentialResponse;
 import com.google.webauthn.gaedemo.server.U2fServer;
 import com.google.webauthn.gaedemo.storage.Credential;
@@ -96,6 +97,9 @@ public class FinishMakeCredential extends HttpServlet {
       case ANDROIDSAFETYNET:
         AndroidSafetyNetServer.registerCredential(cred, currentUser, session, rpId);
         break;
+      case PACKED:
+    	PackedServer.registerCredential(cred, currentUser, session, rpId);
+    	break;
     }
 
     Credential credential = new Credential(cred);
