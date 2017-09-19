@@ -129,11 +129,6 @@ public class U2fServer extends Server {
       throw new ServletException("Unable to verify session and challenge data", e1);
     }
 
-    if (!attResponse.getClientData().getOrigin().equals(originString)) {
-      throw new ServletException("Client data origin: " + attResponse.getClientData().getOrigin()
-          + " does not match server origin:" + originString);
-    }
-
     String clientDataJson = attResponse.getClientDataString();
     System.out.println(clientDataJson);
     byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
