@@ -25,6 +25,7 @@ import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.google.webauthn.gaedemo.server.AndroidSafetyNetServer;
+import com.google.webauthn.gaedemo.server.PackedServer;
 import com.google.webauthn.gaedemo.server.PublicKeyCredentialResponse;
 import com.google.webauthn.gaedemo.server.U2fServer;
 import com.google.webauthn.gaedemo.storage.Credential;
@@ -87,7 +88,8 @@ public class FinishMakeCredential extends HttpServlet {
     PublicKeyCredential cred = new PublicKeyCredential(credentialId, type,
         BaseEncoding.base64Url().decode(credentialId), attestation);
 
-    String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
+    //String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
+    String rpId = request.getHeader("Host").split(":")[0];
     switch (cred.getAttestationType()) {
       case FIDOU2F:
         U2fServer.registerCredential(cred, currentUser, session, rpId);
@@ -95,6 +97,9 @@ public class FinishMakeCredential extends HttpServlet {
       case ANDROIDSAFETYNET:
         AndroidSafetyNetServer.registerCredential(cred, currentUser, session, rpId);
         break;
+      case PACKED:
+    	PackedServer.registerCredential(cred, currentUser, session, rpId);
+    	break;
     }
 
     Credential credential = new Credential(cred);

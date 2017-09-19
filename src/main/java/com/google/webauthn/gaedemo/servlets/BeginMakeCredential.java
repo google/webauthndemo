@@ -46,7 +46,8 @@ public class BeginMakeCredential extends HttpServlet {
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     User user = userService.getCurrentUser();
-    String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
+    //String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
+    String rpId = request.getHeader("Host").split(":")[0];
     String rpName = getServletContext().getInitParameter("name");
     rpName = (rpName == null ? "" : rpName);
 
