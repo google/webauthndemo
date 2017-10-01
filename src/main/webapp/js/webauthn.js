@@ -84,6 +84,13 @@ function assignButtons() {
   $("#authenticate-button").click(function() {
     getAssertion();
   });
+  $("#switch-advanced").click(function() {
+    if ($("#switch-advanced").is(":checked")) {
+      $("#advanced").show();
+    } else {
+      $("#advanced").hide();
+    }
+  });
 }
 
 window.onload = function () {
@@ -126,7 +133,21 @@ function finishAddCredential(publicKeyCredential, sessionId) {
 function addCredential() {
   removeMsgs();
   addSpinner();
-  $.post('/BeginMakeCredential', {}, null, 'json')
+  var advancedOptions = {};
+  if ($("#switch-advanced").is(":checked")) {
+    if ($("#switch-rk").is(":checked")) {
+      advancedOptions.rk = $("#switch-rk").is(":checked");
+    }
+    if ($("#switch-uv").is(":checked")) {
+      advancedOptions.uv = $("#switch-uv").is(":checked");
+    }
+    if ($('#attachment').val() != "none") {
+      advancedOptions.attachment = $('#attachment').val();
+    }
+  }
+  $.post('/BeginMakeCredential',
+		  { advanced: $("#switch-advanced").is(":checked"), advancedOptions: JSON.stringify(advancedOptions) },
+		  null, 'json')
   .done(function(options) {
     var makeCredentialOptions = {};
     makeCredentialOptions.rp = options.rp;
@@ -139,6 +160,12 @@ function addCredential() {
     }
     if ('excludeList' in options) {
       makeCredentialOptions.excludeList = credentialListConversion(parameters.excludeList);
+    }
+    if ('extensions' in options) {
+      makeCredentialOptions.extensions = options.extensions;
+    }
+    if ('authenticatorSelection' in options) {
+      makeCredentialOptions.authenticatorSelection = options.authenticatorSelection;
     }
 
     var createParams = {};
@@ -191,7 +218,7 @@ function finishAssertion(publicKeyCredential, sessionId) {
     .done(function(parameters) {
       console.log(parameters);
       if ('success' in parameters && 'message' in parameters) {
-        addErrorMsg(parameters.message);
+        addSuccessMsg(parameters.message);
       }
       // TODO Validate response and display success/error message
     });
@@ -272,7 +299,7 @@ function getAssertion() {
       }
       if ('response' in assertion) {
         var response = {};
-        response.clientDataJSON = assertion.response.clientDataJSON;
+        response.clientDataJSON = new Uint8Array(assertion.response.clientDataJSON);
         response.authenticatorData = btoa(
           new Uint8Array(assertion.response.authenticatorData)
           .reduce((s, byte) => s + String.fromCharCode(byte), ''));

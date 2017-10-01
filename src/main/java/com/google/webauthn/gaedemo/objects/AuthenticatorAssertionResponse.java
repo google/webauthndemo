@@ -16,12 +16,17 @@ package com.google.webauthn.gaedemo.objects;
 
 import com.google.common.io.BaseEncoding;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
+import com.googlecode.objectify.annotation.Subclass;
 
+import java.util.Map;
+
+@Subclass
 public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
   private static class AssertionResponseJson {
-    String clientDataJSON;
+    Map<String, Byte> clientDataJSON;
     String authenticatorData;
     String signature;
   }
@@ -33,14 +38,23 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
    * @param data
    * @throws ResponseException
    */
-  public AuthenticatorAssertionResponse(String data) throws ResponseException {
+  public AuthenticatorAssertionResponse(JsonElement data) throws ResponseException {
     Gson gson = new Gson();
     try {
       AssertionResponseJson parsedObject = gson.fromJson(data, AssertionResponseJson.class);
 
-      String clientDataString =
-          new String(BaseEncoding.base64().decode(parsedObject.clientDataJSON));
-      clientData = CollectedClientData.decode(clientDataString);
+      StringBuffer decodedData = new StringBuffer();
+      // This should probably need some kind of sort to be stable, but for now
+      // values() seems to walk through this crazy map alright
+      for (byte b : parsedObject.clientDataJSON.values()) {
+        decodedData.appendCodePoint(b);
+      }
+      System.out.println("Decoded data: " + decodedData.toString());
+
+      // Temporary until fix clientData ordering issue.
+      clientDataString = decodedData.toString();
+      clientData = gson.fromJson(decodedData.toString(), CollectedClientData.class);
+
       authData =
           AuthenticatorData.decode(BaseEncoding.base64().decode(parsedObject.authenticatorData));
       signature = BaseEncoding.base64().decode(parsedObject.signature);

@@ -30,6 +30,27 @@
   word-wrap: break-word;
 }
 
+.advanced-switch {
+  background-color: white;
+  padding-top: .2cm;
+  padding-bottom: .2cm;
+  padding-left: .2cm;
+}
+
+.advanced {
+  background-color: white;
+  padding-top: .2cm;
+  padding-bottom: .2cm;
+  padding-left: .2cm;
+  border-size: 1px;
+  border-style: solid;
+  border-color: #009688;
+}
+
+.attachment {
+  font-size: medium;
+}
+
 .auth-button {
   margin-left: .25cm;
   margin-right: .25cm;

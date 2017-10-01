@@ -25,6 +25,7 @@ import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.google.webauthn.gaedemo.server.AndroidSafetyNetServer;
+import com.google.webauthn.gaedemo.server.PackedServer;
 import com.google.webauthn.gaedemo.server.PublicKeyCredentialResponse;
 import com.google.webauthn.gaedemo.server.U2fServer;
 import com.google.webauthn.gaedemo.storage.Credential;
@@ -39,17 +40,16 @@ public class FinishMakeCredential extends HttpServlet {
   private static final long serialVersionUID = 1L;
   private final UserService userService = UserServiceFactory.getUserService();
 
-  public FinishMakeCredential() {}
+  public FinishMakeCredential() {
+  }
 
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response)
-      throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     doPost(request, response);
   }
 
   @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response)
-      throws ServletException, IOException {
+  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     String currentUser = userService.getCurrentUser().getUserId();
     String data = request.getParameter("data");
     String session = request.getParameter("session");
@@ -87,21 +87,24 @@ public class FinishMakeCredential extends HttpServlet {
     PublicKeyCredential cred = new PublicKeyCredential(credentialId, type,
         BaseEncoding.base64Url().decode(credentialId), attestation);
 
-    String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
+    String domain = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
+    String rpId = request.getHeader("Host").split(":")[0];
     switch (cred.getAttestationType()) {
-      case FIDOU2F:
-        U2fServer.registerCredential(cred, currentUser, session, rpId);
-        break;
-      case ANDROIDSAFETYNET:
-        AndroidSafetyNetServer.registerCredential(cred, currentUser, session, rpId);
-        break;
+    case FIDOU2F:
+      U2fServer.registerCredential(cred, currentUser, session, domain, rpId);
+      break;
+    case ANDROIDSAFETYNET:
+      AndroidSafetyNetServer.registerCredential(cred, currentUser, session, rpId);
+      break;
+    case PACKED:
+      PackedServer.registerCredential(cred, currentUser, session, rpId);
+      break;
     }
 
     Credential credential = new Credential(cred);
     credential.save(currentUser);
 
-    PublicKeyCredentialResponse rsp =
-        new PublicKeyCredentialResponse(true, "Successfully created credential");
+    PublicKeyCredentialResponse rsp = new PublicKeyCredentialResponse(true, "Successfully created credential");
 
     response.setContentType("application/json");
     response.getWriter().println(rsp.toJson());
