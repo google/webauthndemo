@@ -14,6 +14,9 @@
 
 package com.google.webauthn.gaedemo.objects;
 
+import java.security.InvalidParameterException;
+import java.util.List;
+
 import co.nstant.in.cbor.CborDecoder;
 import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.ByteString;
@@ -21,8 +24,6 @@ import co.nstant.in.cbor.model.DataItem;
 import co.nstant.in.cbor.model.Map;
 import co.nstant.in.cbor.model.NegativeInteger;
 import co.nstant.in.cbor.model.UnsignedInteger;
-import java.security.InvalidParameterException;
-import java.util.List;
 
 public abstract class CredentialPublicKey {
   Algorithm alg;
@@ -48,6 +49,14 @@ public abstract class CredentialPublicKey {
    */
   @Override
   public abstract String toString();
+
+  /**
+   * Get algorithm info
+   * @return algorithm
+   */
+  public Algorithm getAlg() {
+    return alg;
+  }
 
   /**
    * @param cbor
