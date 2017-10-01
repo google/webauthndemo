@@ -57,6 +57,7 @@ public enum Algorithm {
         return t;
       }
     }
+
     // COSE Algorithm Identifiers
     if (s.equals("-7")) {
       return ES256;

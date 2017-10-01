@@ -28,13 +28,13 @@ import com.google.webauthn.gaedemo.server.AndroidSafetyNetServer;
 import com.google.webauthn.gaedemo.server.PackedServer;
 import com.google.webauthn.gaedemo.server.PublicKeyCredentialResponse;
 import com.google.webauthn.gaedemo.server.Server;
-import com.google.webauthn.gaedemo.server.U2fServer;
 import com.google.webauthn.gaedemo.storage.Credential;
-import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 
 public class FinishGetAssertion extends HttpServlet {
@@ -106,17 +106,20 @@ public class FinishGetAssertion extends HttpServlet {
       throw new ServletException("Unable to validate assertion", e);
     }
 
-    switch (savedCredential.getCredential().getAttestationType()) {
-      case FIDOU2F:
-        U2fServer.verifyAssertion(cred, currentUser, session, savedCredential);
-        break;
-      case ANDROIDSAFETYNET:
-        AndroidSafetyNetServer.verifyAssertion(cred, currentUser, session, savedCredential);
-        break;
-      case PACKED:
-        PackedServer.verifyAssertion(cred, currentUser, session, savedCredential);
-        break;
-    }
+
+    // switch (savedCredential.getCredential().getAttestationType()) {
+    // case FIDOU2F:
+    // U2fServer.verifyAssertion(cred, currentUser, session, savedCredential);
+    // break;
+    // case ANDROIDSAFETYNET:
+    // AndroidSafetyNetServer.verifyAssertion(cred, currentUser, session, savedCredential);
+    // break;
+    // case PACKED:
+    // PackedServer.verifyAssertion(cred, currentUser, session, savedCredential);
+    // break;
+    // }
+
+    Server.verifyAssertion(cred, currentUser, session, savedCredential);
 
     response.setContentType("application/json");
     PublicKeyCredentialResponse rsp = new PublicKeyCredentialResponse(true, "Successful assertion");

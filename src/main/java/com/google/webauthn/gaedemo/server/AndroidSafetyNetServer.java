@@ -99,6 +99,7 @@ public class AndroidSafetyNetServer extends Server {
      */
   }
 
+  // TODO Remove after switch to generic verification
   /**
    * @param cred
    * @param currentUser

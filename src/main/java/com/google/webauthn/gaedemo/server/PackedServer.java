@@ -14,6 +14,7 @@
 
 package com.google.webauthn.gaedemo.server;
 
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.nio.ByteBuffer;
@@ -35,9 +36,22 @@ import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.EccKey;
 import com.google.webauthn.gaedemo.objects.FidoU2fAttestationStatement;
+
+import com.google.gson.Gson;
+import com.google.webauthn.gaedemo.crypto.Crypto;
+import com.google.webauthn.gaedemo.exceptions.ResponseException;
+import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
+import com.google.webauthn.gaedemo.objects.EccKey;
+
 import com.google.webauthn.gaedemo.objects.PackedAttestationStatement;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.google.webauthn.gaedemo.storage.Credential;
+
+
+import javax.servlet.ServletException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Logger;
 
 
 public class PackedServer extends Server {
@@ -145,6 +159,7 @@ public class PackedServer extends Server {
     }
 
     byte[] clientDataHash = Crypto.sha256Digest(attResponse.getClientDataBytes());
+    Gson gson = new Gson();
 
     byte[] rpIdHash = Crypto.sha256Digest(origin.getBytes());
     if (!Arrays.equals(attResponse.getAttestationObject().getAuthenticatorData().getRpIdHash(),
