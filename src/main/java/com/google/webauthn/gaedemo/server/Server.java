@@ -25,7 +25,6 @@ import com.google.webauthn.gaedemo.storage.Credential;
 import com.google.webauthn.gaedemo.storage.SessionData;
 
 import javax.servlet.ServletException;
-import java.nio.ByteBuffer;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.List;
@@ -128,10 +127,8 @@ public abstract class Server {
       String clientDataJson = assertionResponse.getClientDataString();
       byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
 
-      byte[] signedBytes = Bytes.concat(storedAttData.getAttestationObject().getAuthenticatorData().getRpIdHash(),
-              new byte[] { (assertionResponse.getAuthenticatorData().isUP() == true ? (byte) 1 : (byte) 0) },
-              ByteBuffer.allocate(4).putInt(assertionResponse.getAuthenticatorData().getSignCount()).array(),
-              clientDataHash);
+      //concat of aData (authDataBytes) and hash of cData (clientDataHash)
+      byte[] signedBytes = Bytes.concat(assertionResponse.getAuthDataBytes(), clientDataHash);
       String signatureAlgorithm = AlgorithmIdentifierMapper.get(storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey().getAlg()).getJavaAlgorithm();
       if (!Crypto.verifySignature(publicKey, signedBytes, assertionResponse.getSignature(), signatureAlgorithm)) {
         throw new ServletException("Signature invalid");

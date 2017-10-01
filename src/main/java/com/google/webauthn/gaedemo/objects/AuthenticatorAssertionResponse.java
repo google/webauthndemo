@@ -31,6 +31,7 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
     String signature;
   }
 
+  byte[] authDataBytes;
   AuthenticatorData authData;
   byte[] signature;
 
@@ -55,12 +56,20 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
       clientDataString = decodedData.toString();
       clientData = gson.fromJson(decodedData.toString(), CollectedClientData.class);
 
+      authDataBytes = BaseEncoding.base64().decode(parsedObject.authenticatorData);
       authData =
-          AuthenticatorData.decode(BaseEncoding.base64().decode(parsedObject.authenticatorData));
+          AuthenticatorData.decode(authDataBytes);
       signature = BaseEncoding.base64().decode(parsedObject.signature);
     } catch (JsonSyntaxException e) {
       throw new ResponseException("Response format incorrect");
     }
+  }
+
+  /**
+   * @return byte array of authData
+   */
+  public byte[] getAuthDataBytes() {
+    return authDataBytes;
   }
 
   /**
