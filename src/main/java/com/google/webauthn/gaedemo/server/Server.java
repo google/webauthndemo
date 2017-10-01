@@ -14,17 +14,22 @@
 
 package com.google.webauthn.gaedemo.server;
 
+import com.google.common.io.BaseEncoding;
+import com.google.common.primitives.Bytes;
+import com.google.webauthn.gaedemo.crypto.AlgorithmIdentifierMapper;
+import com.google.webauthn.gaedemo.crypto.Crypto;
+import com.google.webauthn.gaedemo.exceptions.ResponseException;
+import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
+import com.google.webauthn.gaedemo.objects.*;
+import com.google.webauthn.gaedemo.storage.Credential;
+import com.google.webauthn.gaedemo.storage.SessionData;
+
+import javax.servlet.ServletException;
+import java.nio.ByteBuffer;
+import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-
-import com.google.common.io.BaseEncoding;
-import com.google.webauthn.gaedemo.exceptions.ResponseException;
-import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
-import com.google.webauthn.gaedemo.objects.AuthenticatorResponse;
-import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
-import com.google.webauthn.gaedemo.storage.Credential;
-import com.google.webauthn.gaedemo.storage.SessionData;
 
 public abstract class Server {
   private static final Logger Log = Logger.getLogger(U2fServer.class.getName());
@@ -94,5 +99,54 @@ public abstract class Server {
     }
 
     return credential;
+  }
+
+  /**
+   * @param cred
+   * @param currentUser
+   * @param sessionId
+   * @throws ServletException
+   */
+  public static void verifyAssertion(PublicKeyCredential cred, String currentUser, String sessionId,
+                                     Credential savedCredential) throws ServletException {
+    AuthenticatorAssertionResponse assertionResponse = (AuthenticatorAssertionResponse) cred.getResponse();
+
+    Log.info("-- Verifying signature --");
+    if (!(savedCredential.getCredential().getResponse() instanceof AuthenticatorAttestationResponse)) {
+      throw new ServletException("Stored attestation missing");
+    }
+    AuthenticatorAttestationResponse storedAttData = (AuthenticatorAttestationResponse) savedCredential.getCredential()
+            .getResponse();
+
+    try {
+      PublicKey publicKey;
+      if (storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey() instanceof EccKey) {
+        publicKey = Crypto.getECPublicKey((EccKey) storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey());
+      } else {
+        publicKey = Crypto.getRSAPublicKey((RsaKey) storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey());
+      }
+
+      String clientDataJson = assertionResponse.getClientDataString();
+      byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
+
+      byte[] signedBytes = Bytes.concat(storedAttData.getAttestationObject().getAuthenticatorData().getRpIdHash(),
+              new byte[] { (assertionResponse.getAuthenticatorData().isUP() == true ? (byte) 1 : (byte) 0) },
+              ByteBuffer.allocate(4).putInt(assertionResponse.getAuthenticatorData().getSignCount()).array(),
+              clientDataHash);
+      String signatureAlgorithm = AlgorithmIdentifierMapper.get(storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey().getAlg()).getJavaAlgorithm();
+      if (!Crypto.verifySignature(publicKey, signedBytes, assertionResponse.getSignature(), signatureAlgorithm)) {
+        throw new ServletException("Signature invalid");
+      }
+    } catch (WebAuthnException e) {
+      throw new ServletException("Failure while verifying signature");
+    }
+
+    if (assertionResponse.getAuthenticatorData().getSignCount() <= savedCredential.getSignCount()) {
+      throw new ServletException("Sign count invalid");
+    }
+
+    savedCredential.updateSignCount(assertionResponse.getAuthenticatorData().getSignCount());
+
+    Log.info("Signature verified");
   }
 }

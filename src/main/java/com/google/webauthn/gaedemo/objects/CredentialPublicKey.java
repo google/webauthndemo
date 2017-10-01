@@ -20,6 +20,7 @@ import co.nstant.in.cbor.model.ByteString;
 import co.nstant.in.cbor.model.DataItem;
 import co.nstant.in.cbor.model.Map;
 import co.nstant.in.cbor.model.UnicodeString;
+
 import java.util.List;
 
 public abstract class CredentialPublicKey {
@@ -35,6 +36,14 @@ public abstract class CredentialPublicKey {
    * @return human-readable hex string of the key
    */
   public abstract String toString();
+
+  /**
+   * Get algorithm info
+   * @return algorithm
+   */
+  public Algorithm getAlg() {
+    return alg;
+  }
 
   /**
    * @param cbor
