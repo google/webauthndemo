@@ -76,15 +76,15 @@ public class OfflineVerify {
     }
   }
 
-  public static AttestationStatement parseAndVerify(String signedAttestationStatment) {
+  public static AttestationStatement parseAndVerify(String signedAttestationStatement) {
     // Parse JSON Web Signature format.
     JsonWebSignature jws;
     try {
       jws = JsonWebSignature.parser(JacksonFactory.getDefaultInstance())
-          .setPayloadClass(AttestationStatement.class).parse(signedAttestationStatment);
+          .setPayloadClass(AttestationStatement.class).parse(signedAttestationStatement);
     } catch (IOException e) {
       System.err
-          .println("Failure: " + signedAttestationStatment + " is not valid JWS " + "format.");
+          .println("Failure: " + signedAttestationStatement + " is not valid JWS " + "format.");
       return null;
     }
 
