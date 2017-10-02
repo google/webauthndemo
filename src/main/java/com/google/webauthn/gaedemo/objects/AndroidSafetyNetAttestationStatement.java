@@ -40,7 +40,7 @@ public class AndroidSafetyNetAttestationStatement extends AttestationStatement {
   /**
    * Decodes a cbor representation of an AndroidSafetyNetAttestationStatement into the object
    * representation
-   * 
+   *
    * @param attStmt Cbor DataItem representation of the attestation statement to decode
    * @return Decoded AndroidSafetyNetAttestationStatement
    * @throws ResponseException Input was not a valid AndroidSafetyNetAttestationStatement DataItem
@@ -87,7 +87,7 @@ public class AndroidSafetyNetAttestationStatement extends AttestationStatement {
 
   /**
    * Return the Google Play Services version used to create the SafetyNet attestation
-   * 
+   *
    * @return the version
    */
   public String getVer() {
