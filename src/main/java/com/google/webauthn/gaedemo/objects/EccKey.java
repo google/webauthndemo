@@ -65,17 +65,7 @@ public class EccKey extends CredentialPublicKey {
 
   @Override
   public byte[] encode() throws CborException {
-    ByteArrayOutputStream output = new ByteArrayOutputStream();
-    Map map = new Map();
-    map.put(new UnicodeString("alg"), new UnicodeString(alg.toString()));
-    map.put(new UnicodeString("x"), new ByteString(x));
-    map.put(new UnicodeString("y"), new ByteString(y));
-    List<co.nstant.in.cbor.model.DataItem> dataItems =
-        new ArrayList<co.nstant.in.cbor.model.DataItem>();
-    dataItems.add(map);
-
-    new CborEncoder(output).encode(dataItems);
-    return output.toByteArray();
+    return cborEncodedKey;
   }
 
   /**
