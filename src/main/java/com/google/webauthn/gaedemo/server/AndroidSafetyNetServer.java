@@ -79,10 +79,13 @@ public class AndroidSafetyNetServer extends Server {
       throw new ServletException("Failed to verify attestation statement");
     }
 
+    String clientDataJson = attResponse.getClientDataString();
+    byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
+
     try {
       byte[] expectedNonce =
           Bytes.concat(attResponse.getAttestationObject().getAuthenticatorData().encode(),
-              attResponse.getClientData().getHash());
+              clientDataHash);
       if (!Arrays.equals(expectedNonce, stmt.getNonce())) {
         throw new ServletException("Nonce does not match");
       }
@@ -90,9 +93,11 @@ public class AndroidSafetyNetServer extends Server {
       throw new ServletException("Error encoding authdata");
     }
 
+    /*
+    // Test devices won't pass this.
     if (!stmt.isCtsProfileMatch()) {
       throw new ServletException("No cts profile match");
-    }
+    }*/
   }
 
   /**
@@ -106,10 +111,6 @@ public class AndroidSafetyNetServer extends Server {
 
     AuthenticatorAssertionResponse assertionResponse =
         (AuthenticatorAssertionResponse) cred.getResponse();
-
-    Gson gson = new Gson();
-    String clientDataJson = gson.toJson(assertionResponse.getClientData());
-    byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
 
     Log.info("-- Verifying signature --");
     if (!(savedCredential.getCredential()
@@ -127,6 +128,9 @@ public class AndroidSafetyNetServer extends Server {
     EccKey publicKey =
         (EccKey) storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
     try {
+
+      String clientDataJson = assertionResponse.getClientDataString();
+      byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
       byte[] signedBytes =
           Bytes.concat(assertionResponse.getAuthenticatorData().encode(), clientDataHash);
       if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()),
@@ -134,7 +138,7 @@ public class AndroidSafetyNetServer extends Server {
         throw new ServletException("Signature invalid");
       }
     } catch (WebAuthnException e) {
-      throw new ServletException("Failure while verifying signature");
+      throw new ServletException("Failure while verifying signature", e);
     } catch (CborException e) {
       throw new ServletException("Failure while verifying authenticator data");
     }
