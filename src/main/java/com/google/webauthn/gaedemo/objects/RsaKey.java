@@ -39,6 +39,12 @@ public class RsaKey extends CredentialPublicKey {
     alg = Algorithm.UNDEFINED;
   }
 
+  public RsaKey(Algorithm alg, byte[] n, byte[] e) {
+    this.alg = alg;
+    this.n = n;
+    this.e = e;
+  }
+
   @Override
   public boolean equals(Object obj) {
     try {
