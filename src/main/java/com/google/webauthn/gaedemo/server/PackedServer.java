@@ -36,14 +36,14 @@ import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.EccKey;
 import com.google.webauthn.gaedemo.objects.FidoU2fAttestationStatement;
-
+//import com.google.webauthn.gaedemo.objects.PackedAttestationStatement;
 import com.google.gson.Gson;
 import com.google.webauthn.gaedemo.crypto.Crypto;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.EccKey;
 
-import com.google.webauthn.gaedemo.objects.PackedAttestationStatement;
+//import com.google.webauthn.gaedemo.objects.PackedAttestationStatement;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.google.webauthn.gaedemo.storage.Credential;
 
@@ -172,8 +172,8 @@ public class PackedServer extends Server {
       throw new ServletException("U2f-capable key not provided");
     }
 
-    PackedAttestationStatement attStmt =
-        (PackedAttestationStatement) attResponse.decodedObject.getAttestationStatement();
+//    PackedAttestationStatement attStmt =
+//        (PackedAttestationStatement) attResponse.decodedObject.getAttestationStatement();
 
     EccKey publicKey =
         (EccKey) attResponse.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
