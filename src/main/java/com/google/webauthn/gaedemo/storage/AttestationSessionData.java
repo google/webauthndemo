@@ -49,7 +49,7 @@ public class AttestationSessionData {
     this.user = user;
     ofy().save().entity(this).now();
   }
-  
+
   public JsonObject getJsonObject() {
     JsonObject result = new JsonObject();
     result.addProperty("challenge", challenge);

@@ -30,7 +30,7 @@ public enum Algorithm {
     this.name = name;
   }
 
-  
+
   /**
    * @param alg The Algorithm to check
    * @return If the Algorithm is an ECC Algorithm
@@ -58,11 +58,20 @@ public enum Algorithm {
         return t;
       }
     }
+    // Support new ES256 algorithm identifier
+    if (s.equals("-7")) {
+      return ES256;
+    }
     throw new IllegalArgumentException(s + " not a valid Algorithm");
   }
 
   @Override
   public String toString() {
+    return name;
+  }
+
+
+  public Object toReadableString() {
     return name;
   }
 }

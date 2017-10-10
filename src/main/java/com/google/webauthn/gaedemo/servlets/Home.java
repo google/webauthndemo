@@ -40,8 +40,7 @@ public class Home extends HttpServlet {
 
     request.setAttribute("nickname", nickname);
     request.setAttribute("logoutUrl", logoutUrl);
-    RequestDispatcher dispatcher =
-        getServletContext().getRequestDispatcher("/index.jsp");
+    RequestDispatcher dispatcher = getServletContext().getRequestDispatcher("/index.jsp");
     dispatcher.forward(request, response);
   }
 

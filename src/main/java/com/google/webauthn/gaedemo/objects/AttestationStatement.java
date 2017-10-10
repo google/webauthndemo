@@ -37,6 +37,8 @@ public abstract class AttestationStatement {
         return null;
       }
       return stmt;
+    } else if (fmt.equals("packed")) {
+      return PackedAttestationStatement.decode(attStmt);
     }
 
     return null;
@@ -47,6 +49,8 @@ public abstract class AttestationStatement {
    * @throws CborException
    */
   abstract DataItem encode() throws CborException;
+
+  public abstract String getName();
 
 
 }

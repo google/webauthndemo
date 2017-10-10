@@ -38,6 +38,7 @@ public class GetSession extends HttpServlet {
   /**
    * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
    */
+  @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     String id = request.getParameter("id");
@@ -47,7 +48,7 @@ public class GetSession extends HttpServlet {
 
     response.setContentType("application/json");
     if (session != null) {
-    response.getWriter().println(session.getJsonObject().toString());
+      response.getWriter().println(session.getJsonObject().toString());
     } else {
       throw new ServletException("Session not found");
     }
@@ -56,6 +57,7 @@ public class GetSession extends HttpServlet {
   /**
    * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
    */
+  @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     // TODO Auto-generated method stub

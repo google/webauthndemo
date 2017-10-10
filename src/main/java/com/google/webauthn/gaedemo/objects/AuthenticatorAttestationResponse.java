@@ -24,15 +24,9 @@ import com.googlecode.objectify.annotation.Subclass;
 
 import java.util.Map;
 
-/**
- *
- */
 @Subclass
 public class AuthenticatorAttestationResponse extends AuthenticatorResponse {
-  /**
-   *
-   */
-  private class AttestationResponseJson {
+  private static class AttestationResponseJson {
     Map<String, Byte> clientDataJSON;
     String attestationObject;
   }
@@ -40,7 +34,7 @@ public class AuthenticatorAttestationResponse extends AuthenticatorResponse {
   public AttestationObject decodedObject;
 
   /**
-   * 
+   *
    */
   public AuthenticatorAttestationResponse() {}
 
@@ -69,6 +63,9 @@ public class AuthenticatorAttestationResponse extends AuthenticatorResponse {
       decodedData.appendCodePoint(b);
     }
     System.out.println("Decoded data: " + decodedData.toString());
+
+    // Temporary until fix clientData ordering issue.
+    clientDataString = decodedData.toString();
     clientData = gson.fromJson(decodedData.toString(), CollectedClientData.class);
 
     byte[] attestationObject = BaseEncoding.base64().decode(parsedObject.attestationObject);

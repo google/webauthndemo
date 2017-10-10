@@ -24,6 +24,7 @@ import java.util.List;
 
 public abstract class CredentialPublicKey {
   Algorithm alg;
+  byte[] cborEncodedKey;
 
   /**
    * @return Cbor encoded byte array
@@ -32,13 +33,18 @@ public abstract class CredentialPublicKey {
   public abstract byte[] encode() throws CborException;
 
   /**
+   * @return human-readable hex string of the key
+   */
+  public abstract String toString();
+
+  /**
    * @param cbor
    * @return CredentialPublicKey object decoded from cbor byte array
    * @throws CborException
    */
   public static CredentialPublicKey decode(byte[] cbor) throws CborException {
     CredentialPublicKey cpk = null;
-
+    byte[] cborEncodedKey = cbor;
     List<DataItem> dataItems = CborDecoder.decode(cbor);
     if (dataItems.size() < 1 || !(dataItems.get(0) instanceof Map)) {
       return null;
@@ -58,6 +64,7 @@ public abstract class CredentialPublicKey {
         if (Algorithm.isEccAlgorithm(alg)) {
           EccKey ecc = new EccKey();
           ecc.alg = alg;
+          ecc.cborEncodedKey = cborEncodedKey;
           for (DataItem d : map.getKeys()) {
             if (((UnicodeString) d).getString().equals("x")) {
               ecc.x = ((ByteString) map.get(d)).getBytes();

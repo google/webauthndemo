@@ -27,41 +27,65 @@ import java.util.Arrays;
 import java.util.List;
 
 @Subclass
-public class FidoU2fAttestationStatement extends AttestationStatement {
+public class PackedAttestationStatement extends AttestationStatement {
   public byte[] sig;
   public byte[] attestnCert;
   public List<byte[]> caCert;
+  public Algorithm alg;
+  public byte[] ecdaaKeyId;
 
   /**
    * @param sig
    * @param attestnCert
    * @param caCert
    */
-  public FidoU2fAttestationStatement(byte[] sig, byte[] attestnCert, List<byte[]> caCert) {
+  public PackedAttestationStatement(byte[] sig, byte[] attestnCert, List<byte[]> caCert,
+      String alg) {
     super();
     this.sig = sig;
     this.attestnCert = attestnCert;
     this.caCert = caCert;
+    this.alg = Algorithm.decode(alg);
+    this.ecdaaKeyId = null;
   }
 
-  public FidoU2fAttestationStatement() {
+  /**
+   * @param sig
+   * @param attestnCert
+   * @param caCert
+   */
+  public PackedAttestationStatement(byte[] sig, byte[] ecdaaKeyId, String alg) {
+    super();
+    this.sig = sig;
+    this.ecdaaKeyId = ecdaaKeyId;
+    this.alg = Algorithm.decode(alg);
+    this.caCert = null;
+    this.attestnCert = null;
+  }
 
+  public PackedAttestationStatement() {
+    this.sig = null;
+    this.attestnCert = null;
+    this.caCert = null;
+    this.alg = null;
+    this.ecdaaKeyId = null;
   }
 
   /**
    * @param attStmt
    * @return Decoded FidoU2fAttestationStatement
    */
-  public static FidoU2fAttestationStatement decode(DataItem attStmt) {
-    FidoU2fAttestationStatement result = new FidoU2fAttestationStatement();
+  public static PackedAttestationStatement decode(DataItem attStmt) {
+    PackedAttestationStatement result = new PackedAttestationStatement();
     Map given = null;
 
     if (attStmt instanceof ByteString) {
-      byte[] temp = ((ByteString)attStmt).getBytes();
+      byte[] temp = ((ByteString) attStmt).getBytes();
       List<DataItem> dataItems = null;
       try {
         dataItems = CborDecoder.decode(temp);
-      } catch (Exception e) {}
+      } catch (Exception e) {
+      }
       given = (Map) dataItems.get(0);
     } else {
       given = (Map) attStmt;
@@ -81,6 +105,10 @@ public class FidoU2fAttestationStatement extends AttestationStatement {
           }
         } else if (((UnicodeString) data).getString().equals("sig")) {
           result.sig = ((ByteString) (given.get(data))).getBytes();
+        } else if (((UnicodeString) data).getString().equals("alg")) {
+          result.alg = Algorithm.decode(((UnicodeString) (given.get(data))).getString());
+        } else if (((UnicodeString) data).getString().equals("ecdaaKeyId")) {
+          result.ecdaaKeyId = ((ByteString) (given.get(data))).getBytes();
         }
       }
     }
@@ -90,28 +118,39 @@ public class FidoU2fAttestationStatement extends AttestationStatement {
   @Override
   DataItem encode() throws CborException {
     Map result = new Map();
-    Array x5c = new Array();
-    x5c.add(new ByteString(attestnCert));
-    for (byte[] cert : this.caCert) {
-      x5c.add(new ByteString(cert));
+    if (attestnCert != null) {
+      Array x5c = new Array();
+      x5c.add(new ByteString(attestnCert));
+      for (byte[] cert : this.caCert) {
+        x5c.add(new ByteString(cert));
+      }
+      result.put(new UnicodeString("x5c"), x5c);
     }
-    result.put(new UnicodeString("x5c"), x5c);
+    if (ecdaaKeyId != null) {
+      result.put(new UnicodeString("ecdaaKeyId"), new ByteString(ecdaaKeyId));
+    }
     result.put(new UnicodeString("sig"), new ByteString(sig));
+    result.put(new UnicodeString("alg"), new UnicodeString(alg.toString()));
 
     return result;
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof FidoU2fAttestationStatement) {
-      FidoU2fAttestationStatement other = (FidoU2fAttestationStatement) obj;
-      if (Arrays.equals(attestnCert, other.attestnCert)) {
+    if (obj instanceof PackedAttestationStatement) {
+      PackedAttestationStatement other = (PackedAttestationStatement) obj;
+      if (attestnCert == other.attestnCert || Arrays.equals(attestnCert, other.attestnCert)) {
         if (Arrays.equals(sig, other.sig)) {
-          if (caCert.size() == other.caCert.size()) {
-            for (int i = 0; i < caCert.size(); i++) {
-              if (!Arrays.equals(caCert.get(i), other.caCert.get(i))) {
-                return false;
+          if (caCert == other.caCert || caCert.size() == other.caCert.size()) {
+            if (caCert != null) {
+              for (int i = 0; i < caCert.size(); i++) {
+                if (!Arrays.equals(caCert.get(i), other.caCert.get(i))) {
+                  return false;
+                }
               }
+            }
+            if (other.alg != alg) {
+              return false;
             }
             return true;
           }
@@ -123,6 +162,6 @@ public class FidoU2fAttestationStatement extends AttestationStatement {
 
   @Override
   public String getName() {
-    return "FIDO U2F Authenticator";
+    return "Packed Attestation";
   }
 }

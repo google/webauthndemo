@@ -14,16 +14,20 @@
 
 package com.google.webauthn.gaedemo.objects;
 
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.xml.bind.DatatypeConverter;
+
+import com.googlecode.objectify.annotation.Subclass;
+
 import co.nstant.in.cbor.CborEncoder;
 import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.ByteString;
 import co.nstant.in.cbor.model.Map;
 import co.nstant.in.cbor.model.UnicodeString;
-import com.googlecode.objectify.annotation.Subclass;
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 @Subclass
 public class EccKey extends CredentialPublicKey {
@@ -61,17 +65,7 @@ public class EccKey extends CredentialPublicKey {
 
   @Override
   public byte[] encode() throws CborException {
-    ByteArrayOutputStream output = new ByteArrayOutputStream();
-    Map map = new Map();
-    map.put(new UnicodeString("alg"), new UnicodeString(alg.toString()));
-    map.put(new UnicodeString("x"), new ByteString(x));
-    map.put(new UnicodeString("y"), new ByteString(y));
-    List<co.nstant.in.cbor.model.DataItem> dataItems =
-        new ArrayList<co.nstant.in.cbor.model.DataItem>();
-    dataItems.add(map);
-
-    new CborEncoder(output).encode(dataItems);
-    return output.toByteArray();
+    return cborEncodedKey;
   }
 
   /**
@@ -86,6 +80,18 @@ public class EccKey extends CredentialPublicKey {
    */
   public byte[] getY() {
     return y;
+  }
+
+  @Override
+  public String toString() {
+    StringBuffer b = new StringBuffer();
+    b.append("alg:");
+    b.append(alg.toReadableString());
+    b.append(" x:");
+    b.append(DatatypeConverter.printHexBinary(x));
+    b.append(" y:");
+    b.append(DatatypeConverter.printHexBinary(y));
+    return b.toString();
   }
 
 }

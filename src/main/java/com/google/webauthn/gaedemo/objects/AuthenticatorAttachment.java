@@ -14,29 +14,36 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+/**
+ *
+ */
+public enum AuthenticatorAttachment {
+  PLATFORM("platform"), CROSS_PLATFORM("cross-platform");
 
-public class PublicKeyCredentialUserEntity extends PublicKeyCredentialEntity {
-  @SuppressWarnings("unused")
-  private String displayName;
+  private String name;
 
   /**
-   * @param displayName
+   * @param name
    */
-  public PublicKeyCredentialUserEntity(String displayName, String id) {
-    super();
-    this.displayName = displayName;
-    this.name = displayName;
-    this.id = id;
+  private AuthenticatorAttachment(String name) {
+    this.name = name;
   }
 
   /**
-   * @return
+   * @param s
+   * @return AuthenticatorAttachment corresponding to the input string
    */
+  public static AuthenticatorAttachment decode(String s) {
+    for (AuthenticatorAttachment a : AuthenticatorAttachment.values()) {
+      if (a.name.equals(s)) {
+        return a;
+      }
+    }
+    throw new IllegalArgumentException(s + " not a valid AuthenticatorAttachment");
+  }
+
   @Override
-  public JsonObject getJsonObject() {
-    Gson gson = new Gson();
-    return (JsonObject) gson.toJsonTree(this);
+  public String toString() {
+    return name;
   }
 }

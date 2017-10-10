@@ -36,7 +36,6 @@ import org.apache.commons.codec.binary.Hex;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Named;
-import javax.servlet.ServletException;
 
 
 /**

@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class BeginGetAssertion extends HttpServlet {
 
+  private static final long serialVersionUID = 1L;
   private final UserService userService = UserServiceFactory.getUserService();
 
   public BeginGetAssertion() {}
@@ -43,14 +44,17 @@ public class BeginGetAssertion extends HttpServlet {
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    String currentUser = userService.getCurrentUser().getEmail();
-    String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
+    String currentUser = userService.getCurrentUser().getUserId();
+    String rpId = request.getHeader("Host").split(":")[0];
+    //String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
     PublicKeyCredentialRequestOptions assertion = new PublicKeyCredentialRequestOptions(rpId);
     SessionData session = new SessionData(assertion.challenge, rpId);
     session.save(currentUser);
+    JsonObject sessionJson = session.getJsonObject();
     assertion.populateAllowList(currentUser);
 
     JsonObject assertionJson = assertion.getJsonObject();
+    assertionJson.add("session", sessionJson);
 
     response.setContentType("application/json");
     response.getWriter().println(assertionJson.toString());

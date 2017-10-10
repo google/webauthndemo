@@ -56,6 +56,7 @@ public class AttestationObject {
       throws CborException, ResponseException {
     AttestationObject result = new AttestationObject();
     List<DataItem> dataItems = CborDecoder.decode(attestationObject);
+
     if (dataItems.size() == 1 && dataItems.get(0) instanceof Map) {
       DataItem attStmt = null;
       Map attObjMap = (Map) dataItems.get(0);

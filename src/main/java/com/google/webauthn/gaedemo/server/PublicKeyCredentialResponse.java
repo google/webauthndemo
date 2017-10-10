@@ -16,6 +16,7 @@ package com.google.webauthn.gaedemo.server;
 
 import com.google.gson.Gson;
 
+@SuppressWarnings("unused")
 public class PublicKeyCredentialResponse {
   private boolean success;
   private String message;

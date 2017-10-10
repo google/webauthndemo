@@ -14,12 +14,14 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import co.nstant.in.cbor.CborException;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Ints;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
+
+import co.nstant.in.cbor.CborException;
 
 public class AuthenticatorData {
   private byte[] rpIdHash;
@@ -46,6 +48,15 @@ public class AuthenticatorData {
     attData = new AttestationData();
   }
 
+
+AuthenticatorData(byte[] rpIdHash, byte flags, int signCount) {
+    this.rpIdHash = rpIdHash;
+    this.flags = flags;
+    this.signCount = signCount;
+    this.attData = null;
+  }
+
+
   /**
    * @return the rpIdHash
    */
@@ -58,6 +69,34 @@ public class AuthenticatorData {
    */
   public byte getFlags() {
     return flags;
+  }
+
+  /**
+   * @return the UP bit of the flags
+   */
+  public boolean isUP() {
+    return (flags & 1) != 0;
+  }
+
+  /**
+   * @return the UP bit of the flags
+   */
+  public boolean isUV() {
+    return (flags & 1 << 2) != 0;
+  }
+
+  /**
+   * @return the UP bit of the flags
+   */
+  public boolean hasAttestationData() {
+    return (flags & 1 << 6) != 0;
+  }
+
+  /**
+   * @return the UP bit of the flags
+   */
+  public boolean hasExtensionData() {
+    return (flags & 1 << 7) != 0;
   }
 
   /**
@@ -114,8 +153,13 @@ public class AuthenticatorData {
   public byte[] encode() throws CborException {
     byte[] flags = {this.flags};
     byte[] signCount = ByteBuffer.allocate(4).putInt(this.signCount).array();
-    byte[] attData = this.attData.encode();
-    byte[] result = Bytes.concat(rpIdHash, flags, signCount, attData);
+    byte[] result;
+    if (this.attData != null) {
+      byte[] attData = this.attData.encode();
+      result = Bytes.concat(rpIdHash, flags, signCount, attData);
+    } else {
+      result = Bytes.concat(rpIdHash, flags, signCount);
+    }
     return result;
   }
 

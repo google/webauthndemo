@@ -42,9 +42,9 @@ function fetchCredentials() {
              <div class="mdl-card__title mdl-card--border">' + name + '</div>\
              <div class="mdl-card__supporting-text">Enrolled ' + date +'</div>\
              <div class="mdl-card__subtitle-text">Public Key</div>\
-             <div class="mdl-card__supporting-text"><em>' + publicKey + '</em></div>\
+             <div class="mdl-card__supporting-text">' + publicKey + '</div>\
              <div class="mdl-card__subtitle-text">Key Handle</div>\
-             <div class="mdl-card__supporting-text"><em>' + handle + '</em></div>\
+             <div class="mdl-card__supporting-text">' + handle + '</div>\
              <div class="mdl-card__menu">\
                <button id="' + buttonId + '" \
                  class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">\
@@ -56,17 +56,25 @@ function fetchCredentials() {
         ';
     }
     $("#credentials").html(credentials);
-    for (var i in rsp) {
-      var id = "#delete" + i;
-      $(id).click(function() {
+    deleteCred = [];
+    for(let i = 0; i < rsp.length; ++i){
+      deleteCred[i] = function() {
         console.log(rsp[i].id);
         $.post('/RemoveCredential', {credentialId : rsp[i].id}, null, 'json')
         .done(function(rsp) {
           fetchCredentials();
         });
+      }
+      var id = "#delete" + i;
+      $(id).click(function() {
+        deleteCred[i]();
       });
     }
   });
+}
+
+function getFunction(f) {
+    return function() { return val; };
 }
 
 function assignButtons() {
@@ -75,6 +83,13 @@ function assignButtons() {
   });
   $("#authenticate-button").click(function() {
     getAssertion();
+  });
+  $("#switch-advanced").click(function() {
+    if ($("#switch-advanced").is(":checked")) {
+      $("#advanced").show();
+    } else {
+      $("#advanced").hide();
+    }
   });
 }
 
@@ -108,28 +123,51 @@ function finishAddCredential(publicKeyCredential, sessionId) {
     .done(function(parameters) {
       console.log(parameters);
       if ('success' in parameters && 'message' in parameters) {
-        addErrorMsg(parameters.message);
+        addSuccessMsg(parameters.message);
+        fetchCredentials();
       }
       // TODO Validate response and display success/error message
     });
 }
 
 function addCredential() {
-  $.post('/BeginMakeCredential', {}, null, 'json')
+  removeMsgs();
+  addSpinner();
+  var advancedOptions = {};
+  if ($("#switch-advanced").is(":checked")) {
+    if ($("#switch-rk").is(":checked")) {
+      advancedOptions.rk = $("#switch-rk").is(":checked");
+    }
+    if ($("#switch-uv").is(":checked")) {
+      advancedOptions.uv = $("#switch-uv").is(":checked");
+    }
+    if ($('#attachment').val() != "none") {
+      advancedOptions.attachment = $('#attachment').val();
+    }
+  }
+  $.post('/BeginMakeCredential',
+		  { advanced: $("#switch-advanced").is(":checked"), advancedOptions: JSON.stringify(advancedOptions) },
+		  null, 'json')
   .done(function(options) {
     var makeCredentialOptions = {};
     makeCredentialOptions.rp = options.rp;
     makeCredentialOptions.user = options.user;
     makeCredentialOptions.challenge = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
-    
+
     makeCredentialOptions.parameters = options.parameters;
     if ('timeout' in options) {
-      makeCredentialOptions.timeout = options.timeout; 
+      makeCredentialOptions.timeout = options.timeout;
     }
     if ('excludeList' in options) {
       makeCredentialOptions.excludeList = credentialListConversion(parameters.excludeList);
     }
-    
+    if ('extensions' in options) {
+      makeCredentialOptions.extensions = options.extensions;
+    }
+    if ('authenticatorSelection' in options) {
+      makeCredentialOptions.authenticatorSelection = options.authenticatorSelection;
+    }
+
     var createParams = {};
     createParams.publicKey = makeCredentialOptions;
 
@@ -158,7 +196,7 @@ function addCredential() {
       }
       if ('response' in attestation) {
         var response = {};
-        response.clientDataJSON = attestation.response.clientDataJSON;
+        response.clientDataJSON = new Uint8Array(attestation.response.clientDataJSON);
         response.attestationObject = btoa(
           new Uint8Array(attestation.response.attestationObject)
           .reduce((s, byte) => s + String.fromCharCode(byte), ''));
@@ -180,7 +218,7 @@ function finishAssertion(publicKeyCredential, sessionId) {
     .done(function(parameters) {
       console.log(parameters);
       if ('success' in parameters && 'message' in parameters) {
-        addErrorMsg(parameters.message);
+        addSuccessMsg(parameters.message);
       }
       // TODO Validate response and display success/error message
     });
@@ -203,8 +241,22 @@ function removeErrorMsg() {
   $("#error").hide();
 }
 
-function getAssertion() {
+function addSuccessMsg(msg) {
+  document.getElementById("success-text").innerHTML = msg;
+  $("#success").show();
+}
+
+function removeSuccessMsg() {
+  $("#success").hide();
+}
+
+function removeMsgs() {
   removeErrorMsg();
+  removeSuccessMsg();
+}
+
+function getAssertion() {
+  removeMsgs();
   addSpinner();
   $.post('/BeginGetAssertion', {}, null, 'json')
   .done(function(parameters) {
@@ -219,7 +271,7 @@ function getAssertion() {
     if ('allowList' in parameters) {
       requestOptions.allowList = credentialListConversion(parameters.allowList);
     }
-    
+
     var credentialRequest = {};
     credentialRequest.publicKey = requestOptions;
     console.log(credentialRequest);
@@ -237,7 +289,7 @@ function getAssertion() {
         publicKeyCredential.id = assertion.id;
       }
       if ('type' in assertion) {
-        publicKeyCredential.type = assertion.type;        
+        publicKeyCredential.type = assertion.type;
       }
       if ('rawId' in assertion) {
         publicKeyCredential.rawId = btoa(
@@ -247,7 +299,7 @@ function getAssertion() {
       }
       if ('response' in assertion) {
         var response = {};
-        response.clientDataJSON = assertion.response.clientDataJSON;
+        response.clientDataJSON = new Uint8Array(assertion.response.clientDataJSON);
         response.authenticatorData = btoa(
           new Uint8Array(assertion.response.authenticatorData)
           .reduce((s, byte) => s + String.fromCharCode(byte), ''));
