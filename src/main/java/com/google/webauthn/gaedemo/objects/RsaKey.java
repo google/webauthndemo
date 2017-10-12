@@ -39,6 +39,12 @@ public class RsaKey extends CredentialPublicKey {
     alg = Algorithm.UNDEFINED;
   }
 
+  public RsaKey(Algorithm alg, byte[] n, byte[] e) {
+    this.alg = alg;
+    this.n = n;
+    this.e = e;
+  }
+
   @Override
   public boolean equals(Object obj) {
     try {
@@ -74,5 +80,13 @@ public class RsaKey extends CredentialPublicKey {
     b.append(" e:");
     b.append(DatatypeConverter.printHexBinary(e));
     return b.toString();
+  }
+
+  public byte[] getN() {
+    return n;
+  }
+
+  public byte[] getE() {
+    return e;
   }
 }

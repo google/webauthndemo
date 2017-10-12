@@ -14,100 +14,24 @@
 
 package com.google.webauthn.gaedemo.server;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.nio.ByteBuffer;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Logger;
-
-import javax.servlet.ServletException;
-
-import com.google.common.primitives.Bytes;
 import com.google.gson.Gson;
 import com.google.webauthn.gaedemo.crypto.Crypto;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
-import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
-import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.EccKey;
-import com.google.webauthn.gaedemo.objects.FidoU2fAttestationStatement;
 import com.google.webauthn.gaedemo.objects.PackedAttestationStatement;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.google.webauthn.gaedemo.storage.Credential;
+
+import javax.servlet.ServletException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Logger;
 
 
 public class PackedServer extends Server {
 
   private static final Logger Log = Logger.getLogger(PackedServer.class.getName());
-
-  /**
-   * @param cred
-   * @param currentUser
-   * @param sessionId
-   * @throws ServletException
-   */
-  public static void verifyAssertion(PublicKeyCredential cred, String currentUser, String sessionId,
-      Credential savedCredential) throws ServletException {
-    AuthenticatorAssertionResponse assertionResponse =
-        (AuthenticatorAssertionResponse) cred.getResponse();
-
-    Log.info("-- Verifying signature --");
-    if (!(savedCredential.getCredential()
-        .getResponse() instanceof AuthenticatorAttestationResponse)) {
-      throw new ServletException("Stored attestation missing");
-    }
-    AuthenticatorAttestationResponse storedAttData =
-        (AuthenticatorAttestationResponse) savedCredential.getCredential().getResponse();
-
-    if (!(storedAttData.decodedObject.getAuthenticatorData().getAttData()
-        .getPublicKey() instanceof EccKey)) {
-      throw new ServletException("U2f-capable key not provided");
-    }
-
-    EccKey publicKey =
-        (EccKey) storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
-//    try {
-//      /*
-//       * U2F authentication signatures are signed over the concatenation of
-//       *
-//       * 32 byte application parameter hash
-//       *
-//       * 1 byte user presence
-//       *
-//       * 4 byte big-endian representation of the counter
-//       *
-//       * 32 byte challenge parameter (ie SHA256 hash of clientData)
-//       */
-//      String clientDataJson = assertionResponse.getClientDataString();
-//      byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
-//
-//      byte[] signedBytes = Bytes.concat(
-//          storedAttData.getAttestationObject().getAuthenticatorData().getRpIdHash(),
-//          new byte[] {
-//              (assertionResponse.getAuthenticatorData().isUP() == true ? (byte) 1 : (byte) 0)},
-//          ByteBuffer.allocate(4).putInt(assertionResponse.getAuthenticatorData().getSignCount())
-//              .array(),
-//          clientDataHash);
-//      if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()),
-//          signedBytes, assertionResponse.getSignature())) {
-//        throw new ServletException("Signature invalid");
-//      }
-//    } catch (WebAuthnException e) {
-//      throw new ServletException("Failure while verifying signature");
-//    }
-
-//    if (assertionResponse.getAuthenticatorData().getSignCount() <= savedCredential.getSignCount()) {
-//      throw new ServletException("Sign count invalid");
-//    }
-
-    savedCredential.updateSignCount(assertionResponse.getAuthenticatorData().getSignCount());
-
-    Log.info("Signature verified");
-  }
 
   /**
    * @param cred

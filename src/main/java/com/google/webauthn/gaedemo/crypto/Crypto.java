@@ -19,24 +19,26 @@ package com.google.webauthn.gaedemo.crypto;
 
 import com.google.common.primitives.Bytes;
 import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
-import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.KeyFactory;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.Security;
-import java.security.Signature;
-import java.security.SignatureException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
+import com.google.webauthn.gaedemo.objects.EccKey;
+import com.google.webauthn.gaedemo.objects.RsaKey;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECPoint;
+import org.jose4j.jws.EcdsaUsingShaAlgorithm;
+
+import java.math.BigInteger;
+import java.security.*;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
+import java.security.spec.RSAPublicKeySpec;
 
 public class Crypto {
 
@@ -79,6 +81,20 @@ public class Crypto {
     return verifySignature(attestationCertificate.getPublicKey(), signedBytes, signature);
   }
 
+  public static boolean verifySignature (PublicKey publicKey, byte[] message, byte[] signature, String signatureAlgorithm) throws WebAuthnException {
+    if (signatureAlgorithm == null || signatureAlgorithm.isEmpty()) {
+      throw new WebAuthnException("Signature algorithm is null or empty");
+    }
+    try {
+      Signature sig = Signature.getInstance(signatureAlgorithm);
+      sig.initVerify(publicKey);
+      sig.update(message);
+      return sig.verify(signature);
+    } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+      throw new WebAuthnException("Error when verifying signature", e);
+    }
+  }
+
   public static PublicKey decodePublicKey(byte[] x, byte[] y) throws WebAuthnException {
     try {
       X9ECParameters curve = SECNamedCurves.getByName("secp256r1");
@@ -97,5 +113,42 @@ public class Crypto {
     } catch (NoSuchAlgorithmException e) {
       throw new WebAuthnException("Error when decoding public key", e);
     }
+  }
+
+  public static PublicKey getRSAPublicKey(RsaKey rsaKey) throws WebAuthnException {
+    BigInteger modulus = new BigInteger(rsaKey.getN());
+    BigInteger publicExponent = new BigInteger(rsaKey.getE());
+    try {
+      return getRSAPublicKey(modulus, publicExponent);
+    } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+      throw new WebAuthnException("Error when generate RSA public key", e);
+    }
+  }
+  public static PublicKey getECPublicKey(EccKey eccKey) throws WebAuthnException {
+    BigInteger x = new BigInteger(eccKey.getX());
+    BigInteger y = new BigInteger(eccKey.getY());
+    java.security.spec.ECPoint w = new java.security.spec.ECPoint(x, y);
+    EcdsaUsingShaAlgorithm algorithm = (EcdsaUsingShaAlgorithm) AlgorithmIdentifierMapper.get(eccKey.getAlg());
+    String curveName = algorithm.getCurveName();
+    try {
+      return getECPublicKey(w, curveName);
+    } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+      throw new WebAuthnException("Error when generate EC public key", e);
+    }
+  }
+
+  public static PublicKey getRSAPublicKey(BigInteger n, BigInteger e) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    KeySpec keySpec = new RSAPublicKeySpec(n, e);
+    KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+    return keyFactory.generatePublic(keySpec);
+  }
+
+  public static PublicKey getECPublicKey(java.security.spec.ECPoint w, String stdCurveName) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(stdCurveName);
+    java.security.spec.ECParameterSpec params = new ECNamedCurveSpec(parameterSpec.getName(), parameterSpec.getCurve(),
+            parameterSpec.getG(), parameterSpec.getN(), parameterSpec.getH(), parameterSpec.getSeed());
+    KeySpec keySpec = new java.security.spec.ECPublicKeySpec(w, params);
+    KeyFactory keyFactory = KeyFactory.getInstance("EC");
+    return keyFactory.generatePublic(keySpec);
   }
 }

@@ -39,6 +39,12 @@ public class EccKey extends CredentialPublicKey {
     alg = Algorithm.UNDEFINED;
   }
 
+  public EccKey(Algorithm alg, byte[] x, byte[] y) {
+    this.alg = alg;
+    this.x = x;
+    this.y = y;
+  }
+
   /**
    * @param x
    * @param y
