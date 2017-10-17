@@ -25,6 +25,8 @@ import com.google.webauthn.gaedemo.objects.MakeCredentialOptions;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredentialRequestOptions;
 import com.google.webauthn.gaedemo.server.AndroidSafetyNetServer;
+import com.google.webauthn.gaedemo.server.PackedServer;
+import com.google.webauthn.gaedemo.server.Server;
 import com.google.webauthn.gaedemo.server.U2fServer;
 import com.google.webauthn.gaedemo.storage.Credential;
 import com.google.webauthn.gaedemo.storage.SessionData;
@@ -36,6 +38,7 @@ import org.apache.commons.codec.binary.Hex;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Named;
+import javax.servlet.ServletException;
 
 
 /**
@@ -63,7 +66,8 @@ public class Fido2RequestHandler {
     }
 
     MakeCredentialOptions options = new MakeCredentialOptions(
-        user.getNickname(), Constants.APP_ID, Constants.APP_ID);
+        user.getNickname() /* userName */, user.getEmail() /* userId */,
+        Constants.APP_ID /* rpId */, Constants.APP_ID /* rpName */);
     SessionData session = new SessionData(options.challenge, Constants.APP_ID);
     session.save(user.getEmail());
     JsonObject sessionJson = session.getJsonObject();
@@ -78,7 +82,7 @@ public class Fido2RequestHandler {
   @ApiMethod(name = "processRegistrationResponse")
   public List<String> processRegistrationResponse(
       @Named("responseData") String responseData, User user)
-      throws OAuthRequestException, ResponseException {
+      throws OAuthRequestException, ResponseException, ServletException {
     if (user == null) {
       throw new OAuthRequestException("User is not authenticated");
     }
@@ -100,20 +104,20 @@ public class Fido2RequestHandler {
     PublicKeyCredential cred = new PublicKeyCredential(credentialId, type,
         BaseEncoding.base64Url().decode(credentialId), attestation);
 
-    try {
-      switch (cred.getAttestationType()) {
-        case FIDOU2F:
-          U2fServer.registerCredential(cred, user.getEmail(), session, Constants.APP_ID);
-          break;
-        case ANDROIDSAFETYNET:
-          AndroidSafetyNetServer.registerCredential(
-              cred, user.getEmail(), session, Constants.APP_ID);
-          break;
-        default:
-          // This should never happen.
-      }
-    } catch (ServletException e) {
-      // TODO
+    switch (cred.getAttestationType()) {
+      case FIDOU2F:
+        U2fServer.registerCredential(cred, user.getEmail(),
+            session, Constants.APP_ID, Constants.APP_ID);
+        break;
+      case ANDROIDSAFETYNET:
+        AndroidSafetyNetServer.registerCredential(
+            cred, user.getEmail(), session, Constants.APP_ID);
+        break;
+      case PACKED:
+        PackedServer.registerCredential(cred, user.getEmail(), session, Constants.APP_ID);
+        break;
+      default:
+        // This should never happen.
     }
 
     Credential credential = new Credential(cred);
@@ -148,7 +152,7 @@ public class Fido2RequestHandler {
   @ApiMethod(name = "processSignResponse")
   public List<String> processSignResponse(
       @Named("responseData") String responseData, User user)
-      throws OAuthRequestException, ResponseException {
+      throws OAuthRequestException, ResponseException, ServletException {
     if (user == null) {
       throw new OAuthRequestException("User is not authenticated");
     }
@@ -163,7 +167,6 @@ public class Fido2RequestHandler {
 
     AuthenticatorAssertionResponse assertion =
         new AuthenticatorAssertionResponse(clientDataJSON, authenticatorData, signature);
-
     // TODO
     String type = null;
     String session = null;
@@ -171,17 +174,27 @@ public class Fido2RequestHandler {
     PublicKeyCredential cred = new PublicKeyCredential(credentialId, type,
         BaseEncoding.base64Url().decode(credentialId), assertion);
 
+    Credential savedCredential;
     try {
-      U2fServer.verifyAssertion(cred, user.getEmail(), session);
-    } catch (ServletException e) {
-      // TODO
+      savedCredential = Server.validateAndFindCredential(cred, user.getEmail(), session);
+    } catch (ResponseException e) {
+      throw new ServletException("Unable to validate assertion", e);
     }
 
-    Credential credential = new Credential(cred);
-    credential.save(user.getEmail());
+    switch (savedCredential.getCredential().getAttestationType()) {
+      case FIDOU2F:
+        U2fServer.verifyAssertion(cred, user.getEmail(), session, savedCredential);
+        break;
+      case ANDROIDSAFETYNET:
+        AndroidSafetyNetServer.verifyAssertion(cred, user.getEmail(), session, savedCredential);
+        break;
+      case PACKED:
+        PackedServer.verifyAssertion(cred, user.getEmail(), session, savedCredential);
+        break;
+    }
 
     List<String> resultList = new ArrayList<String>();
-    resultList.add(credential.toJson());
+    resultList.add(savedCredential.toJson());
     return resultList;
   }
 
@@ -196,7 +209,7 @@ public class Fido2RequestHandler {
 
     for (Credential c : savedCreds) {
       JsonObject cJson = new JsonObject();
-      cJson.addProperty("handle", BaseEncoding.base64().encode(c.getCredential().rawId));
+      cJson.addProperty("handle", BaseEncoding.base64Url().encode(c.getCredential().rawId));
       EccKey ecc = (EccKey) ((AuthenticatorAttestationResponse) c.getCredential().getResponse())
           .getAttestationObject().getAuthenticatorData().getAttData().getPublicKey();
       // TODO
