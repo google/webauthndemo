@@ -18,5 +18,5 @@ public class Constants {
       "294011350698-79m03dcrj4dqom8fpe04j7rla2c7u285.apps.googleusercontent.com";
   public static final String ANDROID_AUDIENCE = WEB_CLIENT_ID;
 
-  public static final String APP_ID = "https://webauthdemo.appspot.com";
+  public static final String APP_ID = "webauthndemo-176619.appspot.com";
 }
