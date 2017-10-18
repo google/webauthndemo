@@ -44,7 +44,7 @@ public class BeginGetAssertion extends HttpServlet {
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    String currentUser = userService.getCurrentUser().getUserId();
+    String currentUser = userService.getCurrentUser().getEmail();
     String rpId = request.getHeader("Host").split(":")[0];
     //String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
     PublicKeyCredentialRequestOptions assertion = new PublicKeyCredentialRequestOptions(rpId);
