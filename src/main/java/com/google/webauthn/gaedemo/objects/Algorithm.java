@@ -30,7 +30,6 @@ public enum Algorithm {
     this.name = name;
   }
 
-
   /**
    * @param alg The Algorithm to check
    * @return If the Algorithm is an ECC Algorithm
@@ -58,11 +57,65 @@ public enum Algorithm {
         return t;
       }
     }
-    // Support new ES256 algorithm identifier
+    // COSE Algorithm Identifiers
     if (s.equals("-7")) {
       return ES256;
     }
+
     throw new IllegalArgumentException(s + " not a valid Algorithm");
+  }
+
+  /**
+   * @param alg Input integer to decode
+   * @return Transport corresponding to the input string
+   */
+  public static Algorithm decode(int alg) {
+    switch (alg) {
+      case -7:
+        return ES256;
+      case -35:
+        return ES384;
+      case -36:
+        return ES512;
+      case -37:
+        return PS256;
+      case -38:
+        return PS384;
+      case -39:
+        return PS512;
+      case -40:
+        return RS256;
+      case -41:
+        return RS384;
+      case -42:
+        return RS512;
+
+    }
+    throw new IllegalArgumentException(alg + " not a valid Algorithm");
+  }
+
+  public int encodeToInt() {
+    switch (this) {
+      case ES256:
+        return -7;
+      case ES384:
+        return -35;
+      case ES512:
+        return -36;
+      case PS256:
+        return -37;
+      case PS384:
+        return -38;
+      case PS512:
+        return -39;
+      case RS256:
+        return -40;
+      case RS384:
+        return -41;
+      case RS512:
+        return -42;
+    }
+    return 0;
   }
 
   @Override
