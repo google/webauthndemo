@@ -61,9 +61,6 @@ public class RsaKeyTest {
       CredentialPublicKey decodedCpk = CredentialPublicKey.decode(rsaKey.encode());
       assertTrue(decodedCpk instanceof RsaKey);
       assertEquals(decodedCpk, rsaKey);
-      rsaKey.alg = Algorithm.ES256;
-      decodedCpk = CredentialPublicKey.decode(rsaKey.encode());
-      assertTrue(!(decodedCpk instanceof RsaKey));
     } catch (CborException e) {
       fail("CborException: " + e.getMessage());
     }
