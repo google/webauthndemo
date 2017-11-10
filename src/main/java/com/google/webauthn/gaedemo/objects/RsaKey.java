@@ -14,20 +14,18 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.xml.bind.DatatypeConverter;
-
-import com.googlecode.objectify.annotation.Subclass;
-
 import co.nstant.in.cbor.CborBuilder;
 import co.nstant.in.cbor.CborEncoder;
 import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.ByteString;
 import co.nstant.in.cbor.model.DataItem;
-import co.nstant.in.cbor.model.UnicodeString;
+import co.nstant.in.cbor.model.NegativeInteger;
+import co.nstant.in.cbor.model.UnsignedInteger;
+import com.googlecode.objectify.annotation.Subclass;
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
+import java.util.List;
+import javax.xml.bind.DatatypeConverter;
 
 @Subclass
 public class RsaKey extends CredentialPublicKey {
@@ -57,9 +55,10 @@ public class RsaKey extends CredentialPublicKey {
   public byte[] encode() throws CborException {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     List<DataItem> dataItems =
-        new CborBuilder().addMap().put(new UnicodeString("alg"), new UnicodeString(alg.toString()))
-            .put(new UnicodeString("n"), new ByteString(n))
-            .put(new UnicodeString("e"), new ByteString(e)).end().build();
+        new CborBuilder().addMap().put(new UnsignedInteger(KTY_LABEL), new UnsignedInteger(kty))
+            .put(new UnsignedInteger(ALG_LABEL), new NegativeInteger(alg.encodeToInt()))
+            .put(new NegativeInteger(N_LABEL), new ByteString(n))
+            .put(new NegativeInteger(E_LABEL), new ByteString(e)).end().build();
     new CborEncoder(output).encode(dataItems);
     return output.toByteArray();
   }
