@@ -19,6 +19,14 @@
 
   <security-constraint>
     <web-resource-collection>
+      <web-resource-name>assetlinks</web-resource-name>
+      <url-pattern>/.well-known/*</url-pattern>
+    </web-resource-collection>
+    <!-- OMIT auth-constraint -->
+  </security-constraint>
+
+  <security-constraint>
+    <web-resource-collection>
       <url-pattern>/_ah/api/*</url-pattern>
     </web-resource-collection>
     <user-data-constraint>
@@ -159,5 +167,13 @@
   <servlet-mapping>
     <servlet-name>EndpointsServlet</servlet-name>
     <url-pattern>/_ah/api/*</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>AssetLinks</servlet-name>
+    <servlet-class>com.google.webauthn.gaedemo.servlets.AssetLinksHttpServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AssetLinks</servlet-name>
+    <url-pattern>/.well-known/assetlinks.json</url-pattern>
   </servlet-mapping>
 </web-app>
