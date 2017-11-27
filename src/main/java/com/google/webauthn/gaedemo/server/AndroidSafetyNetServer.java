@@ -14,9 +14,13 @@
 
 package com.google.webauthn.gaedemo.server;
 
-import co.nstant.in.cbor.CborException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Logger;
+
+import javax.servlet.ServletException;
+
 import com.google.common.primitives.Bytes;
-import com.google.gson.Gson;
 import com.google.webauthn.gaedemo.crypto.Crypto;
 import com.google.webauthn.gaedemo.crypto.OfflineVerify;
 import com.google.webauthn.gaedemo.crypto.OfflineVerify.AttestationStatement;
@@ -28,10 +32,8 @@ import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.EccKey;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.google.webauthn.gaedemo.storage.Credential;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Logger;
-import javax.servlet.ServletException;
+
+import co.nstant.in.cbor.CborException;
 
 public class AndroidSafetyNetServer extends Server {
   private static final Logger Log = Logger.getLogger(AndroidSafetyNetServer.class.getName());
@@ -79,13 +81,11 @@ public class AndroidSafetyNetServer extends Server {
       throw new ServletException("Failed to verify attestation statement");
     }
 
-    String clientDataJson = attResponse.getClientDataString();
-    byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
+    byte[] clientDataHash = Crypto.sha256Digest(attResponse.getClientDataBytes());
 
     try {
-      byte[] expectedNonce =
-          Bytes.concat(attResponse.getAttestationObject().getAuthenticatorData().encode(),
-              clientDataHash);
+      byte[] expectedNonce = Bytes.concat(
+          attResponse.getAttestationObject().getAuthenticatorData().encode(), clientDataHash);
       if (!Arrays.equals(expectedNonce, stmt.getNonce())) {
         throw new ServletException("Nonce does not match");
       }
@@ -94,10 +94,9 @@ public class AndroidSafetyNetServer extends Server {
     }
 
     /*
-    // Test devices won't pass this.
-    if (!stmt.isCtsProfileMatch()) {
-      throw new ServletException("No cts profile match");
-    }*/
+     * // Test devices won't pass this. if (!stmt.isCtsProfileMatch()) { throw new
+     * ServletException("No cts profile match"); }
+     */
   }
 
   /**
@@ -128,9 +127,7 @@ public class AndroidSafetyNetServer extends Server {
     EccKey publicKey =
         (EccKey) storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
     try {
-
-      String clientDataJson = assertionResponse.getClientDataString();
-      byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
+      byte[] clientDataHash = Crypto.sha256Digest(assertionResponse.getClientDataBytes());
       byte[] signedBytes =
           Bytes.concat(assertionResponse.getAuthenticatorData().encode(), clientDataHash);
       if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()),
