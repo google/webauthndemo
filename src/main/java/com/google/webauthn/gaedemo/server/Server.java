@@ -52,7 +52,8 @@ public abstract class Server {
     // Session.getChallenge is a base64-encoded string
     byte[] sessionChallenge = BaseEncoding.base64().decode(session.getChallenge());
     // assertionResponse.getClientData().getChallenge() is a base64url-encoded string
-    byte[] clientSessionChallenge = BaseEncoding.base64Url().decode(assertionResponse.getClientData().getChallenge());
+    byte[] clientSessionChallenge =
+        BaseEncoding.base64Url().decode(assertionResponse.getClientData().getChallenge());
     if (!Arrays.equals(sessionChallenge, clientSessionChallenge)) {
       throw new ResponseException("Returned challenge incorrect");
     }

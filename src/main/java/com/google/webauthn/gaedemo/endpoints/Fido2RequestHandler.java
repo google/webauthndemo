@@ -16,15 +16,10 @@ import javax.inject.Named;
  * access to data from other applications.
  * https://cloud.google.com/endpoints/docs/frameworks/java/get-started-frameworks-java
  */
-@Api(
-  name = "fido2RequestHandler",
-  version = "v1",
-  scopes = {Constants.EMAIL_SCOPE, Constants.OPENID_SCOPE},
-  clientIds = {Constants.WEB_CLIENT_ID, Constants.ANDROID_CLIENT_ID},
-  audiences = {Constants.ANDROID_AUDIENCE},
-  namespace =
-      @ApiNamespace(ownerName = "www.google.com", ownerDomain = "www.google.com")
-)
+@Api(name = "fido2RequestHandler", version = "v1", scopes = {Constants.EMAIL_SCOPE,
+    Constants.OPENID_SCOPE}, clientIds = {Constants.WEB_CLIENT_ID,
+        Constants.ANDROID_CLIENT_ID}, audiences = {
+            Constants.ANDROID_AUDIENCE}, namespace = @ApiNamespace(ownerName = "www.google.com", ownerDomain = "www.google.com"))
 public class Fido2RequestHandler {
 
   @ApiMethod(name = "getRegistrationRequest")
@@ -37,8 +32,8 @@ public class Fido2RequestHandler {
   }
 
   @ApiMethod(name = "processRegistrationResponse")
-  public List<String> processRegistrationResponse(
-      @Named("responseData") String responseData, User user) throws OAuthRequestException {
+  public List<String> processRegistrationResponse(@Named("responseData") String responseData,
+      User user) throws OAuthRequestException {
     if (user == null) {
       throw new OAuthRequestException("User is not authenticated");
     }
@@ -56,8 +51,8 @@ public class Fido2RequestHandler {
   }
 
   @ApiMethod(name = "processSignResponse")
-  public List<String> processSignResponse(
-      @Named("responseData") String responseData, User user) throws OAuthRequestException {
+  public List<String> processSignResponse(@Named("responseData") String responseData, User user)
+      throws OAuthRequestException {
     if (user == null) {
       throw new OAuthRequestException("User is not authenticated");
     }
