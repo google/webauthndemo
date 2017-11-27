@@ -1,17 +1,15 @@
 /*
  * Copyright 2017 Google Inc. All Rights Reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 
@@ -34,7 +32,7 @@ public class AndroidSafetyNetAttestationStatementTest {
    * {@link com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement#encode()} and
    * {@link com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement#decode(co.nstant.in.cbor.model.DataItem)}.
    */
-  //@Test
+  // @Test
   public void testEncode() {
     SecureRandom random = new SecureRandom();
     AndroidSafetyNetAttestationStatement attStmt = new AndroidSafetyNetAttestationStatement();
@@ -56,7 +54,7 @@ public class AndroidSafetyNetAttestationStatementTest {
    * Test method for
    * {@link com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement#equals(java.lang.Object)}.
    */
-  //@Test
+  // @Test
   public void testEqualsObject() {
     AndroidSafetyNetAttestationStatement a = new AndroidSafetyNetAttestationStatement();
     AndroidSafetyNetAttestationStatement b = new AndroidSafetyNetAttestationStatement();

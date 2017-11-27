@@ -49,7 +49,7 @@ public class AuthenticatorData {
   }
 
 
-AuthenticatorData(byte[] rpIdHash, byte flags, int signCount) {
+  AuthenticatorData(byte[] rpIdHash, byte flags, int signCount) {
     this.rpIdHash = rpIdHash;
     this.flags = flags;
     this.signCount = signCount;
