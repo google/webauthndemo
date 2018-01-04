@@ -1,17 +1,15 @@
 /*
  * Copyright 2017 Google Inc. All Rights Reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 
@@ -74,8 +72,8 @@ public class Crypto {
   }
 
   // TODO add test for this.
-  public static boolean verifySignature(X509Certificate attestationCertificate, byte[] signedBytes, byte[] signature)
-      throws WebAuthnException {
+  public static boolean verifySignature(X509Certificate attestationCertificate, byte[] signedBytes,
+      byte[] signature) throws WebAuthnException {
     return verifySignature(attestationCertificate.getPublicKey(), signedBytes, signature);
   }
 
@@ -84,7 +82,7 @@ public class Crypto {
       X9ECParameters curve = SECNamedCurves.getByName("secp256r1");
       ECPoint point;
       try {
-        byte[] encodedPublicKey = Bytes.concat(new byte[]{0x04}, x, y);
+        byte[] encodedPublicKey = Bytes.concat(new byte[] {0x04}, x, y);
         point = curve.getCurve().decodePoint(encodedPublicKey);
       } catch (RuntimeException e) {
         throw new WebAuthnException("Couldn't parse user public key", e);

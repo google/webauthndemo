@@ -27,7 +27,6 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 
 import com.google.common.primitives.Bytes;
-import com.google.gson.Gson;
 import com.google.webauthn.gaedemo.crypto.Crypto;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
@@ -50,20 +49,24 @@ public class U2fServer extends Server {
    */
   public static void verifyAssertion(PublicKeyCredential cred, String currentUser, String sessionId,
       Credential savedCredential) throws ServletException {
-    AuthenticatorAssertionResponse assertionResponse = (AuthenticatorAssertionResponse) cred.getResponse();
+    AuthenticatorAssertionResponse assertionResponse =
+        (AuthenticatorAssertionResponse) cred.getResponse();
 
     Log.info("-- Verifying signature --");
-    if (!(savedCredential.getCredential().getResponse() instanceof AuthenticatorAttestationResponse)) {
+    if (!(savedCredential.getCredential()
+        .getResponse() instanceof AuthenticatorAttestationResponse)) {
       throw new ServletException("Stored attestation missing");
     }
-    AuthenticatorAttestationResponse storedAttData = (AuthenticatorAttestationResponse) savedCredential.getCredential()
-        .getResponse();
+    AuthenticatorAttestationResponse storedAttData =
+        (AuthenticatorAttestationResponse) savedCredential.getCredential().getResponse();
 
-    if (!(storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey() instanceof EccKey)) {
+    if (!(storedAttData.decodedObject.getAuthenticatorData().getAttData()
+        .getPublicKey() instanceof EccKey)) {
       throw new ServletException("U2f-capable key not provided");
     }
 
-    EccKey publicKey = (EccKey) storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
+    EccKey publicKey =
+        (EccKey) storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
     try {
       /*
        * U2F authentication signatures are signed over the concatenation of
@@ -76,15 +79,17 @@ public class U2fServer extends Server {
        *
        * 32 byte challenge parameter (ie SHA256 hash of clientData)
        */
-      String clientDataJson = assertionResponse.getClientDataString();
-      byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
+      byte[] clientDataHash = Crypto.sha256Digest(assertionResponse.getClientDataBytes());
 
-      byte[] signedBytes = Bytes.concat(storedAttData.getAttestationObject().getAuthenticatorData().getRpIdHash(),
-          new byte[] { (assertionResponse.getAuthenticatorData().isUP() == true ? (byte) 1 : (byte) 0) },
-          ByteBuffer.allocate(4).putInt(assertionResponse.getAuthenticatorData().getSignCount()).array(),
-          clientDataHash);
-      if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()), signedBytes,
-          assertionResponse.getSignature())) {
+      byte[] signedBytes =
+          Bytes.concat(storedAttData.getAttestationObject().getAuthenticatorData().getRpIdHash(),
+              new byte[] {
+                  (assertionResponse.getAuthenticatorData().isUP() == true ? (byte) 1 : (byte) 0)},
+              ByteBuffer.allocate(4).putInt(assertionResponse.getAuthenticatorData().getSignCount())
+                  .array(),
+              clientDataHash);
+      if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()),
+          signedBytes, assertionResponse.getSignature())) {
         throw new ServletException("Signature invalid");
       }
     } catch (WebAuthnException e) {
@@ -107,14 +112,15 @@ public class U2fServer extends Server {
    * @param originString
    * @throws ServletException
    */
-  public static void registerCredential(PublicKeyCredential cred, String currentUser, String session,
-      String originString, String rpId) throws ServletException {
+  public static void registerCredential(PublicKeyCredential cred, String currentUser,
+      String session, String originString, String rpId) throws ServletException {
 
     if (!(cred.getResponse() instanceof AuthenticatorAttestationResponse)) {
       throw new ServletException("Invalid response structure");
     }
 
-    AuthenticatorAttestationResponse attResponse = (AuthenticatorAttestationResponse) cred.getResponse();
+    AuthenticatorAttestationResponse attResponse =
+        (AuthenticatorAttestationResponse) cred.getResponse();
 
     List<Credential> savedCreds = Credential.load(currentUser);
     for (Credential c : savedCreds) {
@@ -129,23 +135,24 @@ public class U2fServer extends Server {
       throw new ServletException("Unable to verify session and challenge data", e1);
     }
 
-    String clientDataJson = attResponse.getClientDataString();
-    System.out.println(clientDataJson);
-    byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
+    byte[] clientDataHash = Crypto.sha256Digest(attResponse.getClientDataBytes());
 
     byte[] rpIdHash = Crypto.sha256Digest(rpId.getBytes());
-    if (!Arrays.equals(attResponse.getAttestationObject().getAuthenticatorData().getRpIdHash(), rpIdHash)) {
+    if (!Arrays.equals(attResponse.getAttestationObject().getAuthenticatorData().getRpIdHash(),
+        rpIdHash)) {
       throw new ServletException("RPID hash incorrect");
     }
 
-    if (!(attResponse.decodedObject.getAuthenticatorData().getAttData().getPublicKey() instanceof EccKey)) {
+    if (!(attResponse.decodedObject.getAuthenticatorData().getAttData()
+        .getPublicKey() instanceof EccKey)) {
       throw new ServletException("U2f-capable key not provided");
     }
 
-    FidoU2fAttestationStatement attStmt = (FidoU2fAttestationStatement) attResponse.decodedObject
-        .getAttestationStatement();
+    FidoU2fAttestationStatement attStmt =
+        (FidoU2fAttestationStatement) attResponse.decodedObject.getAttestationStatement();
 
-    EccKey publicKey = (EccKey) attResponse.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
+    EccKey publicKey =
+        (EccKey) attResponse.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
 
     try {
       /*
@@ -161,14 +168,15 @@ public class U2fServer extends Server {
        *
        * 65 byte user public key represented as {0x4, X, Y}
        */
-      byte[] signedBytes = Bytes.concat(new byte[] { 0 }, rpIdHash, clientDataHash, cred.rawId, new byte[] { 0x04 },
-          publicKey.getX(), publicKey.getY());
+      byte[] signedBytes = Bytes.concat(new byte[] {0}, rpIdHash, clientDataHash, cred.rawId,
+          new byte[] {0x04}, publicKey.getX(), publicKey.getY());
 
       // TODO Make attStmt.attestnCert an X509Certificate right off the
       // bat.
-      DataInputStream inputStream = new DataInputStream(new ByteArrayInputStream(attStmt.attestnCert));
-      X509Certificate attestationCertificate = (X509Certificate) CertificateFactory.getInstance("X.509")
-          .generateCertificate(inputStream);
+      DataInputStream inputStream =
+          new DataInputStream(new ByteArrayInputStream(attStmt.attestnCert));
+      X509Certificate attestationCertificate = (X509Certificate) CertificateFactory
+          .getInstance("X.509").generateCertificate(inputStream);
       if (!Crypto.verifySignature(attestationCertificate, signedBytes, attStmt.sig)) {
         throw new ServletException("Signature invalid");
       }

@@ -40,11 +40,11 @@ public class FinishMakeCredential extends HttpServlet {
   private static final long serialVersionUID = 1L;
   private final UserService userService = UserServiceFactory.getUserService();
 
-  public FinishMakeCredential() {
-  }
+  public FinishMakeCredential() {}
 
   @Override
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     doPost(request, response);
   }
 
@@ -95,21 +95,22 @@ public class FinishMakeCredential extends HttpServlet {
     String domain = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
     String rpId = request.getHeader("Host").split(":")[0];
     switch (cred.getAttestationType()) {
-    case FIDOU2F:
-      U2fServer.registerCredential(cred, currentUser, session, domain, rpId);
-      break;
-    case ANDROIDSAFETYNET:
-      AndroidSafetyNetServer.registerCredential(cred, currentUser, session, rpId);
-      break;
-    case PACKED:
-      PackedServer.registerCredential(cred, currentUser, session, rpId);
-      break;
+      case FIDOU2F:
+        U2fServer.registerCredential(cred, currentUser, session, domain, rpId);
+        break;
+      case ANDROIDSAFETYNET:
+        AndroidSafetyNetServer.registerCredential(cred, currentUser, session, rpId);
+        break;
+      case PACKED:
+        PackedServer.registerCredential(cred, currentUser, session, rpId);
+        break;
     }
 
     Credential credential = new Credential(cred);
     credential.save(currentUser);
 
-    PublicKeyCredentialResponse rsp = new PublicKeyCredentialResponse(true, "Successfully created credential");
+    PublicKeyCredentialResponse rsp =
+        new PublicKeyCredentialResponse(true, "Successfully created credential");
 
     response.setContentType("application/json");
     response.getWriter().println(rsp.toJson());
