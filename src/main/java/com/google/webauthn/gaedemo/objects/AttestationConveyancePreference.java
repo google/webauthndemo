@@ -1,4 +1,4 @@
-// Copyright 2017 Google Inc.
+// Copyright 2018 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.webauthn.gaedemo.storage;
+package com.google.webauthn.gaedemo.objects;
 
-import com.google.webauthn.gaedemo.objects.PublicKeyCredentialType;
-import com.google.webauthn.gaedemo.objects.Transport;
-import java.io.Serializable;
-import java.util.*;
+public enum AttestationConveyancePreference {
+  NONE("none"), INDIRECT("indirect"), DIRECT("direct");
 
-public class CredentialObject implements Serializable {
-  private static final long serialVersionUID = 1L;
-  PublicKeyCredentialType type;
-  byte[] handle;
-  ArrayList<Transport> transports;
+  private final String val;
+
+  AttestationConveyancePreference(String s) {
+    this.val = s;
+  }
+
+  @Override
+  public String toString() {
+    return this.val;
+  }
 }
