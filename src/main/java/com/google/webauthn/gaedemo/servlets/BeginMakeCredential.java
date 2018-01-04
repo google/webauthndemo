@@ -26,7 +26,7 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.JsonObject;
 import com.google.webauthn.gaedemo.objects.AuthenticatorSelectionCriteria;
-import com.google.webauthn.gaedemo.objects.MakeCredentialOptions;
+import com.google.webauthn.gaedemo.objects.MakePublicKeyCredentialOptions;
 import com.google.webauthn.gaedemo.storage.SessionData;
 
 public class BeginMakeCredential extends HttpServlet {
@@ -51,8 +51,8 @@ public class BeginMakeCredential extends HttpServlet {
     String rpName = getServletContext().getInitParameter("name");
     rpName = (rpName == null ? "" : rpName);
 
-    MakeCredentialOptions options =
-        new MakeCredentialOptions(user.getNickname(), user.getUserId(), rpId, rpName);
+    MakePublicKeyCredentialOptions options =
+        new MakePublicKeyCredentialOptions(user.getNickname(), user.getUserId(), rpId, rpName);
 
     String hasAdvanced = request.getParameter("advanced");
     if (hasAdvanced.equals("true")) {

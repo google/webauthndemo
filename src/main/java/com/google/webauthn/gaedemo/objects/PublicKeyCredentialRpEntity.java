@@ -1,4 +1,4 @@
-// Copyright 2017 Google Inc.
+// Copyright 2018 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,22 +17,22 @@ package com.google.webauthn.gaedemo.objects;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-public class PublicKeyCredentialEntity {
-  protected String name;
-  protected String icon;
+public class PublicKeyCredentialRpEntity extends PublicKeyCredentialEntity {
+  protected String id;
 
   /**
+   * @param id
    * @param name
    * @param icon
    */
-  PublicKeyCredentialEntity(String name, String icon) {
-    this.name = name;
-    this.icon = icon;
+  PublicKeyCredentialRpEntity(String id, String name, String icon) {
+    super(name, icon);
+    this.id = id;
   }
 
-  PublicKeyCredentialEntity() {
-    this.name = null;
-    this.icon = null;
+  PublicKeyCredentialRpEntity() {
+    super(null, null);
+    this.id = null;
   }
 
   /**
