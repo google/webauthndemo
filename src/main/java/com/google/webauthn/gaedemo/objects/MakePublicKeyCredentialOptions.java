@@ -123,7 +123,7 @@ public class MakePublicKeyCredentialOptions {
       result.addProperty("attestation", this.attestation.toString());
     }
     if (extensions != null) {
-      result.add("extensions", extensions.getJsonObject());
+      // TODO
     }
 
     return result;

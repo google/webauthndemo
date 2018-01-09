@@ -25,7 +25,7 @@ import org.junit.Test;
 
 public class EccKeyTest {
 
-  // @Test
+  @Test
   public void testEquals() {
     EccKey one = new EccKey();
     EccKey two = new EccKey();
@@ -52,7 +52,7 @@ public class EccKeyTest {
     assertNotEquals(four, three);
   }
 
-  // @Test
+  //@Test
   public void testEncode() {
     EccKey testKey = new EccKey();
     testKey.alg = Algorithm.ES256;

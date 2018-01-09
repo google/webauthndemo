@@ -136,13 +136,16 @@ function addCredential() {
   var advancedOptions = {};
   if ($("#switch-advanced").is(":checked")) {
     if ($("#switch-rk").is(":checked")) {
-      advancedOptions.rk = $("#switch-rk").is(":checked");
+      advancedOptions.requireResidentKey = $("#switch-rk").is(":checked");
     }
     if ($("#switch-uv").is(":checked")) {
-      advancedOptions.uv = $("#switch-uv").is(":checked");
+      advancedOptions.userVerification = $("#switch-uv").is(":checked");
     }
     if ($('#attachment').val() != "none") {
-      advancedOptions.attachment = $('#attachment').val();
+      advancedOptions.authenticatorAttachment = $('#attachment').val();
+    }
+    if ($('conveyance').val() != "NA") {
+      advancedOptions.attestationConveyancePreference = $('#conveyance').val();
     }
   }
   $.post('/BeginMakeCredential',
@@ -215,7 +218,7 @@ function addCredential() {
         // Send new credential back to Relying Party for validation and storage
         finishAddCredential(publicKeyCredential, options.session.id);
       } else {
-    	  addErrorMsg("Attestation response lacking 'response' attribute");
+    	  addErrorMsg("Make Credential response lacking 'response' attribute");
       }
     }).catch(function (err) {
       removeSpinner();

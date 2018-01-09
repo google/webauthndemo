@@ -14,29 +14,33 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import com.google.gson.JsonObject;
+public enum AuthenticatorTransport {
+  USB("usb"), NFC("nfc"), BLE("ble");
 
-public class PublicKeyCredentialParameters {
-  private PublicKeyCredentialType type;
-  private Algorithm algorithm;
+  private String name;
 
   /**
-   * @param type
-   * @param algorithm
+   * @param name
    */
-  public PublicKeyCredentialParameters(PublicKeyCredentialType type, Algorithm algorithm) {
-    this.type = type;
-    this.algorithm = algorithm;
+  private AuthenticatorTransport(String name) {
+    this.name = name;
   }
 
   /**
-   * @return JsonObject representation of PublicKeyCredentialParameters
+   * @param s
+   * @return Transport corresponding to the input string
    */
-  public JsonObject getJsonObject() {
-    JsonObject result = new JsonObject();
-    result.addProperty("type", type.toString());
-    result.addProperty("alg", algorithm.toString());
+  public static AuthenticatorTransport decode(String s) {
+    for (AuthenticatorTransport t : AuthenticatorTransport.values()) {
+      if (t.name.equals(s)) {
+        return t;
+      }
+    }
+    throw new IllegalArgumentException(s + " not a valid Transport");
+  }
 
-    return result;
+  @Override
+  public String toString() {
+    return name;
   }
 }

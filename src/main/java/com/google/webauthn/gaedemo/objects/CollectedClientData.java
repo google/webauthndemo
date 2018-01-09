@@ -20,17 +20,16 @@ import com.google.webauthn.gaedemo.crypto.Crypto;
 import java.security.NoSuchAlgorithmException;
 
 public class CollectedClientData {
+  String type;
   String challenge;
   String origin;
-  String hashAlg;
-  String tokenBinding;
+  String hashAlgorithm;
+  String tokenBindingId;
+  AuthenticationExtensions clientExtensions;
+  AuthenticationExtensions authenticatorExtensions;
 
-  CollectedClientData() {
-    challenge = null;
-    origin = null;
-    hashAlg = null;
-    tokenBinding = null;
-  }
+
+  CollectedClientData() {}
 
   /**
    * @param json
@@ -56,7 +55,7 @@ public class CollectedClientData {
   public byte[] getHash() {
     String json = encode();
     try {
-      return Crypto.digest(json.getBytes(), hashAlg);
+      return Crypto.digest(json.getBytes(), hashAlgorithm);
     } catch (NoSuchAlgorithmException e) {
       return Crypto.sha256Digest(json.getBytes());
     }
@@ -80,14 +79,26 @@ public class CollectedClientData {
    * @return the hashAlg
    */
   public String getHashAlg() {
-    return hashAlg;
+    return hashAlgorithm;
   }
 
   /**
    * @return the tokenBinding
    */
   public String getTokenBinding() {
-    return tokenBinding;
+    return tokenBindingId;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public AuthenticationExtensions getClientExtensions() {
+    return clientExtensions;
+  }
+
+  public AuthenticationExtensions getAuthenticatorExtensions() {
+    return authenticatorExtensions;
   }
 
   @Override
@@ -95,21 +106,27 @@ public class CollectedClientData {
     try {
       if (obj instanceof CollectedClientData) {
         CollectedClientData other = (CollectedClientData) obj;
-        if ((getChallenge() == null && other.challenge == null)
-            || getChallenge().equals(other.challenge)) {
-          if ((getOrigin() == null && other.origin == null) || getOrigin().equals(other.origin)) {
-            if ((getHashAlg() == null && other.hashAlg == null)
-                || getHashAlg().equals(other.hashAlg)) {
-              if ((getTokenBinding() == null && other.tokenBinding == null)
-                  || (getTokenBinding().equals(other.tokenBinding))) {
-                return true;
+        if ((getChallenge() == other.challenge) || getChallenge().equals(other.challenge)) {
+          if ((getOrigin() == other.origin) || getOrigin().equals(other.origin)) {
+            if ((getHashAlg() == other.hashAlgorithm) || getHashAlg().equals(other.hashAlgorithm)) {
+              if ((getTokenBinding() == other.tokenBindingId)
+                  || (getTokenBinding().equals(other.tokenBindingId))) {
+                if ((getType() == other.type) || (getType().equals(other.type))) {
+                  if ((getClientExtensions() == other.clientExtensions)
+                      || (getClientExtensions().equals(other.clientExtensions))) {
+                    if ((getAuthenticatorExtensions() == other.authenticatorExtensions)
+                        || (getAuthenticatorExtensions().equals(other.authenticatorExtensions))) {
+                      return true;
+                    }
+                  }
+                }
               }
             }
           }
         }
       }
     } catch (NullPointerException e) {
-      return false;
+      // Fall out
     }
     return false;
   }

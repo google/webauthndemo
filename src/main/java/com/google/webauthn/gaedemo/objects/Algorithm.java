@@ -89,9 +89,8 @@ public enum Algorithm {
         return RS384;
       case -42:
         return RS512;
-
     }
-    throw new IllegalArgumentException(alg + " not a valid Algorithm");
+    return Algorithm.UNDEFINED;
   }
 
   public int encodeToInt() {
@@ -114,8 +113,9 @@ public enum Algorithm {
         return -41;
       case RS512:
         return -42;
+      default:
     }
-    return 0;
+    return -1;
   }
 
   @Override
