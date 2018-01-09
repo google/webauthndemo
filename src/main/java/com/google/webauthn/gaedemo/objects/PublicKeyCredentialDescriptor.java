@@ -28,7 +28,7 @@ public class PublicKeyCredentialDescriptor {
   public PublicKeyCredentialDescriptor(PublicKeyCredentialType type, byte[] id) {
     this.type = type;
     this.id = id;
-    this.transports = new ArrayList<Transport>();
+    this.transports = new ArrayList<AuthenticatorTransport>();
   }
 
   /**
@@ -37,7 +37,7 @@ public class PublicKeyCredentialDescriptor {
    * @param transports
    */
   public PublicKeyCredentialDescriptor(PublicKeyCredentialType type, byte[] id,
-      ArrayList<Transport> transports) {
+      ArrayList<AuthenticatorTransport> transports) {
     this.type = type;
     this.id = id;
     this.transports = transports;
@@ -45,7 +45,7 @@ public class PublicKeyCredentialDescriptor {
 
   private PublicKeyCredentialType type;
   private byte[] id;
-  private ArrayList<Transport> transports;
+  private ArrayList<AuthenticatorTransport> transports;
 
   /**
    * @return Encoded JsonObject representation of PublicKeyCredentialDescriptor
@@ -56,7 +56,7 @@ public class PublicKeyCredentialDescriptor {
 
     result.addProperty("id", BaseEncoding.base64().encode(id));
     JsonArray transports = new JsonArray();
-    for (Transport t : this.transports) {
+    for (AuthenticatorTransport t : this.transports) {
       JsonPrimitive element = new JsonPrimitive(t.toString());
       transports.add(element);
     }

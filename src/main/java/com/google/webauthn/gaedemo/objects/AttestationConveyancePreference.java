@@ -23,6 +23,19 @@ public enum AttestationConveyancePreference {
     this.val = s;
   }
 
+  /**
+   * @param s
+   * @return AuthenticatorAttachment corresponding to the input string
+   */
+  public static AttestationConveyancePreference decode(String s) {
+    for (AttestationConveyancePreference a : AttestationConveyancePreference.values()) {
+      if (a.val.equals(s)) {
+        return a;
+      }
+    }
+    throw new IllegalArgumentException(s + " not a valid AttestationConveyancePreference");
+  }
+
   @Override
   public String toString() {
     return this.val;

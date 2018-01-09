@@ -29,7 +29,7 @@ public class CredentialPublicKeyTest {
   /**
    * Test method for {@link com.google.webauthn.gaedemo.objects.CredentialPublicKey#decode(byte[])}.
    */
-  //@Test
+  @Test
   public void testDecode() {
     EccKey eccKey = new EccKey();
     eccKey.alg = Algorithm.decode("-7");

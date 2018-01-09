@@ -29,10 +29,12 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
     Map<String, Byte> clientDataJSON;
     String authenticatorData;
     String signature;
+    String userHandle;
   }
 
   AuthenticatorData authData;
   byte[] signature;
+  byte[] userHandle;
 
   public AuthenticatorAssertionResponse() {}
 
@@ -68,6 +70,7 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
       authData =
           AuthenticatorData.decode(BaseEncoding.base64().decode(parsedObject.authenticatorData));
       signature = BaseEncoding.base64().decode(parsedObject.signature);
+      userHandle = BaseEncoding.base64().decode(parsedObject.userHandle);
     } catch (JsonSyntaxException e) {
       throw new ResponseException("Response format incorrect");
     }
@@ -85,5 +88,12 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
    */
   public byte[] getSignature() {
     return signature;
+  }
+
+  /**
+   * @return the userHandle
+   */
+  public byte[] getUserHandle() {
+    return userHandle;
   }
 }

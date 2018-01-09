@@ -37,18 +37,18 @@ public class AuthenticatorAssertionResponseTest {
   /**
    * Test method for
    * {@link com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse#AuthenticatorAssertionResponse(java.lang.String)}.
+   * @throws ResponseException 
    */
   //@Test
-  public void testAuthenticatorAssertionResponse() {
+  public void testAuthenticatorAssertionResponse() throws ResponseException {
     Gson gson = new Gson();
     CollectedClientData clientData = new CollectedClientData();
     clientData.challenge = "challengeString";
-    clientData.hashAlg = "SHA-256";
+    clientData.hashAlgorithm = "SHA-256";
     clientData.origin = "https://localhost";
-    String clientJson = gson.toJson(clientData);
-    String clientBase64 = BaseEncoding.base64Url().encode(clientJson.getBytes());
-
+    String clientJson = BaseEncoding.base64().encode(gson.toJson(clientData).getBytes());
     AuthenticatorData authData = null;
+
     {
       byte flags = 1 << 6;
       byte[] rpIdHash = new byte[32];
@@ -74,13 +74,9 @@ public class AuthenticatorAssertionResponseTest {
 
     JsonElement element = gson.fromJson(json.toString(), JsonElement.class);
     System.out.println(json.toString());
-    try {
-      AuthenticatorAssertionResponse decoded = new AuthenticatorAssertionResponse(element);
-      assertTrue(Arrays.equals(decoded.signature, signature));
-      assertEquals(decoded.getClientData(), clientJson);
-      assertEquals(decoded.getAuthenticatorData(), authData);
-    } catch (ResponseException e) {
-      fail("Decode failed" + e);
-    }
+    AuthenticatorAssertionResponse decoded = new AuthenticatorAssertionResponse(element);
+    assertTrue(Arrays.equals(decoded.signature, signature));
+    assertEquals(decoded.getClientData(), clientJson);
+    assertEquals(decoded.getAuthenticatorData(), authData);
   }
 }

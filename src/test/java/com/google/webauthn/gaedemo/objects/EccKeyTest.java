@@ -27,7 +27,7 @@ import org.junit.Test;
 
 public class EccKeyTest {
 
-  //@Test
+  @Test
   public void testEquals() {
     EccKey one = new EccKey();
     EccKey two = new EccKey();
