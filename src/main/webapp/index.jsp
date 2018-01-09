@@ -72,10 +72,13 @@
         <input type="checkbox" id="switch-rk" class="mdl-switch__input">
         <span class="mdl-switch__label">Require resident key</span>
       </label>
-      <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-uv">
-        <input type="checkbox" id="switch-uv" class="mdl-switch__input">
-        <span class="mdl-switch__label">Require user verification</span>
-      </label>
+      <label for="userVerification" class="attachment">User Verification</label>
+      <select id="userVerification" class="attachment">
+        <option value="none">None</option>
+        <option value="required">Required</option>
+        <option value="preferred">Preferred</option>
+        <option value="discouraged">Discouraged</option>
+      </select>
     </div>
     <div id="credentials" class="mdl-grid mdl-grid--no-spacing"></div>
     <div id="github" class="github-link">
