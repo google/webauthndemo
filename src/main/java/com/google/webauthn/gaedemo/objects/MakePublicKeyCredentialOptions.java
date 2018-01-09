@@ -95,7 +95,7 @@ public class MakePublicKeyCredentialOptions {
    * @return Encoded JsonObect representation of MakeCredentialOptions
    */
   public JsonObject getJsonObject() {
-    // Required paramters
+    // Required parameters
     JsonObject result = new JsonObject();
     result.add("rp", rp.getJsonObject());
     result.add("user", user.getJsonObject());

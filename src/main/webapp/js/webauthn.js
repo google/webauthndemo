@@ -138,13 +138,13 @@ function addCredential() {
     if ($("#switch-rk").is(":checked")) {
       advancedOptions.requireResidentKey = $("#switch-rk").is(":checked");
     }
-    if ($("#switch-uv").is(":checked")) {
-      advancedOptions.userVerification = $("#switch-uv").is(":checked");
+    if ($('#userVerification').val() != "none") {
+        advancedOptions.authenticatorAttachment = $('#userVerification').val();
     }
     if ($('#attachment').val() != "none") {
       advancedOptions.authenticatorAttachment = $('#attachment').val();
     }
-    if ($('conveyance').val() != "NA") {
+    if ($('#conveyance').val() != "NA") {
       advancedOptions.attestationConveyancePreference = $('#conveyance').val();
     }
   }

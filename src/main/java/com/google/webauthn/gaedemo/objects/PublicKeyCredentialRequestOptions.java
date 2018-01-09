@@ -33,6 +33,8 @@ public class PublicKeyCredentialRequestOptions {
   public long timeout;
   public String rpId;
   protected ArrayList<PublicKeyCredentialDescriptor> allowCredentials;
+  protected UserVerificationRequirement userVerification;
+  AuthenticationExtensions extensions;
   
 
   /**
