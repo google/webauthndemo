@@ -55,11 +55,18 @@
       </label>
     </div>
     <div id="advanced" class="advanced hidden">
-      <label for="attachment" class="attachment">Attachment type</label>
+      <label for="attachment" class="attachment">Attachment Type</label>
       <select id="attachment" class="attachment">
         <option value="none">None</option>
         <option value="platform">Platform</option>
         <option value="cross-platform">Cross-Platform</option>
+      </select>
+      <label for="conveyance" class="attachment">Conveyance Preference</label>
+      <select id="conveyance" class="attachment">
+        <option value="NA">N/A</option>
+        <option value="none">None</option>
+        <option value="indirect">Indirect</option>
+        <option value="direct">Direct</option>
       </select>
       <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-rk">
         <input type="checkbox" id="switch-rk" class="mdl-switch__input">

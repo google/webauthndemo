@@ -1,4 +1,4 @@
-// Copyright 2017 Google Inc.
+// Copyright 2018 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,29 +14,32 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-public enum Transport {
-  USB("usb"), NFC("nfc"), BLE("ble");
+/**
+ *
+ */
+public enum UserVerificationRequirement {
+  REQUIRED("required"), PREFERRED("preferred"), DISCOURAGED("discouraged");
 
   private String name;
 
   /**
    * @param name
    */
-  private Transport(String name) {
+  private UserVerificationRequirement(String name) {
     this.name = name;
   }
 
   /**
    * @param s
-   * @return Transport corresponding to the input string
+   * @return AuthenticatorAttachment corresponding to the input string
    */
-  public static Transport decode(String s) {
-    for (Transport t : Transport.values()) {
-      if (t.name.equals(s)) {
-        return t;
+  public static UserVerificationRequirement decode(String s) {
+    for (UserVerificationRequirement a : UserVerificationRequirement.values()) {
+      if (a.name.equals(s)) {
+        return a;
       }
     }
-    throw new IllegalArgumentException(s + " not a valid Transport");
+    throw new IllegalArgumentException(s + " not a valid AuthenticatorAttachment");
   }
 
   @Override

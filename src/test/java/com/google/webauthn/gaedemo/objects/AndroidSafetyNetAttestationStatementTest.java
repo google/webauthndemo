@@ -32,7 +32,7 @@ public class AndroidSafetyNetAttestationStatementTest {
    * {@link com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement#encode()} and
    * {@link com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement#decode(co.nstant.in.cbor.model.DataItem)}.
    */
-  // @Test
+  @Test
   public void testEncode() {
     SecureRandom random = new SecureRandom();
     AndroidSafetyNetAttestationStatement attStmt = new AndroidSafetyNetAttestationStatement();
@@ -54,7 +54,7 @@ public class AndroidSafetyNetAttestationStatementTest {
    * Test method for
    * {@link com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement#equals(java.lang.Object)}.
    */
-  // @Test
+  @Test
   public void testEqualsObject() {
     AndroidSafetyNetAttestationStatement a = new AndroidSafetyNetAttestationStatement();
     AndroidSafetyNetAttestationStatement b = new AndroidSafetyNetAttestationStatement();
