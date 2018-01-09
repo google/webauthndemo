@@ -22,49 +22,52 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 public class AuthenticatorSelectionCriteria {
-  public AuthenticatorAttachment attachment;
-  public boolean rk;
-  public boolean uv;
+  public AuthenticatorAttachment authenticatorAttachment;
+  public boolean requireResidentKey;
+  public UserVerificationRequirement userVerification;
 
   public AuthenticatorSelectionCriteria() {
-    attachment = null;
-    rk = false;
-    uv = false;
+    authenticatorAttachment = null;
+    requireResidentKey = false;
+    userVerification = UserVerificationRequirement.PREFERRED;
   }
 
-  public AuthenticatorSelectionCriteria(AuthenticatorAttachment attachment, boolean requireResidentKey, boolean uv) {
-    this.attachment = attachment;
-    this.rk = requireResidentKey;
-    this.uv = uv;
+  public AuthenticatorSelectionCriteria(AuthenticatorAttachment authenticatorAttachment,
+      boolean requireResidentKey, UserVerificationRequirement userVerification) {
+    this.authenticatorAttachment = authenticatorAttachment;
+    this.requireResidentKey = requireResidentKey;
+    this.userVerification = userVerification;
   }
 
   public static AuthenticatorSelectionCriteria parse(String jsonString) {
-	JsonElement jsonElement = new JsonParser().parse(jsonString);
-	JsonObject  jsonObject = jsonElement.getAsJsonObject();
+    JsonElement jsonElement = new JsonParser().parse(jsonString);
+    JsonObject jsonObject = jsonElement.getAsJsonObject();
     Set<Map.Entry<String, JsonElement>> entries = jsonObject.entrySet();
     boolean rk = false;
-    boolean uv = false;
+    UserVerificationRequirement uv = null;
     AuthenticatorAttachment attachment = null;
-    for (Map.Entry<String, JsonElement> entry: entries) {
-      if (entry.getKey().equals("rk")) {
+    for (Map.Entry<String, JsonElement> entry : entries) {
+      if (entry.getKey().equals("requireResidentKey")) {
         rk = entry.getValue().getAsBoolean();
-      } else if (entry.getKey().equals("uv")) {
-        uv = entry.getValue().getAsBoolean();
-      } else if (entry.getKey().equals("attachment")) {
+      } else if (entry.getKey().equals("userVerification")) {
+        uv = UserVerificationRequirement.decode(entry.getValue().getAsString());
+      } else if (entry.getKey().equals("authenticatorAttachment")) {
         attachment = AuthenticatorAttachment.decode(entry.getValue().getAsString());
       }
     }
 
-    return new AuthenticatorSelectionCriteria(attachment, rk , uv);
+    return new AuthenticatorSelectionCriteria(attachment, rk, uv);
   }
 
   public JsonObject getJsonObject() {
     JsonObject result = new JsonObject();
-    if (attachment != null) {
-      result.addProperty("attachment", attachment.toString());
+    if (authenticatorAttachment != null) {
+      result.addProperty("authenticatorAttachment", authenticatorAttachment.toString());
     }
-    result.addProperty("requireResidentKey", rk);
-    result.addProperty("uv", uv);
+    result.addProperty("requireResidentKey", requireResidentKey);
+    if (userVerification != null) {
+      result.addProperty("userVerification", userVerification.toString());
+    }
     return result;
   }
 

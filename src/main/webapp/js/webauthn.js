@@ -136,13 +136,16 @@ function addCredential() {
   var advancedOptions = {};
   if ($("#switch-advanced").is(":checked")) {
     if ($("#switch-rk").is(":checked")) {
-      advancedOptions.rk = $("#switch-rk").is(":checked");
+      advancedOptions.requireResidentKey = $("#switch-rk").is(":checked");
     }
     if ($("#switch-uv").is(":checked")) {
-      advancedOptions.uv = $("#switch-uv").is(":checked");
+      advancedOptions.userVerification = $("#switch-uv").is(":checked");
     }
     if ($('#attachment').val() != "none") {
-      advancedOptions.attachment = $('#attachment').val();
+      advancedOptions.authenticatorAttachment = $('#attachment').val();
+    }
+    if ($('conveyance').val() != "NA") {
+      advancedOptions.attestationConveyancePreference = $('#conveyance').val();
     }
   }
   $.post('/BeginMakeCredential',
@@ -150,34 +153,42 @@ function addCredential() {
 		  null, 'json')
   .done(function(options) {
     var makeCredentialOptions = {};
+    // Required parameters
     makeCredentialOptions.rp = options.rp;
     makeCredentialOptions.user = options.user;
     makeCredentialOptions.challenge = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
-
-    makeCredentialOptions.parameters = options.parameters;
+    makeCredentialOptions.pubKeyCredParams = options.pubKeyCredParams;
+    
+    // Optional parameters
     if ('timeout' in options) {
       makeCredentialOptions.timeout = options.timeout;
     }
-    if ('excludeList' in options) {
-      makeCredentialOptions.excludeList = credentialListConversion(parameters.excludeList);
+    if ('excludeCredentials' in options) {
+      makeCredentialOptions.excludeCredentials = credentialListConversion(parameters.excludeCredentials);
+    }
+    if ('authenticatorSelection' in options) {
+        makeCredentialOptions.authenticatorSelection = options.authenticatorSelection;
+    }
+    if ('attestation' in options) {
+    	makeCredentialOptions.attestation = options.attestation;
     }
     if ('extensions' in options) {
       makeCredentialOptions.extensions = options.extensions;
     }
-    if ('authenticatorSelection' in options) {
-      makeCredentialOptions.authenticatorSelection = options.authenticatorSelection;
-    }
 
+    //
     var createParams = {};
     createParams.publicKey = makeCredentialOptions;
 
     console.log(makeCredentialOptions);
 
+    // Check to see if the browser supports credential creation
     if (typeof navigator.credentials.create !== "function") {
       addErrorMsg("Browser does not support credential creation");
       return;
     }
 
+    // Send credential options received from Relying Party to the browser
     navigator.credentials.create({"publicKey": makeCredentialOptions})
     .then(function (attestation) {
       removeSpinner();
@@ -196,12 +207,18 @@ function addCredential() {
       }
       if ('response' in attestation) {
         var response = {};
-        response.clientDataJSON = new Uint8Array(attestation.response.clientDataJSON);
+        response.clientDataJSON = btoa(
+          new Uint8Array(attestation.response.clientDataJSON)
+          .reduce((s, byte) => s + String.fromCharCode(byte), ''));
         response.attestationObject = btoa(
           new Uint8Array(attestation.response.attestationObject)
           .reduce((s, byte) => s + String.fromCharCode(byte), ''));
         publicKeyCredential.response = response;
+        
+        // Send new credential back to Relying Party for validation and storage
         finishAddCredential(publicKeyCredential, options.session.id);
+      } else {
+    	  addErrorMsg("Make Credential response lacking 'response' attribute");
       }
     }).catch(function (err) {
       removeSpinner();
@@ -299,7 +316,9 @@ function getAssertion() {
       }
       if ('response' in assertion) {
         var response = {};
-        response.clientDataJSON = new Uint8Array(assertion.response.clientDataJSON);
+        response.clientDataJSON = btoa(
+          new Uint8Array(assertion.response.clientDataJSON)
+          .reduce((s, byte) => s + String.fromCharCode(byte), ''));
         response.authenticatorData = btoa(
           new Uint8Array(assertion.response.authenticatorData)
           .reduce((s, byte) => s + String.fromCharCode(byte), ''));

@@ -14,24 +14,33 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-public class AuthenticatorResponse {
-  protected CollectedClientData clientData;
+public enum AuthenticatorTransport {
+  USB("usb"), NFC("nfc"), BLE("ble");
 
-  // Temporary until fix clientData ordering issue.
-  protected byte[] clientDataBytes;
+  private String name;
 
   /**
-   * @return the clientData
+   * @param name
    */
-  public CollectedClientData getClientData() {
-    return clientData;
+  private AuthenticatorTransport(String name) {
+    this.name = name;
   }
 
   /**
-   * @return the clientData string
+   * @param s
+   * @return Transport corresponding to the input string
    */
-  public byte[] getClientDataBytes() {
-    return clientDataBytes;
+  public static AuthenticatorTransport decode(String s) {
+    for (AuthenticatorTransport t : AuthenticatorTransport.values()) {
+      if (t.name.equals(s)) {
+        return t;
+      }
+    }
+    throw new IllegalArgumentException(s + " not a valid Transport");
   }
 
+  @Override
+  public String toString() {
+    return name;
+  }
 }

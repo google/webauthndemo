@@ -1,4 +1,4 @@
-// Copyright 2017 Google Inc.
+// Copyright 2018 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,32 +14,36 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+/**
+ *
+ */
+public enum UserVerificationRequirement {
+  REQUIRED("required"), PREFERRED("preferred"), DISCOURAGED("discouraged");
 
-public class PublicKeyCredentialEntity {
-  protected String name;
-  protected String icon;
+  private String name;
 
   /**
    * @param name
-   * @param icon
    */
-  PublicKeyCredentialEntity(String name, String icon) {
+  private UserVerificationRequirement(String name) {
     this.name = name;
-    this.icon = icon;
-  }
-
-  PublicKeyCredentialEntity() {
-    this.name = null;
-    this.icon = null;
   }
 
   /**
-   * @return Encoded JsonObject representation of PublicKeyCredentialEntity
+   * @param s
+   * @return AuthenticatorAttachment corresponding to the input string
    */
-  public JsonObject getJsonObject() {
-    Gson gson = new Gson();
-    return (JsonObject) gson.toJsonTree(this);
+  public static UserVerificationRequirement decode(String s) {
+    for (UserVerificationRequirement a : UserVerificationRequirement.values()) {
+      if (a.name.equals(s)) {
+        return a;
+      }
+    }
+    throw new IllegalArgumentException(s + " not a valid AuthenticatorAttachment");
+  }
+
+  @Override
+  public String toString() {
+    return name;
   }
 }

@@ -15,12 +15,13 @@
 package com.google.webauthn.gaedemo.storage;
 
 import com.google.webauthn.gaedemo.objects.PublicKeyCredentialType;
-import com.google.webauthn.gaedemo.objects.Transport;
+import com.google.webauthn.gaedemo.objects.AuthenticatorTransport;
 import java.io.Serializable;
 import java.util.*;
 
 public class CredentialObject implements Serializable {
+  private static final long serialVersionUID = 1L;
   PublicKeyCredentialType type;
   byte[] handle;
-  ArrayList<Transport> transports;
+  ArrayList<AuthenticatorTransport> transports;
 }

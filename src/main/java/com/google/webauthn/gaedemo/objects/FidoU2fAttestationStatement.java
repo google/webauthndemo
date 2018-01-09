@@ -57,11 +57,12 @@ public class FidoU2fAttestationStatement extends AttestationStatement {
     Map given = null;
 
     if (attStmt instanceof ByteString) {
-      byte[] temp = ((ByteString)attStmt).getBytes();
+      byte[] temp = ((ByteString) attStmt).getBytes();
       List<DataItem> dataItems = null;
       try {
         dataItems = CborDecoder.decode(temp);
-      } catch (Exception e) {}
+      } catch (Exception e) {
+      }
       given = (Map) dataItems.get(0);
     } else {
       given = (Map) attStmt;

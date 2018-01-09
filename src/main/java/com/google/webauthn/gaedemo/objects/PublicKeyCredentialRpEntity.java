@@ -1,4 +1,4 @@
-// Copyright 2017 Google Inc.
+// Copyright 2018 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,33 +14,32 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-public enum Transport {
-  USB("usb"), NFC("nfc"), BLE("ble");
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
-  private String name;
+public class PublicKeyCredentialRpEntity extends PublicKeyCredentialEntity {
+  protected String id;
 
   /**
+   * @param id
    * @param name
+   * @param icon
    */
-  private Transport(String name) {
-    this.name = name;
+  PublicKeyCredentialRpEntity(String id, String name, String icon) {
+    super(name, icon);
+    this.id = id;
+  }
+
+  PublicKeyCredentialRpEntity() {
+    super(null, null);
+    this.id = null;
   }
 
   /**
-   * @param s
-   * @return Transport corresponding to the input string
+   * @return Encoded JsonObject representation of PublicKeyCredentialEntity
    */
-  public static Transport decode(String s) {
-    for (Transport t : Transport.values()) {
-      if (t.name.equals(s)) {
-        return t;
-      }
-    }
-    throw new IllegalArgumentException(s + " not a valid Transport");
-  }
-
-  @Override
-  public String toString() {
-    return name;
+  public JsonObject getJsonObject() {
+    Gson gson = new Gson();
+    return (JsonObject) gson.toJsonTree(this);
   }
 }
