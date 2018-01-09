@@ -32,8 +32,9 @@ public class AuthenticatorSelectionCriteria {
     userVerification = UserVerificationRequirement.PREFERRED;
   }
 
-  public AuthenticatorSelectionCriteria(AuthenticatorAttachment attachment, boolean requireResidentKey, UserVerificationRequirement userVerification) {
-    this.authenticatorAttachment = attachment;
+  public AuthenticatorSelectionCriteria(AuthenticatorAttachment authenticatorAttachment,
+      boolean requireResidentKey, UserVerificationRequirement userVerification) {
+    this.authenticatorAttachment = authenticatorAttachment;
     this.requireResidentKey = requireResidentKey;
     this.userVerification = userVerification;
   }
@@ -45,8 +46,8 @@ public class AuthenticatorSelectionCriteria {
     boolean rk = false;
     UserVerificationRequirement uv = null;
     AuthenticatorAttachment attachment = null;
-    for (Map.Entry<String, JsonElement> entry: entries) {
-      if (entry.getKey().equals("rk")) {
+    for (Map.Entry<String, JsonElement> entry : entries) {
+      if (entry.getKey().equals("requireResidentKey")) {
         rk = entry.getValue().getAsBoolean();
       } else if (entry.getKey().equals("userVerification")) {
         uv = UserVerificationRequirement.decode(entry.getValue().getAsString());
