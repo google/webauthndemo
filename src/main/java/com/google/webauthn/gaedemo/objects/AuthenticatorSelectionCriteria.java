@@ -40,8 +40,8 @@ public class AuthenticatorSelectionCriteria {
   }
 
   public static AuthenticatorSelectionCriteria parse(String jsonString) {
-	JsonElement jsonElement = new JsonParser().parse(jsonString);
-	JsonObject  jsonObject = jsonElement.getAsJsonObject();
+    JsonElement jsonElement = new JsonParser().parse(jsonString);
+    JsonObject jsonObject = jsonElement.getAsJsonObject();
     Set<Map.Entry<String, JsonElement>> entries = jsonObject.entrySet();
     boolean rk = false;
     UserVerificationRequirement uv = null;
@@ -56,7 +56,7 @@ public class AuthenticatorSelectionCriteria {
       }
     }
 
-    return new AuthenticatorSelectionCriteria(attachment, rk , uv);
+    return new AuthenticatorSelectionCriteria(attachment, rk, uv);
   }
 
   public JsonObject getJsonObject() {

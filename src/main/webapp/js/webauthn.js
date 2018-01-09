@@ -207,7 +207,9 @@ function addCredential() {
       }
       if ('response' in attestation) {
         var response = {};
-        response.clientDataJSON = new Uint8Array(attestation.response.clientDataJSON);
+        response.clientDataJSON = btoa(
+          new Uint8Array(attestation.response.clientDataJSON)
+          .reduce((s, byte) => s + String.fromCharCode(byte), ''));
         response.attestationObject = btoa(
           new Uint8Array(attestation.response.attestationObject)
           .reduce((s, byte) => s + String.fromCharCode(byte), ''));
@@ -314,7 +316,9 @@ function getAssertion() {
       }
       if ('response' in assertion) {
         var response = {};
-        response.clientDataJSON = new Uint8Array(assertion.response.clientDataJSON);
+        response.clientDataJSON = btoa(
+          new Uint8Array(assertion.response.clientDataJSON)
+          .reduce((s, byte) => s + String.fromCharCode(byte), ''));
         response.authenticatorData = btoa(
           new Uint8Array(assertion.response.authenticatorData)
           .reduce((s, byte) => s + String.fromCharCode(byte), ''));

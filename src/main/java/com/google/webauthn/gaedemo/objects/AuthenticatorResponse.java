@@ -18,7 +18,7 @@ public class AuthenticatorResponse {
   protected CollectedClientData clientData;
 
   // Temporary until fix clientData ordering issue.
-  protected String clientDataString;
+  protected byte[] clientDataBytes;
 
   /**
    * @return the clientData
@@ -30,8 +30,8 @@ public class AuthenticatorResponse {
   /**
    * @return the clientData string
    */
-  public String getClientDataString() {
-    return clientDataString;
+  public byte[] getClientDataBytes() {
+    return clientDataBytes;
   }
 
 }

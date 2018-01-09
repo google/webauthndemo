@@ -70,39 +70,40 @@ public class PackedServer extends Server {
 
     EccKey publicKey =
         (EccKey) storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
-//    try {
-//      /*
-//       * U2F authentication signatures are signed over the concatenation of
-//       *
-//       * 32 byte application parameter hash
-//       *
-//       * 1 byte user presence
-//       *
-//       * 4 byte big-endian representation of the counter
-//       *
-//       * 32 byte challenge parameter (ie SHA256 hash of clientData)
-//       */
-//      String clientDataJson = assertionResponse.getClientDataString();
-//      byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
-//
-//      byte[] signedBytes = Bytes.concat(
-//          storedAttData.getAttestationObject().getAuthenticatorData().getRpIdHash(),
-//          new byte[] {
-//              (assertionResponse.getAuthenticatorData().isUP() == true ? (byte) 1 : (byte) 0)},
-//          ByteBuffer.allocate(4).putInt(assertionResponse.getAuthenticatorData().getSignCount())
-//              .array(),
-//          clientDataHash);
-//      if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()),
-//          signedBytes, assertionResponse.getSignature())) {
-//        throw new ServletException("Signature invalid");
-//      }
-//    } catch (WebAuthnException e) {
-//      throw new ServletException("Failure while verifying signature");
-//    }
+    // try {
+    // /*
+    // * U2F authentication signatures are signed over the concatenation of
+    // *
+    // * 32 byte application parameter hash
+    // *
+    // * 1 byte user presence
+    // *
+    // * 4 byte big-endian representation of the counter
+    // *
+    // * 32 byte challenge parameter (ie SHA256 hash of clientData)
+    // */
+    // String clientDataJson = assertionResponse.getClientDataString();
+    // byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
+    //
+    // byte[] signedBytes = Bytes.concat(
+    // storedAttData.getAttestationObject().getAuthenticatorData().getRpIdHash(),
+    // new byte[] {
+    // (assertionResponse.getAuthenticatorData().isUP() == true ? (byte) 1 : (byte) 0)},
+    // ByteBuffer.allocate(4).putInt(assertionResponse.getAuthenticatorData().getSignCount())
+    // .array(),
+    // clientDataHash);
+    // if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()),
+    // signedBytes, assertionResponse.getSignature())) {
+    // throw new ServletException("Signature invalid");
+    // }
+    // } catch (WebAuthnException e) {
+    // throw new ServletException("Failure while verifying signature");
+    // }
 
-//    if (assertionResponse.getAuthenticatorData().getSignCount() <= savedCredential.getSignCount()) {
-//      throw new ServletException("Sign count invalid");
-//    }
+    // if (assertionResponse.getAuthenticatorData().getSignCount() <=
+    // savedCredential.getSignCount()) {
+    // throw new ServletException("Sign count invalid");
+    // }
 
     savedCredential.updateSignCount(assertionResponse.getAuthenticatorData().getSignCount());
 
@@ -143,10 +144,7 @@ public class PackedServer extends Server {
       throw new ServletException("Couldn't verify client data");
     }
 
-    Gson gson = new Gson();
-    String clientDataJson = attResponse.getClientDataString();
-    System.out.println(clientDataJson);
-    byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
+    byte[] clientDataHash = Crypto.sha256Digest(attResponse.getClientDataBytes());
 
     byte[] rpIdHash = Crypto.sha256Digest(origin.getBytes());
     if (!Arrays.equals(attResponse.getAttestationObject().getAuthenticatorData().getRpIdHash(),
@@ -164,40 +162,40 @@ public class PackedServer extends Server {
 
     EccKey publicKey =
         (EccKey) attResponse.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
-//
-//    try {
-//      /*
-//       * U2F registration signatures are signed over the concatenation of
-//       *
-//       * 1 byte RFU (0)
-//       *
-//       * 32 byte application parameter hash
-//       *
-//       * 32 byte challenge parameter
-//       *
-//       * key handle
-//       *
-//       * 65 byte user public key represented as {0x4, X, Y}
-//       */
-//      byte[] signedBytes = Bytes.concat(new byte[] {0}, rpIdHash,
-//          clientDataHash, cred.rawId, new byte[] {0x04},
-//          publicKey.getX(), publicKey.getY());
-//
-//      // TODO Make attStmt.attestnCert an X509Certificate right off the bat.
-//      DataInputStream inputStream = new DataInputStream(
-//          new ByteArrayInputStream(attStmt.attestnCert));
-//      X509Certificate attestationCertificate = (X509Certificate)
-//        CertificateFactory.getInstance("X.509").
-//        generateCertificate(inputStream);
-//      if (!Crypto.verifySignature(attestationCertificate, signedBytes,
-//            attStmt.sig)) {
-//        throw new ServletException("Signature invalid");
-//      }
-//    } catch (CertificateException e) {
-//        throw new ServletException("Error when parsing attestationCertificate");
-//    } catch (WebAuthnException e) {
-//      throw new ServletException("Failure while verifying signature", e);
-//    }
+    //
+    // try {
+    // /*
+    // * U2F registration signatures are signed over the concatenation of
+    // *
+    // * 1 byte RFU (0)
+    // *
+    // * 32 byte application parameter hash
+    // *
+    // * 32 byte challenge parameter
+    // *
+    // * key handle
+    // *
+    // * 65 byte user public key represented as {0x4, X, Y}
+    // */
+    // byte[] signedBytes = Bytes.concat(new byte[] {0}, rpIdHash,
+    // clientDataHash, cred.rawId, new byte[] {0x04},
+    // publicKey.getX(), publicKey.getY());
+    //
+    // // TODO Make attStmt.attestnCert an X509Certificate right off the bat.
+    // DataInputStream inputStream = new DataInputStream(
+    // new ByteArrayInputStream(attStmt.attestnCert));
+    // X509Certificate attestationCertificate = (X509Certificate)
+    // CertificateFactory.getInstance("X.509").
+    // generateCertificate(inputStream);
+    // if (!Crypto.verifySignature(attestationCertificate, signedBytes,
+    // attStmt.sig)) {
+    // throw new ServletException("Signature invalid");
+    // }
+    // } catch (CertificateException e) {
+    // throw new ServletException("Error when parsing attestationCertificate");
+    // } catch (WebAuthnException e) {
+    // throw new ServletException("Failure while verifying signature", e);
+    // }
 
     // TODO Check trust anchors
     // TODO Check if self-attestation(/is allowed)

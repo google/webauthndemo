@@ -21,12 +21,10 @@ import com.google.gson.JsonSyntaxException;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.googlecode.objectify.annotation.Subclass;
 
-import java.util.Map;
-
 @Subclass
 public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
   private static class AssertionResponseJson {
-    Map<String, Byte> clientDataJSON;
+    String clientDataJSON;
     String authenticatorData;
     String signature;
     String userHandle;
@@ -41,7 +39,7 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
   public AuthenticatorAssertionResponse(String clientDataJSON, String authenticatorData,
       String signatureString) throws ResponseException {
     clientData = CollectedClientData.decode(clientDataJSON);
-    clientDataString = clientDataJSON;
+    clientDataBytes = clientDataJSON.getBytes();
     authData = AuthenticatorData.decode(BaseEncoding.base64().decode(authenticatorData));
     signature = BaseEncoding.base64().decode(signatureString);
   }
@@ -54,18 +52,8 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
     Gson gson = new Gson();
     try {
       AssertionResponseJson parsedObject = gson.fromJson(data, AssertionResponseJson.class);
-
-      StringBuffer decodedData = new StringBuffer();
-      // This should probably need some kind of sort to be stable, but for now
-      // values() seems to walk through this crazy map alright
-      for (byte b : parsedObject.clientDataJSON.values()) {
-        decodedData.appendCodePoint(b);
-      }
-      System.out.println("Decoded data: " + decodedData.toString());
-
-      // Temporary until fix clientData ordering issue.
-      clientDataString = decodedData.toString();
-      clientData = gson.fromJson(decodedData.toString(), CollectedClientData.class);
+      clientDataBytes = BaseEncoding.base64().decode(parsedObject.clientDataJSON);
+      clientData = gson.fromJson(new String(clientDataBytes), CollectedClientData.class);
 
       authData =
           AuthenticatorData.decode(BaseEncoding.base64().decode(parsedObject.authenticatorData));
