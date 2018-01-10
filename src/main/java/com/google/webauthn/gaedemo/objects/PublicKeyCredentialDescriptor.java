@@ -56,12 +56,15 @@ public class PublicKeyCredentialDescriptor {
 
     result.addProperty("id", BaseEncoding.base64().encode(id));
     JsonArray transports = new JsonArray();
-    for (AuthenticatorTransport t : this.transports) {
-      JsonPrimitive element = new JsonPrimitive(t.toString());
-      transports.add(element);
+    if (this.transports != null) {
+      for (AuthenticatorTransport t : this.transports) {
+        JsonPrimitive element = new JsonPrimitive(t.toString());
+        transports.add(element);
+      }
+      if (transports.size() > 0) {
+        result.add("transports", transports);
+      }
     }
-    if (transports.size() > 0)
-      result.add("transports", transports);
 
     return result;
   }

@@ -14,12 +14,7 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import java.util.Map;
-import java.util.Set;
-
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 public class AuthenticatorSelectionCriteria {
   public AuthenticatorAttachment authenticatorAttachment;
@@ -37,26 +32,6 @@ public class AuthenticatorSelectionCriteria {
     this.authenticatorAttachment = authenticatorAttachment;
     this.requireResidentKey = requireResidentKey;
     this.userVerification = userVerification;
-  }
-
-  public static AuthenticatorSelectionCriteria parse(String jsonString) {
-    JsonElement jsonElement = new JsonParser().parse(jsonString);
-    JsonObject jsonObject = jsonElement.getAsJsonObject();
-    Set<Map.Entry<String, JsonElement>> entries = jsonObject.entrySet();
-    boolean rk = false;
-    UserVerificationRequirement uv = null;
-    AuthenticatorAttachment attachment = null;
-    for (Map.Entry<String, JsonElement> entry : entries) {
-      if (entry.getKey().equals("requireResidentKey")) {
-        rk = entry.getValue().getAsBoolean();
-      } else if (entry.getKey().equals("userVerification")) {
-        uv = UserVerificationRequirement.decode(entry.getValue().getAsString());
-      } else if (entry.getKey().equals("authenticatorAttachment")) {
-        attachment = AuthenticatorAttachment.decode(entry.getValue().getAsString());
-      }
-    }
-
-    return new AuthenticatorSelectionCriteria(attachment, rk, uv);
   }
 
   public JsonObject getJsonObject() {

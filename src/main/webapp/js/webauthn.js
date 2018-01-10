@@ -138,8 +138,11 @@ function addCredential() {
     if ($("#switch-rk").is(":checked")) {
       advancedOptions.requireResidentKey = $("#switch-rk").is(":checked");
     }
+    if ($("#switch-rr").is(":checked")) {
+        advancedOptions.excludeCredentials = $("#switch-rr").is(":checked");
+    }
     if ($('#userVerification').val() != "none") {
-        advancedOptions.authenticatorAttachment = $('#userVerification').val();
+        advancedOptions.userVerification = $('#userVerification').val();
     }
     if ($('#attachment').val() != "none") {
       advancedOptions.authenticatorAttachment = $('#attachment').val();
@@ -164,7 +167,7 @@ function addCredential() {
       makeCredentialOptions.timeout = options.timeout;
     }
     if ('excludeCredentials' in options) {
-      makeCredentialOptions.excludeCredentials = credentialListConversion(parameters.excludeCredentials);
+      makeCredentialOptions.excludeCredentials = credentialListConversion(options.excludeCredentials);
     }
     if ('authenticatorSelection' in options) {
         makeCredentialOptions.authenticatorSelection = options.authenticatorSelection;
