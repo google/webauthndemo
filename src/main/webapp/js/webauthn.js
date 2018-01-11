@@ -38,7 +38,7 @@ function fetchCredentials() {
       var buttonId = 'delete' + i;
       credentials +=
         '<div class="mdl-cell mdl-cell--1-offset mdl-cell-4-col">\
-           <div class="mdl-card mdl-shadow--4dp">\
+           <div class="mdl-card mdl-shadow--4dp" id="' + handle + '">\
              <div class="mdl-card__title mdl-card--border">' + name + '</div>\
              <div class="mdl-card__supporting-text">Enrolled ' + date +'</div>\
              <div class="mdl-card__subtitle-text">Public Key</div>\
@@ -239,9 +239,16 @@ function finishAssertion(publicKeyCredential, sessionId) {
       console.log(parameters);
       if ('success' in parameters && 'message' in parameters) {
         addSuccessMsg(parameters.message);
+        if ('handle' in parameters) {
+          highlightCredential(parameters.handle);
+        }
       }
       // TODO Validate response and display success/error message
     });
+}
+
+function highlightCredential(handle) {
+  $("#" + handle).effect("highlight", {color: '#FF4081'}, 7500);
 }
 
 function addSpinner() {

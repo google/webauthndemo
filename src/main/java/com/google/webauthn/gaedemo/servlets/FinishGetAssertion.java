@@ -34,6 +34,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.DatatypeConverter;
+
 import java.io.IOException;
 
 
@@ -118,7 +120,9 @@ public class FinishGetAssertion extends HttpServlet {
     Server.verifyAssertion(cred, currentUser, session, savedCredential);
 
     response.setContentType("application/json");
-    PublicKeyCredentialResponse rsp = new PublicKeyCredentialResponse(true, "Successful assertion");
+    String handle = DatatypeConverter.printHexBinary(savedCredential.getCredential().rawId);
+    PublicKeyCredentialResponse rsp =
+        new PublicKeyCredentialResponse(true, "Successful assertion", handle);
     response.getWriter().println(rsp.toJson());
   }
 }
