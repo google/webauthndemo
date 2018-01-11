@@ -16,14 +16,20 @@ package com.google.webauthn.gaedemo.server;
 
 import com.google.gson.Gson;
 
-@SuppressWarnings("unused")
 public class PublicKeyCredentialResponse {
-  private boolean success;
-  private String message;
+  protected boolean success;
+  protected String message;
+  protected String handle;
 
   public PublicKeyCredentialResponse(boolean success, String message) {
     this.success = success;
     this.message = message;
+  }
+
+  public PublicKeyCredentialResponse(boolean success, String message, String handle) {
+    this.success = success;
+    this.message = message;
+    this.handle = handle;
   }
 
   public String toJson() {
