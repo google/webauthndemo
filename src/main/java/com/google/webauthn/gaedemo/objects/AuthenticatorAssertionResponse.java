@@ -66,7 +66,6 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
       // Temporary until fix clientData ordering issue.
       clientDataString = decodedData.toString();
       clientData = gson.fromJson(decodedData.toString(), CollectedClientData.class);
-      clientDataBytes = BaseEncoding.base64().decode(parsedObject.clientDataJSON);
 
       authData =
           AuthenticatorData.decode(BaseEncoding.base64().decode(parsedObject.authenticatorData));
