@@ -21,7 +21,7 @@ import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.EccKey;
 import com.google.webauthn.gaedemo.objects.FidoU2fAttestationStatement;
-import com.google.webauthn.gaedemo.objects.MakeCredentialOptions;
+import com.google.webauthn.gaedemo.objects.MakePublicKeyCredentialOptions;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredentialRequestOptions;
 import com.google.webauthn.gaedemo.server.AndroidSafetyNetServer;
@@ -65,7 +65,7 @@ public class Fido2RequestHandler {
       throw new OAuthRequestException("User is not authenticated");
     }
 
-    MakeCredentialOptions options = new MakeCredentialOptions(
+    MakePublicKeyCredentialOptions options = new MakePublicKeyCredentialOptions(
         user.getNickname() /* userName */, user.getEmail() /* userId */,
         Constants.APP_ID /* rpId */, Constants.APP_ID /* rpName */);
     SessionData session = new SessionData(options.challenge, Constants.APP_ID);
