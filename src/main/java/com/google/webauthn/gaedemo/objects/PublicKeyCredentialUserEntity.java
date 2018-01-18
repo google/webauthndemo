@@ -18,8 +18,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 public class PublicKeyCredentialUserEntity extends PublicKeyCredentialEntity {
-  @SuppressWarnings("unused")
-  private String displayName;
+  protected String displayName;
+  protected String id;
 
   /**
    * @param displayName

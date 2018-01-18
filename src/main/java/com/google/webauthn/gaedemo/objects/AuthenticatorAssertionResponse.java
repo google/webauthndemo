@@ -27,10 +27,13 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
     String clientDataJSON;
     String authenticatorData;
     String signature;
+    String userHandle;
   }
 
+  byte[] authDataBytes;
   AuthenticatorData authData;
   byte[] signature;
+  byte[] userHandle;
 
   /**
    * @param data
@@ -40,16 +43,24 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
     Gson gson = new Gson();
     try {
       AssertionResponseJson parsedObject = gson.fromJson(data, AssertionResponseJson.class);
-
       clientDataBytes = BaseEncoding.base64().decode(parsedObject.clientDataJSON);
       clientData = gson.fromJson(new String(clientDataBytes), CollectedClientData.class);
 
+      authDataBytes = BaseEncoding.base64().decode(parsedObject.authenticatorData);
       authData =
-          AuthenticatorData.decode(BaseEncoding.base64().decode(parsedObject.authenticatorData));
+          AuthenticatorData.decode(authDataBytes);
       signature = BaseEncoding.base64().decode(parsedObject.signature);
+      userHandle = BaseEncoding.base64().decode(parsedObject.userHandle);
     } catch (JsonSyntaxException e) {
       throw new ResponseException("Response format incorrect");
     }
+  }
+
+  /**
+   * @return byte array of authData
+   */
+  public byte[] getAuthDataBytes() {
+    return authDataBytes;
   }
 
   /**
@@ -64,5 +75,12 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
    */
   public byte[] getSignature() {
     return signature;
+  }
+
+  /**
+   * @return the userHandle
+   */
+  public byte[] getUserHandle() {
+    return userHandle;
   }
 }

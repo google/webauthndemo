@@ -138,6 +138,7 @@ public class U2fServer extends Server {
     byte[] clientDataHash = Crypto.sha256Digest(attResponse.getClientDataBytes());
 
     byte[] rpIdHash = Crypto.sha256Digest(rpId.getBytes());
+
     if (!Arrays.equals(attResponse.getAttestationObject().getAuthenticatorData().getRpIdHash(),
         rpIdHash)) {
       throw new ServletException("RPID hash incorrect");
@@ -177,6 +178,7 @@ public class U2fServer extends Server {
           new DataInputStream(new ByteArrayInputStream(attStmt.attestnCert));
       X509Certificate attestationCertificate = (X509Certificate) CertificateFactory
           .getInstance("X.509").generateCertificate(inputStream);
+
       if (!Crypto.verifySignature(attestationCertificate, signedBytes, attStmt.sig)) {
         throw new ServletException("Signature invalid");
       }

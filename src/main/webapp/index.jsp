@@ -9,8 +9,9 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
   rel="stylesheet">
 <link href="stylesheets/webauthn.css" rel="stylesheet">
-<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-<script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script src="//code.getmdl.io/1.3.0/material.min.js"></script>
 <script src="js/webauthn.js"></script>
 <title>WebAuthN Demo</title>
 </head>
@@ -55,20 +56,35 @@
       </label>
     </div>
     <div id="advanced" class="advanced hidden">
-      <label for="attachment" class="attachment">Attachment type</label>
+      <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-rr">
+        <input type="checkbox" id="switch-rr" class="mdl-switch__input">
+        <span class="mdl-switch__label">Prevent Reregistration</span>
+      </label>
+      <label for="attachment" class="attachment">Attachment Type</label>
       <select id="attachment" class="attachment">
-        <option value="none">None</option>
+        <option value="none">N/A</option>
         <option value="platform">Platform</option>
         <option value="cross-platform">Cross-Platform</option>
+      </select>
+      <br />
+      <label for="conveyance" class="attachment">Conveyance Preference</label>
+      <select id="conveyance" class="attachment">
+        <option value="NA">N/A</option>
+        <option value="none">None</option>
+        <option value="indirect">Indirect</option>
+        <option value="direct">Direct</option>
       </select>
       <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-rk">
         <input type="checkbox" id="switch-rk" class="mdl-switch__input">
         <span class="mdl-switch__label">Require resident key</span>
       </label>
-      <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-uv">
-        <input type="checkbox" id="switch-uv" class="mdl-switch__input">
-        <span class="mdl-switch__label">Require user verification</span>
-      </label>
+      <label for="userVerification" class="attachment">User Verification</label>
+      <select id="userVerification" class="attachment">
+        <option value="none">None</option>
+        <option value="required">Required</option>
+        <option value="preferred">Preferred</option>
+        <option value="discouraged">Discouraged</option>
+      </select>
     </div>
     <div id="credentials" class="mdl-grid mdl-grid--no-spacing"></div>
     <div id="github" class="github-link">

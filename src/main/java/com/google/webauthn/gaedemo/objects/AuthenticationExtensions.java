@@ -15,21 +15,11 @@
 package com.google.webauthn.gaedemo.objects;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 
 public class AuthenticationExtensions {
-  public boolean uvi;
 
   public static AuthenticationExtensions parse(String parameter) {
     Gson gson = new Gson();
     return gson.fromJson(parameter, AuthenticationExtensions.class);
-  }
-
-  public JsonObject getJsonObject() {
-    JsonObject extensionsJson = new JsonObject();
-    if (uvi == true) {
-      extensionsJson.addProperty("uvi", uvi);
-    }
-    return extensionsJson;
   }
 }

@@ -36,13 +36,13 @@ public class AuthenticatorAttestationResponseTest {
    * Test method for
    * {@link com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse#AuthenticatorAttestationResponse}.
    */
-  // @Test
+  //@Test
   public void testAuthenticatorAttestationResponse() {
 
     Gson gson = new Gson();
     CollectedClientData clientData = new CollectedClientData();
     clientData.challenge = "challengeString";
-    clientData.hashAlg = "SHA-256";
+    clientData.hashAlgorithm = "SHA-256";
     clientData.origin = "https://localhost";
     String clientJson = gson.toJson(clientData);
     String clientBase64 = BaseEncoding.base64Url().encode(clientJson.getBytes());

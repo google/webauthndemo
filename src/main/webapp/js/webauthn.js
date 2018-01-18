@@ -17,7 +17,7 @@
 
 const $ = query => {
   return document.querySelector(query);
-}
+};
 
 const show = query => {
   $(query).style.display = 'block';
@@ -25,15 +25,15 @@ const show = query => {
 
 const hide = query => {
   $(query).style.display = 'none';
-}
+};
 
 const isChecked = query => {
   return $(query).checked;
-}
+};
 
 const onClick = (query, func) => {
   $(query).addEventListener('click', func);
-}
+};
 
 const post = (url, obj) => {
   let headers = new Headers({
@@ -55,17 +55,17 @@ const post = (url, obj) => {
       throw response.statusText;
     }
   });
-}
+};
 
-function fetchAllCredentials() {
-  post('/RegisteredKeys').then(tokens => {
-    credentials.innerHTML='';
-    for (let i in tokens) {
-      let token = tokens[i];
-      credentials.innerHTML += `<div id="credential${i}">${token.id}: ${token.handle}</div>`;
-    }
-  });
-}
+// function fetchAllCredentials() {
+//   post('/RegisteredKeys').then(tokens => {
+//     credentials.innerHTML='';
+//     for (let i in tokens) {
+//       let token = tokens[i];
+//       credentials.innerHTML += `<div id="credential${i}">${token.id}: ${token.handle}</div>`;
+//     }
+//   });
+// }
 
 function fetchCredentials() {
   post('/RegisteredKeys').then(rsp => {
@@ -75,7 +75,7 @@ function fetchCredentials() {
       let buttonId = `delete${i}`;
       credentials +=
         `<div class="mdl-cell mdl-cell--1-offset mdl-cell-4-col">
-           <div class="mdl-card mdl-shadow--4dp">
+           <div class="mdl-card mdl-shadow--4dp" id="${handle}">
              <div class="mdl-card__title mdl-card--border">${name}</div>
              <div class="mdl-card__supporting-text">Enrolled ${date}</div>
              <div class="mdl-card__subtitle-text">Public Key</div>
@@ -134,14 +134,14 @@ function credentialListConversion(list) {
       type: item.type,
       id: Uint8Array.from(atob(item.id), c => c.charCodeAt(0)),
       transports: list.transports || undefined
-    }
+    };
   });
 }
 
 function finishAddCredential(publicKeyCredential, sessionId) {
   post('/FinishMakeCredential', {
-      data: JSON.stringify(publicKeyCredential),
-      session: sessionId }
+    data: JSON.stringify(publicKeyCredential),
+    session: sessionId }
   ).then(parameters => {
     console.log(parameters);
     if ('success' in parameters && 'message' in parameters) {
@@ -158,60 +158,50 @@ function addCredential() {
   var advancedOptions = {};
   if (isChecked('#switch-advanced')) {
     if (isChecked('#switch-rk')) {
-      advancedOptions.rk = isChecked('#switch-rk');
+      advancedOptions.requireResidentKey = isChecked('#switch-rk');
     }
-    if (isChecked('#switch-uv')) {
-      advancedOptions.uv = isChecked('#switch-uv');
+    if (isChecked('#switch-rr')) {
+      advancedOptions.excludeCredentials = isChecked('#switch-rk');
+    }
+    if ($('#userVerification').value != "none") {
+      advancedOptions.userVerification = $('#userVerification').value;
     }
     if ($('#attachment').value != "none") {
-      advancedOptions.attachment = $('#attachment').value;
+      advancedOptions.authenticatorAttachment = $('#attachment').value;
+    }
+    if ($('#conveyance').value != "NA") {
+      advancedOptions.attestationConveyancePreference = $('#conveyance').value;
     }
   }
 
   let options = {};
 
   post('/BeginMakeCredential', {
-      advanced: isChecked('#switch-advanced'),
-      advancedOptions: JSON.stringify(advancedOptions) }
+    advanced: isChecked('#switch-advanced'),
+    advancedOptions: JSON.stringify(advancedOptions) }
   ).then(_options => {
     options = _options;
     let makeCredentialOptions = {};
     makeCredentialOptions.rp = options.rp;
     makeCredentialOptions.user = options.user;
     makeCredentialOptions.challenge = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
+    makeCredentialOptions.pubKeyCredParams = options.pubKeyCredParams;
 
-    makeCredentialOptions.pubKeyCredParams = options.parameters.map(entry => {
-      let alg;
-      switch (entry.algorithm) {
-        case 'ES256':
-          alg = -7;
-          break;
-        case 'ES384':
-          alg = -35;
-          break;
-        case 'ES512':
-          alg = -36;
-          break;
-        default:
-          alg = 0;
-      }
-      return {
-        type: entry.type,
-        alg: alg
-      }
-    });
-    // makeCredentialOptions.parameters = options.parameters;
+    // Optional parameters
     if ('timeout' in options) {
       makeCredentialOptions.timeout = options.timeout;
     }
-    if ('excludeList' in options) {
-      makeCredentialOptions.excludeList = credentialListConversion(parameters.excludeList);
-    }
-    if ('extensions' in options) {
-      makeCredentialOptions.extensions = options.extensions;
+    if ('excludeCredentials' in options) {
+      makeCredentialOptions.excludeCredentials = credentialListConversion(options.excludeCredentials);
     }
     if ('authenticatorSelection' in options) {
       makeCredentialOptions.authenticatorSelection = options.authenticatorSelection;
+    }
+    if ('attestation' in options) {
+      makeCredentialOptions.attestation = options.attestation;
+    }
+    if ('extensions' in options) {
+      makeCredentialOptions.extensions = options.extensions;
     }
 
     let createParams = {};
@@ -219,6 +209,7 @@ function addCredential() {
 
     console.log(makeCredentialOptions);
 
+    // Check to see if the browser supports credential creation
     if (typeof navigator.credentials.create !== "function") {
       throw "Browser does not support credential creation";
     }
@@ -242,7 +233,7 @@ function addCredential() {
       publicKeyCredential.rawId = attestation.rawId;
     }
     if ('response' in attestation) {
-      var response = {};
+      let response = {};
       response.clientDataJSON = btoa(
         new Uint8Array(attestation.response.clientDataJSON)
         .reduce((s, byte) => s + String.fromCharCode(byte), ''));
@@ -250,7 +241,11 @@ function addCredential() {
         new Uint8Array(attestation.response.attestationObject)
         .reduce((s, byte) => s + String.fromCharCode(byte), ''));
       publicKeyCredential.response = response;
+
+      // Send new credential back to Relying Party for validation and storage
       finishAddCredential(publicKeyCredential, options.session.id);
+    } else {
+      addErrorMsg("Make Credential response lacking 'response' attribute");
     }
   }).catch(function (err) {
     hide('#active');
@@ -261,15 +256,22 @@ function addCredential() {
 
 function finishAssertion(publicKeyCredential, sessionId) {
   post('/FinishGetAssertion', {
-      data: JSON.stringify(publicKeyCredential),
-      session: sessionId }
+    data: JSON.stringify(publicKeyCredential),
+    session: sessionId }
   ).then(parameters => {
     console.log(parameters);
     if ('success' in parameters && 'message' in parameters) {
       addSuccessMsg(parameters.message);
+      if ('handle' in parameters) {
+        highlightCredential(parameters.handle);
+      }
     }
     // TODO Validate response and display success/error message
   });
+}
+
+function highlightCredential(handle) {
+  $("#" + handle).effect("highlight", {color: '#FF4081'}, 7500);
 }
 
 function addErrorMsg(msg) {

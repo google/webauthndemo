@@ -26,10 +26,16 @@ public class PublicKeyCredentialRequestOptions {
   private static final int CHALLENGE_LENGTH = 32;
   private final SecureRandom random = new SecureRandom();
 
+  // Required parameters
   public byte[] challenge;
+  
+  // Optional parameters
   public long timeout;
   public String rpId;
-  private ArrayList<PublicKeyCredentialDescriptor> allowList;
+  protected ArrayList<PublicKeyCredentialDescriptor> allowCredentials;
+  protected UserVerificationRequirement userVerification;
+  AuthenticationExtensions extensions;
+  
 
   /**
    * @param rpId
@@ -37,7 +43,7 @@ public class PublicKeyCredentialRequestOptions {
   public PublicKeyCredentialRequestOptions(String rpId) {
     challenge = new byte[CHALLENGE_LENGTH];
     random.nextBytes(challenge);
-    allowList = new ArrayList<PublicKeyCredentialDescriptor>();
+    allowCredentials = new ArrayList<PublicKeyCredentialDescriptor>();
     this.rpId = rpId;
   }
 
@@ -53,7 +59,7 @@ public class PublicKeyCredentialRequestOptions {
     }
     result.addProperty("rpId", rpId);
     JsonArray allowList = new JsonArray();
-    for (PublicKeyCredentialDescriptor credential : this.allowList) {
+    for (PublicKeyCredentialDescriptor credential : this.allowCredentials) {
       allowList.add(credential.getJsonObject());
     }
     result.add("allowList", allowList);
@@ -72,7 +78,7 @@ public class PublicKeyCredentialRequestOptions {
         continue;
       PublicKeyCredentialDescriptor pkcd =
           new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PUBLIC_KEY, storedCred.rawId);
-      allowList.add(pkcd);
+      allowCredentials.add(pkcd);
     }
   }
 }

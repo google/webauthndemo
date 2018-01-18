@@ -15,6 +15,10 @@
 package com.google.webauthn.gaedemo.servlets;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -24,9 +28,18 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.webauthn.gaedemo.objects.AttestationConveyancePreference;
+import com.google.webauthn.gaedemo.objects.AuthenticatorAttachment;
 import com.google.webauthn.gaedemo.objects.AuthenticatorSelectionCriteria;
-import com.google.webauthn.gaedemo.objects.MakeCredentialOptions;
+import com.google.webauthn.gaedemo.objects.AuthenticatorTransport;
+import com.google.webauthn.gaedemo.objects.MakePublicKeyCredentialOptions;
+import com.google.webauthn.gaedemo.objects.PublicKeyCredentialDescriptor;
+import com.google.webauthn.gaedemo.objects.PublicKeyCredentialType;
+import com.google.webauthn.gaedemo.objects.UserVerificationRequirement;
+import com.google.webauthn.gaedemo.storage.Credential;
 import com.google.webauthn.gaedemo.storage.SessionData;
 
 public class BeginMakeCredential extends HttpServlet {
@@ -51,14 +64,12 @@ public class BeginMakeCredential extends HttpServlet {
     String rpName = getServletContext().getInitParameter("name");
     rpName = (rpName == null ? "" : rpName);
 
-    MakeCredentialOptions options =
-        new MakeCredentialOptions(user.getNickname(), user.getUserId(), rpId, rpName);
+    MakePublicKeyCredentialOptions options =
+        new MakePublicKeyCredentialOptions(user.getNickname(), user.getUserId(), rpId, rpName);
 
     String hasAdvanced = request.getParameter("advanced");
     if (hasAdvanced.equals("true")) {
-      AuthenticatorSelectionCriteria criteria =
-          AuthenticatorSelectionCriteria.parse(request.getParameter("advancedOptions"));
-      options.setCriteria(criteria);
+      parseAdvancedOptions(request.getParameter("advancedOptions"), options);
     }
 
     SessionData session = new SessionData(options.challenge, rpId);
@@ -71,4 +82,50 @@ public class BeginMakeCredential extends HttpServlet {
     response.setContentType("application/json");
     response.getWriter().println(optionsJson.toString());
   }
+
+  private void parseAdvancedOptions(String jsonString, MakePublicKeyCredentialOptions options) {
+    JsonElement jsonElement = new JsonParser().parse(jsonString);
+    JsonObject jsonObject = jsonElement.getAsJsonObject();
+    Set<Map.Entry<String, JsonElement>> entries = jsonObject.entrySet();
+
+    boolean rk = false;
+    boolean excludeCredentials = false;
+    UserVerificationRequirement uv = null;
+    AuthenticatorAttachment attachment = null;
+    for (Map.Entry<String, JsonElement> entry : entries) {
+      if (entry.getKey().equals("requireResidentKey")) {
+        rk = entry.getValue().getAsBoolean();
+      } else if (entry.getKey().equals("excludeCredentials")) {
+        excludeCredentials = entry.getValue().getAsBoolean();
+
+        if (excludeCredentials) {
+          List<PublicKeyCredentialDescriptor> credentials = new ArrayList<>();
+          String currentUser = userService.getCurrentUser().getUserId();
+          List<Credential> savedCreds = Credential.load(currentUser);
+          for (Credential c : savedCreds) {
+            credentials.add(convertCredentialToCredentialDescriptor(c));
+          }
+          options.setExcludeCredentials(credentials);
+        }
+      } else if (entry.getKey().equals("userVerification")) {
+        uv = UserVerificationRequirement.decode(entry.getValue().getAsString());
+      } else if (entry.getKey().equals("authenticatorAttachment")) {
+        attachment = AuthenticatorAttachment.decode(entry.getValue().getAsString());
+      } else if (entry.getKey().equals("attestationConveyancePreference")) {
+        AttestationConveyancePreference conveyance =
+            AttestationConveyancePreference.decode(entry.getValue().getAsString());
+        options.setAttestationConveyancePreference(conveyance);
+      }
+    }
+
+    options.setCriteria(new AuthenticatorSelectionCriteria(attachment, rk, uv));
+  }
+
+  private PublicKeyCredentialDescriptor convertCredentialToCredentialDescriptor(Credential c) {
+    PublicKeyCredentialType type = PublicKeyCredentialType.PUBLIC_KEY;
+    byte[] id = c.getCredential().getRawId();
+
+    return new PublicKeyCredentialDescriptor(type, id, null);
+  }
+
 }
