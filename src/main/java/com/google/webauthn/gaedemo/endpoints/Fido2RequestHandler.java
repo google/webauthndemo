@@ -83,7 +83,6 @@ public class Fido2RequestHandler {
   public List<String> processRegistrationResponse(
       @Named("responseData") String responseData, User user)
       throws OAuthRequestException, ResponseException, ServletException {
-
     if (user == null) {
       throw new OAuthRequestException("User is not authenticated");
     }

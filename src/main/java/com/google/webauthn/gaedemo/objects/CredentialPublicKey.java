@@ -84,7 +84,8 @@ public abstract class CredentialPublicKey {
             rsaKey.kty = ((UnsignedInteger) map.get(d)).getValue().intValue();
             break;
           case ALG_LABEL:
-            rsaKey.alg = Algorithm.decode(((NegativeInteger) map.get(d)).getValue().intValue());
+            rsaKey.alg =
+                Algorithm.decode(((NegativeInteger) map.get(d)).getValue().intValue());
             if (!Algorithm.isRsaAlgorithm(rsaKey.alg))
               throw new InvalidParameterException("Unsupported RSA algorithm");
             break;
@@ -117,7 +118,8 @@ public abstract class CredentialPublicKey {
             eccKey.kty = ((UnsignedInteger) map.get(d)).getValue().intValue();
             break;
           case ALG_LABEL:
-            eccKey.alg = Algorithm.decode(((NegativeInteger) map.get(d)).getValue().intValue());
+            eccKey.alg =
+                Algorithm.decode(((NegativeInteger) map.get(d)).getValue().intValue());
             if (!Algorithm.isEccAlgorithm(eccKey.alg))
               throw new InvalidParameterException("Unsupported ECC algorithm");
             break;

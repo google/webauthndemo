@@ -14,6 +14,7 @@
 
 package com.google.webauthn.gaedemo.objects;
 
+import co.nstant.in.cbor.CborException;
 import com.google.common.io.BaseEncoding;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -21,12 +22,12 @@ import com.google.gson.JsonObject;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.googlecode.objectify.annotation.Subclass;
 
-import co.nstant.in.cbor.CborException;
+import java.util.Map;
 
 @Subclass
 public class AuthenticatorAttestationResponse extends AuthenticatorResponse {
   private static class AttestationResponseJson {
-    String clientDataJSON;
+    Map<String, Byte> clientDataJSON;
     String attestationObject;
   }
 
@@ -56,16 +57,25 @@ public class AuthenticatorAttestationResponse extends AuthenticatorResponse {
     Gson gson = new Gson();
     AttestationResponseJson parsedObject = gson.fromJson(data, AttestationResponseJson.class);
 
-    clientDataBytes = BaseEncoding.base64().decode(parsedObject.clientDataJSON);
+    StringBuffer decodedData = new StringBuffer();
+    // This should probably need some kind of sort to be stable, but for now
+    // values() seems to walk through this crazy map alright
+    for (byte b : parsedObject.clientDataJSON.values()) {
+      decodedData.appendCodePoint(b);
+    }
+    System.out.println("Decoded data: " + decodedData.toString());
+
+    // Temporary until fix clientData ordering issue.
+    clientDataString = decodedData.toString();
+    clientData = gson.fromJson(decodedData.toString(), CollectedClientData.class);
+
     byte[] attestationObject = BaseEncoding.base64().decode(parsedObject.attestationObject);
 
     try {
       decodedObject = AttestationObject.decode(attestationObject);
     } catch (CborException e) {
-      throw new ResponseException("Cannot decode attestation object");
+      throw new ResponseException("Cannot decode");
     }
-
-    clientData = gson.fromJson(new String(clientDataBytes), CollectedClientData.class);
   }
 
   /**
@@ -73,7 +83,8 @@ public class AuthenticatorAttestationResponse extends AuthenticatorResponse {
    */
   public String encode() {
     JsonObject json = new JsonObject();
-    json.addProperty("clientDataJSON", BaseEncoding.base64().encode(clientDataBytes));
+    json.addProperty("clientDataJSON",
+        BaseEncoding.base64().encode(getClientData().encode().getBytes()));
     try {
       json.addProperty("attestationObject", BaseEncoding.base64().encode(decodedObject.encode()));
     } catch (CborException e) {

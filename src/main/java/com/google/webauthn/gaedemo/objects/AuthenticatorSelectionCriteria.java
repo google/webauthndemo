@@ -32,21 +32,20 @@ public class AuthenticatorSelectionCriteria {
     uv = false;
   }
 
-  public AuthenticatorSelectionCriteria(AuthenticatorAttachment attachment,
-      boolean requireResidentKey, boolean uv) {
+  public AuthenticatorSelectionCriteria(AuthenticatorAttachment attachment, boolean requireResidentKey, boolean uv) {
     this.attachment = attachment;
     this.rk = requireResidentKey;
     this.uv = uv;
   }
 
   public static AuthenticatorSelectionCriteria parse(String jsonString) {
-    JsonElement jsonElement = new JsonParser().parse(jsonString);
-    JsonObject jsonObject = jsonElement.getAsJsonObject();
+	JsonElement jsonElement = new JsonParser().parse(jsonString);
+	JsonObject  jsonObject = jsonElement.getAsJsonObject();
     Set<Map.Entry<String, JsonElement>> entries = jsonObject.entrySet();
     boolean rk = false;
     boolean uv = false;
     AuthenticatorAttachment attachment = null;
-    for (Map.Entry<String, JsonElement> entry : entries) {
+    for (Map.Entry<String, JsonElement> entry: entries) {
       if (entry.getKey().equals("rk")) {
         rk = entry.getValue().getAsBoolean();
       } else if (entry.getKey().equals("uv")) {
@@ -56,7 +55,7 @@ public class AuthenticatorSelectionCriteria {
       }
     }
 
-    return new AuthenticatorSelectionCriteria(attachment, rk, uv);
+    return new AuthenticatorSelectionCriteria(attachment, rk , uv);
   }
 
   public JsonObject getJsonObject() {
