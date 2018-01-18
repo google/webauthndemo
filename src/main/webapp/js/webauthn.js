@@ -93,12 +93,13 @@ function fetchCredentials() {
         `;
     }
     $('#credentials').innerHTML = credentials;
-    for (let r of rsp){
-      onClick(`delete${i}`, i => {
+    for (let i = 0; i < rsp.length; i++){
+      let r = rsp[i];
+      onClick(`#delete${i}`, () => {
         console.log(r.id);
         post('/RemoveCredential', {
           credentialId : r.id
-        }).then(response => {
+        }).then(() => {
           fetchCredentials();
         });
       });
