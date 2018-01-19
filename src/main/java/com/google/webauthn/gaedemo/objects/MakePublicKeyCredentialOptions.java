@@ -62,7 +62,7 @@ public class MakePublicKeyCredentialOptions {
     challenge = new byte[CHALLENGE_LENGTH];
     random.nextBytes(challenge);
     pubKeyCredParams.add(
-        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, -7));
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.ES256));
     extensions = null;
   }
 
