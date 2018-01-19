@@ -2,9 +2,9 @@
   "relation": ["delegate_permission/common.handle_all_urls"],
   "target": {
     "namespace": "android_app",
-    "package_name": "com.fido.example.fidoapiexample2",
+    "package_name": "com.fido.example.fido2apiexample",
     "sha256_cert_fingerprints": [
-      "75:1B:63:A3:38:0A:8D:89:B2:EB:CA:E4:D0:49:D1:CF:5B:7B:C3:89:57:87:32:B5:7F:33:E2:BF:9E:98:E9:D8"
+      "6E:77:D1:8C:2A:3D:9A:67:10:1C:6D:5C:67:23:BE:15:05:19:00:CE:CF:0D:FF:EF:EC:AB:5B:70:00:EC:ED:87"
     ]
   }
 }]

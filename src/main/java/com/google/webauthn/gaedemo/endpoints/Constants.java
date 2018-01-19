@@ -13,10 +13,10 @@ public class Constants {
   // ClientIds:
   // https://cloud.google.com/endpoints/docs/frameworks/java/creating-client-ids
   public static final String WEB_CLIENT_ID =
-      "294011350698-br3h7bjbe640h1mnq8thnkkf6rc885t1.apps.googleusercontent.com";
+      "762961289381-hbbpkaqgi1kelev5mquj4dg4n8glr59p.apps.googleusercontent.com";
   public static final String ANDROID_CLIENT_ID =
-      "294011350698-79m03dcrj4dqom8fpe04j7rla2c7u285.apps.googleusercontent.com";
+      "762961289381-jtv7flspglhobn3scflagqgmcogikf10.apps.googleusercontent.com";
   public static final String ANDROID_AUDIENCE = WEB_CLIENT_ID;
 
-  public static final String APP_ID = "webauthndemo-176619.appspot.com";
+  public static final String APP_ID = "webauthndemo.appspot.com";
 }
