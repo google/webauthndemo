@@ -18,13 +18,13 @@ import com.google.gson.JsonObject;
 
 public class PublicKeyCredentialParameters {
   private PublicKeyCredentialType type;
-  private Algorithm algorithm;
+  private int algorithm;
 
   /**
    * @param type
    * @param algorithm
    */
-  public PublicKeyCredentialParameters(PublicKeyCredentialType type, Algorithm algorithm) {
+  public PublicKeyCredentialParameters(PublicKeyCredentialType type, int algorithm) {
     this.type = type;
     this.algorithm = algorithm;
   }
@@ -35,7 +35,7 @@ public class PublicKeyCredentialParameters {
   public JsonObject getJsonObject() {
     JsonObject result = new JsonObject();
     result.addProperty("type", type.toString());
-    result.addProperty("alg", algorithm.toString());
+    result.addProperty("alg", algorithm);
 
     return result;
   }
