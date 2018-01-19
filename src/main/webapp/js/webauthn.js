@@ -184,8 +184,10 @@ function addCredential() {
     let makeCredentialOptions = {};
     makeCredentialOptions.rp = options.rp;
     makeCredentialOptions.user = options.user;
-    makeCredentialOptions.challenge = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
+makeCredentialOptions.user.id = (new Uint8Array(1)).buffer;
+    makeCredentialOptions.challenge = (Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0))).buffer;
     makeCredentialOptions.pubKeyCredParams = options.pubKeyCredParams;
+makeCredentialOptions.pubKeyCredParams[0].alg = -7;
 
     // Optional parameters
     if ('timeout' in options) {
