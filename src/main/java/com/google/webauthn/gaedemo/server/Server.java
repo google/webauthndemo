@@ -131,8 +131,7 @@ public abstract class Server {
         publicKey = Crypto.getRSAPublicKey((RsaKey) storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey());
       }
 
-      String clientDataJson = assertionResponse.getClientDataString();
-      byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
+      byte[] clientDataHash = Crypto.sha256Digest(assertionResponse.getClientDataBytes());
 
       byte[] signedBytes = Bytes.concat(storedAttData.getAttestationObject().getAuthenticatorData().getRpIdHash(),
               new byte[] { (assertionResponse.getAuthenticatorData().isUP() == true ? (byte) 1 : (byte) 0) },
