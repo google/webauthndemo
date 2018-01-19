@@ -1,0 +1,65 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/app-layout/app-layout.html">
+<link rel="import" href="../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+
+<dom-module id="wad-app">
+  <template>
+    <style>
+      app-header {
+        background-color: rgb(0,150,136);
+        color: white;
+      }
+      app-toolbar paper-button {
+        background-color: rgb(255,64,129);
+        font-size: 14px;
+      }
+      .logout {
+        background-color: transparent;
+      }
+    </style>
+    <app-header>
+      <app-toolbar>
+        <div main-title>WebAuthN Demo</div>
+        <paper-button on-tap="addCredential" raised>Register New Credential</paper-button>
+        <paper-button on-tap="getAssertion" raised>Authenticate</paper-button>
+        <paper-button on-tap="logout" class="logout">Logout</paper-button>
+      </app-toolbar>
+    </app-header>
+    <section>
+
+    </section>
+    <section>
+      <paper-toggle-button>Advanced Options</paper-toggle-button>
+    </section>
+    <section>
+      <div>Attachment type</div>
+      <paper-toggle-button>Require resident key</paper-toggle-button>
+      <paper-toggle-button>Require user verification</paper-toggle-button>
+    </section>
+    <iron-list>
+      test
+    </iron-list>
+  </template>
+  <script>
+    class WadApp extends Polymer.Element {
+      static get is() { return 'wad-app' }
+      static get properties() {
+        return {};
+      }
+      addCredential() {
+
+      }
+      getAssertion() {
+
+      }
+      logout() {
+
+      }
+    }
+
+    window.customElements.define(WadApp.is, WadApp);
+  </script>
+</dom-module>

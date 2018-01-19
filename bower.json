@@ -1,0 +1,11 @@
+{
+  "name": "webauthndemo",
+  "authors": [
+    "WebAuthN Demo Authors"
+  ],
+  "license": "Apache 2.0",
+  "private": true,
+  "dependencies": {
+    "polymer": "polymer/polymer#^2.0.0"
+  }
+}
