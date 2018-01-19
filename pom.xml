@@ -14,7 +14,7 @@
     <appengine.app.version>1</appengine.app.version>
     <appengine.sdk.version>1.9.60</appengine.sdk.version>
 
-    <objectify.version>6.0a1</objectify.version>
+    <objectify.version>5.1.21</objectify.version>
     <guava.version>23.6-jre</guava.version>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -120,11 +120,6 @@
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt</artifactId>
       <version>0.9.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.api-client</groupId>
-      <artifactId>google-api-client</artifactId>
-      <version>1.23.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
