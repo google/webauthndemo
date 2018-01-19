@@ -35,7 +35,7 @@ public class PublicKeyCredentialParameters {
   public JsonObject getJsonObject() {
     JsonObject result = new JsonObject();
     result.addProperty("type", type.toString());
-    result.addProperty("alg", algorithm.toString());
+    result.addProperty("alg", algorithm.encodeToInt());
 
     return result;
   }
