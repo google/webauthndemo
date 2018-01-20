@@ -67,46 +67,6 @@ const post = (url, obj) => {
 //   });
 // }
 
-function fetchCredentials() {
-  post('/RegisteredKeys').then(rsp => {
-    var credentials = '';
-    for (let i = 0; i < rsp.length; i++) {
-      let { handle, publicKey, name, date } = rsp[i];
-      let buttonId = `delete${i}`;
-      credentials +=
-        `<div class="mdl-cell mdl-cell--1-offset mdl-cell-4-col">
-           <div class="mdl-card mdl-shadow--4dp" id="${handle}">
-             <div class="mdl-card__title mdl-card--border">${name}</div>
-             <div class="mdl-card__supporting-text">Enrolled ${date}</div>
-             <div class="mdl-card__subtitle-text">Public Key</div>
-             <div class="mdl-card__supporting-text">${publicKey}</div>
-             <div class="mdl-card__subtitle-text">Key Handle</div>
-             <div class="mdl-card__supporting-text">${handle}</div>
-             <div class="mdl-card__menu">
-               <button id="${buttonId}"
-                 class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
-                 <i class="material-icons">delete_forever</i>
-               </button>
-             </div>
-           </div>
-         </div>
-        `;
-    }
-    $('#credentials').innerHTML = credentials;
-    for (let i = 0; i < rsp.length; i++){
-      let r = rsp[i];
-      onClick(`#delete${i}`, () => {
-        console.log(r.id);
-        post('/RemoveCredential', {
-          credentialId : r.id
-        }).then(() => {
-          fetchCredentials();
-        });
-      });
-    }
-  });
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   let hiddens = document.querySelectorAll('.hidden');
   for (let hidden of hiddens) {
@@ -184,6 +144,7 @@ function addCredential() {
     let makeCredentialOptions = {};
     makeCredentialOptions.rp = options.rp;
     makeCredentialOptions.user = options.user;
+    makeCredentialOptions.user.id = new TextEncoder().encode(options.user.id);
     makeCredentialOptions.challenge = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
     makeCredentialOptions.pubKeyCredParams = options.pubKeyCredParams;
 

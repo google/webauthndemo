@@ -3,6 +3,13 @@
 <link rel="import" href="../bower_components/iron-list/iron-list.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 
 <dom-module id="wad-app">
@@ -19,6 +26,26 @@
       .logout {
         background-color: transparent;
       }
+      paper-card {
+        margin: 30px;
+        max-width: 400px;
+      }
+      paper-progress {
+        width: 100%;
+      }
+      .subtitle-text {
+        font-size: 14px;
+        font-weight: bold;
+        color: rgba(0,0,0,.54);
+      }
+      .supporting-text {
+        padding-left: .2cm;
+        font-size: 14px;
+        font-style: italic;
+        overflow-wrap: break-word;
+        white-space: pre-wrap;
+        color: rgba(0,0,0,.54);
+      }
     </style>
     <app-header>
       <app-toolbar>
@@ -28,35 +55,258 @@
         <paper-button on-tap="logout" class="logout">Logout</paper-button>
       </app-toolbar>
     </app-header>
+    <template is="dom-if" if="{{active}}">
+      <section id="active">
+        <paper-progress indeterminate class="blue"></paper-progress>
+        <h3>Waiting for user touch</h3>
+      </section>
+    </template>
     <section>
-
+      <paper-toggle-button checked="{{advanced}}">Advanced Options</paper-toggle-button>
+      <template is="dom-if" if="[[advanced]]">
+        <paper-toggle-button checked="{{excludeCredentials}}">Prevent Reregistration</paper-toggle-button>
+        <div>
+          <paper-dropdown-menu label="Attachment type">
+            <paper-listbox
+              attr-for-selected="item-name"
+              selected="{{authenticatorAttachment}}"
+              slot="dropdown-content">
+              <paper-item item-name="none">N/A</paper-item>
+              <paper-item item-name="platform">Platform</paper-item>
+              <paper-item item-name="cross-platform">Cross-Platform</paper-item>
+            </paper-listbox>
+          </paper-dropdown-menu>
+        </div>
+        <div>
+          <paper-dropdown-menu label="Conveyance Preference">
+            <paper-listbox
+              attr-for-selected="item-name"
+              selected="{{attestationConveyancePreference}}"
+              slot="dropdown-content">
+              <paper-item item-name="NA">N/A</paper-item>
+              <paper-item item-name="none">None</paper-item>
+              <paper-item item-name="indirect">Indirect</paper-item>
+              <paper-item item-name="direct">Direct</paper-item>
+            </paper-listbox>
+          </paper-dropdown-menu>
+        </div>
+        <paper-toggle-button checked="{{requireResidentKey}}">Require resident key</paper-toggle-button>
+        <div>
+          <paper-dropdown-menu label="User Verification">
+            <paper-listbox
+              attr-for-selected="item-name"
+              selected="{{userVerification}}"
+              slot="dropdown-content">
+              <paper-item item-name="none">None</paper-item>
+              <paper-item item-name="required">Required</paper-item>
+              <paper-item item-name="preferred">Preferred</paper-item>
+              <paper-item item-name="discouraged">Discouraged</paper-item>
+            </paper-listbox>
+          </paper-dropdown-menu>
+        </div>
+      </template>
     </section>
     <section>
-      <paper-toggle-button>Advanced Options</paper-toggle-button>
+      <template is="dom-repeat" items="[[credentials]]">
+        <paper-card elevation="1">
+          <div class="card-content">
+            <div class="subtitle-text">[[item.name]]</div>
+            <div class="supporting-text">[[item.date]]</div>
+            <div class="subtitle-text">Public Key</div>
+            <div class="supporting-text">[[item.publicKey]]</div>
+            <div class="subtitle-text">Key Handle</div>
+            <div class="supporting-text">[[item.handle]]</div>
+          </div>
+          <div class="card-actions">
+            <paper-button raised id="[[item.id]]" on-tap="_onDelete">
+              <iron-icon icon="delete"></iron-icon>Delete
+            </paper-button>
+          </div>
+        </paper-card>
+      </template>
     </section>
-    <section>
-      <div>Attachment type</div>
-      <paper-toggle-button>Require resident key</paper-toggle-button>
-      <paper-toggle-button>Require user verification</paper-toggle-button>
-    </section>
-    <iron-list>
-      test
-    </iron-list>
+    <paper-toast id="toast" duration="5000"></paper-toast>
   </template>
   <script>
     class WadApp extends Polymer.Element {
       static get is() { return 'wad-app' }
-      static get properties() {
-        return {};
-      }
-      addCredential() {
 
+      static get properties() {
+        return {
+          credentials: Array,
+          active: Boolean,
+          advanced: Boolean,
+          excludeCredentials: Boolean,
+          authenticatorAttachment: String,
+          attestationConveyancePreference: String,
+          requireResidentKey: Boolean,
+          userVerification: String
+        };
       }
+
+      ready() {
+        super.ready();
+        this._fetchCredentials();
+      }
+
+      _fetch(url, obj) {
+        let headers = new Headers({
+          'Content-Type': 'application/x-www-form-urlencoded'
+        });
+        let body = new URLSearchParams();
+        for (let key in obj) {
+          body.append(key, obj[key]);
+        }
+        return fetch(url, {
+          method: 'POST',
+          headers: headers,
+          credentials: 'include',
+          body: body
+        }).then(response => {
+          if (response.status === 200) {
+            return response.json();
+          } else {
+            throw response.statusText;
+          }
+        });
+      }
+
+      _fetchCredentials() {
+        this._fetch('/RegisteredKeys').then(response => {
+          this.credentials = response;
+        });
+      }
+
+      addCredential() {
+        this.active = true;
+
+        let advancedOptions = {};
+        if (this.advanced) {
+          advanced.requireResidentKey = this.requireResidentKey;
+          advanced.excludeCredentials = this.excludeCredentials;
+          advanced.userVerification = this.userVerification;
+          advanced.authenticatorAttachment = this.authenticatorAttachment;
+          advanced.attestationConveyancePreference = this.attestationConveyancePreference;
+        }
+
+        let options = {};
+
+        this._fetch('/BeginMakeCredential', {
+          advanced: this.advanced,
+          advancedOptions: JSON.stringify(advancedOptions) }
+        ).then(_options => {
+          options = _options;
+          let makeCredentialOptions = {};
+          makeCredentialOptions.rp = options.rp;
+          makeCredentialOptions.user = options.user;
+          makeCredentialOptions.user.id = new TextEncoder().encode(options.user.id);
+          makeCredentialOptions.challenge = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
+          makeCredentialOptions.pubKeyCredParams = options.pubKeyCredParams;
+
+          // Optional parameters
+          if ('timeout' in options) {
+            makeCredentialOptions.timeout = options.timeout;
+          }
+          if ('excludeCredentials' in options) {
+            makeCredentialOptions.excludeCredentials = credentialListConversion(options.excludeCredentials);
+          }
+          if ('authenticatorSelection' in options) {
+            makeCredentialOptions.authenticatorSelection = options.authenticatorSelection;
+          }
+          if ('attestation' in options) {
+            makeCredentialOptions.attestation = options.attestation;
+          }
+          if ('extensions' in options) {
+            makeCredentialOptions.extensions = options.extensions;
+          }
+
+          let createParams = {};
+          createParams.publicKey = makeCredentialOptions;
+
+console.log(makeCredentialOptions);
+
+          // Check to see if the browser supports credential creation
+          if (typeof navigator.credentials.create !== "function") {
+            throw "Browser does not support credential creation";
+          }
+
+          return navigator.credentials.create({
+            "publicKey": makeCredentialOptions
+          });
+        }).then(attestation => {
+          this.active = false;
+
+          let publicKeyCredential = {};
+          if ('id' in attestation) {
+            publicKeyCredential.id = attestation.id;
+          }
+          if ('type' in attestation) {
+            publicKeyCredential.type = attestation.type;
+          }
+          if ('rawId' in attestation) {
+            publicKeyCredential.rawId = btoa(
+              new Uint8Array(attestation.rawId).reduce((s, byte) =>
+              s + String.fromCharCode(byte), ''));
+            publicKeyCredential.rawId = attestation.rawId;
+          }
+          if ('response' in attestation) {
+            let response = {};
+            response.clientDataJSON = btoa(
+              new Uint8Array(attestation.response.clientDataJSON)
+              .reduce((s, byte) => s + String.fromCharCode(byte), ''));
+            response.attestationObject = btoa(
+              new Uint8Array(attestation.response.attestationObject)
+              .reduce((s, byte) => s + String.fromCharCode(byte), ''));
+            publicKeyCredential.response = response;
+
+            // Send new credential back to Relying Party for validation and storage
+            this._finishAddCredential(publicKeyCredential, options.session.id);
+          } else {
+            this._showMessage("Make Credential response lacking 'response' attribute");
+          }
+        }).catch(function (err) {
+          this.active = false;
+          this._showMessage(`An error occurred during Make Credential operation [${err.toString()}]`);
+        });
+      }
+
+      _finishAddCredential(publicKeyCredential, sessionId) {
+        this._fetch('/FinishMakeCredential', {
+          data: JSON.stringify(publicKeyCredential),
+          session: sessionId }
+        ).then(parameters => {
+console.log(parameters);
+          if ('success' in parameters && 'message' in parameters) {
+            this._showMessage(parameters.message);
+            this._fetchCredentials();
+          }
+          // TODO Validate response and display success/error message
+        });
+      }
+
       getAssertion() {
 
       }
+
       logout() {
 
+      }
+
+      _showMessage(text) {
+        this.$.toast.text = text;
+        this.$.toast.show();
+      }
+
+      _delete(id) {
+        this._fetch('/RemoveCredential', {
+          credentialId : id
+        }).then(() => {
+          this._fetchCredentials();
+        });
+      }
+
+      _onDelete(e) {
+        this._delete(e.target.id);
       }
     }
 
