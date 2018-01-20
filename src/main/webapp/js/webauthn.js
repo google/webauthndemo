@@ -262,8 +262,8 @@ function getAssertion() {
     if ('rpId' in parameters) {
       requestOptions.rpId = parameters.rpId;
     }
-    if ('allowList' in parameters) {
-      requestOptions.allowList = credentialListConversion(parameters.allowList);
+    if ('allowCredentials' in parameters) {
+      requestOptions.allowCredentials = credentialListConversion(parameters.allowCredentials);
     }
 
     let credentialRequest = {};
@@ -302,6 +302,9 @@ function getAssertion() {
         .reduce((s, byte) => s + String.fromCharCode(byte), ''));
       response.signature = btoa(
         new Uint8Array(assertion.response.signature)
+        .reduce((s, byte) => s + String.fromCharCode(byte), ''));
+      response.userHandle = btoa(
+        new Uint8Array(assertion.response.userHandle)
         .reduce((s, byte) => s + String.fromCharCode(byte), ''));
       publicKeyCredential.response = response;
       finishAssertion(publicKeyCredential, parameters.session.id);
