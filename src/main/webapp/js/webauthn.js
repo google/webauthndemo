@@ -28,13 +28,13 @@ class WadApp {
 
     this.toast = document.querySelector('#toast');
 
-    document.querySelector('#add').addEventListener('click', () => {
+    document.getElementById('add').addEventListener('click', () => {
       this.addCredential();
     });
-    document.querySelector('#auth').addEventListener('click', () => {
+    document.getElementById('auth').addEventListener('click', () => {
       this.getAssertion();
     });
-    document.querySelector('#credentials').addEventListener('click', e => {
+    document.getElementById('credentials').addEventListener('click', e => {
       e.stopPropagation();
       if (e.target.nodeName == 'PAPER-BUTTON') {
         this.delete(e.target.id);
@@ -74,28 +74,28 @@ console.log('[/RegisteredKeys] request');
     });
   }
 
-  addCredential() {
+  async addCredential() {
     this.app.active = true;
 
-    const advancedOptions = {};
-    let options;
+    try {
+      const advancedOptions = {};
 
-    if (this.app.advanced) {
-      advancedOptions.requireResidentKey = this.app.requireResidentKey;
-      advancedOptions.excludeCredentials = this.app.excludeCredentials;
-      advancedOptions.userVerification = this.app.userVerification;
-      advancedOptions.authenticatorAttachment = this.app.authenticatorAttachment;
-      advancedOptions.attestationConveyancePreference = this.app.attestationConveyancePreference;
-    }
+      if (this.app.advanced) {
+        advancedOptions.requireResidentKey = this.app.requireResidentKey;
+        advancedOptions.excludeCredentials = this.app.excludeCredentials;
+        advancedOptions.userVerification = this.app.userVerification;
+        advancedOptions.authenticatorAttachment = this.app.authenticatorAttachment;
+        advancedOptions.attestationConveyancePreference = this.app.attestationConveyancePreference;
+      }
 
-console.log('[/BeginMakeCredential] request options:', advancedOptions);
+  console.log('[/BeginMakeCredential] request options:', advancedOptions);
 
-    this._fetch('/BeginMakeCredential', {
-      advanced: this.app.advanced,
-      advancedOptions: JSON.stringify(advancedOptions)
-    }).then(_options => {
-      options = _options;
-console.log('[/BeginMakeCredential] response:', options);
+      const options = await this._fetch('/BeginMakeCredential', {
+        advanced: this.app.advanced,
+        advancedOptions: JSON.stringify(advancedOptions)
+      });
+
+  console.log('[/BeginMakeCredential] response:', options);
 
       const makeCredentialOptions = {};
 
@@ -122,20 +122,20 @@ console.log('[/BeginMakeCredential] response:', options);
         makeCredentialOptions.extensions = options.extensions;
       }
 
-console.log('`navigator.credentials.create()` options:', makeCredentialOptions);
+  console.log('`navigator.credentials.create()` options:', makeCredentialOptions);
 
       // Check to see if the browser supports credential creation
       if (typeof navigator.credentials.create !== "function") {
         throw "Browser does not support credential creation";
       }
 
-      return navigator.credentials.create({
+      const attestation = await navigator.credentials.create({
         publicKey: makeCredentialOptions
       });
-    }).then(attestation => {
+
       this.app.active = false;
 
-console.log('`navigator.credentials.create()`result:', attestation);
+  console.log('`navigator.credentials.create()`result:', attestation);
 
       const publicKeyCredential = {};
 
@@ -153,40 +153,40 @@ console.log('`navigator.credentials.create()`result:', attestation);
       }
 
       const response = {};
+
       response.clientDataJSON = this._binToStr(attestation.response.clientDataJSON);
       response.attestationObject = this._binToStr(attestation.response.attestationObject);
       publicKeyCredential.response = response;
 
-console.log('[/FinishMakeCredential] request options:', publicKeyCredential);
+  console.log('[/FinishMakeCredential] request options:', publicKeyCredential);
 
-      return this._fetch('/FinishMakeCredential', {
+      const result = await this._fetch('/FinishMakeCredential', {
         data: JSON.stringify(publicKeyCredential),
         session: options.session.id
       });
-    }).then(parameters => {
-console.log('[/FinishMakeCredential] response:', parameters);
 
-      if (parameters && parameters.success) {
-        this._showMessage(parameters.message);
+  console.log('[/FinishMakeCredential] response:', result);
+
+      if (result && result.success) {
+        this._showMessage(result.message);
         this.fetchCredentials();
       } else {
         throw 'Unexpected response received.';
       }
-    }).catch(err => {
+    } catch (err) {
       this.app.active = false;
 
       this._showMessage(`An error occurred during Make Credential operation [${err.toString()}]`);
-    });
+    }
   }
 
-  getAssertion() {
+  async getAssertion() {
     this.app.active = true;
-    let parameters;
 
+    try {
 console.log('[/BeingGetAssertion] request');
 
-    this._fetch('/BeginGetAssertion').then(_parameters => {
-      parameters = _parameters;
+      const parameters = await this._fetch('/BeginGetAssertion');
       const requestOptions = {};
 
       requestOptions.challenge = this._strToBin(parameters.challenge);
@@ -206,10 +206,10 @@ console.log('`navigator.credentials.get()` result:', requestOptions);
         throw "Browser does not support credential lookup";
       }
 
-      return navigator.credentials.get({
+      const assertion = await navigator.credentials.get({
         publicKey: requestOptions
       });
-    }).then(assertion => {
+
       this.app.active = false;
 
 console.log('`navigator.credentials.get()` result:', assertion);
@@ -238,26 +238,38 @@ console.log('`navigator.credentials.get()` result:', assertion);
       publicKeyCredential.response = response;
 
 console.log('[/FinishGetAssertion] request options:', publicKeyCredential);
-      return this._fetch('/FinishGetAssertion', {
+
+      const result = await this._fetch('/FinishGetAssertion', {
         data: JSON.stringify(publicKeyCredential),
         session: parameters.session.id
       });
-    }).then(parameters => {
-console.log('[/FinishGetAssertion] response:', parameters);
 
-      if (parameters && parameters.success) {
-        this._showMessage(parameters.message);
-        if ('handle' in parameters) {
-          document.querySelector(`#${parameters.handle}`).style =
-            'background-color: fuchsia';
+console.log('[/FinishGetAssertion] response:', result);
+
+      if (result && result.success) {
+        this._showMessage(result.message);
+        if ('handle' in result) {
+          this._blinkCard(result.handle);
         }
       } else {
         throw 'Unexpected response received.';
       }
-    }).catch(err => {
+    } catch (err) {
       this.app.active = false;
 
       this._showMessage(`An error occurred during Assertion request [${err.toString()}]`);
+    };
+  }
+
+  _blinkCard(id) {
+    let card = document.getElementById(id);
+    card.animate([{
+      backgroundColor: 'rgb(255,64,129)'
+    },{
+      backgroundColor: 'white'
+    }], {
+      duration: 2000,
+      easing: 'ease-out'
     });
   }
 
@@ -269,9 +281,6 @@ console.log('[/FinishGetAssertion] response:', parameters);
         transports: list.transports || undefined
       };
     });
-  }
-
-  _finishAssertion(publicKeyCredential, sessionId) {
   }
 
   _strToBin(str) {
