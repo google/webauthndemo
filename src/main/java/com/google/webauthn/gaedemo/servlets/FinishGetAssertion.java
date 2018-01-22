@@ -57,7 +57,7 @@ public class FinishGetAssertion extends HttpServlet {
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    String currentUser = userService.getCurrentUser().getUserId();
+    String currentUser = userService.getCurrentUser().getEmail();
     String data = request.getParameter("data");
     String session = request.getParameter("session");
 
@@ -94,7 +94,11 @@ public class FinishGetAssertion extends HttpServlet {
       throw new ServletException(e.toString());
     }
 
-    PublicKeyCredential cred = new PublicKeyCredential(credentialId, type,
+    // Recoding of credential ID is needed, because the ID from HTTP servlet request doesn't support
+    // padding.
+    String credentialIdRecoded = BaseEncoding.base64Url().encode(
+        BaseEncoding.base64Url().decode(credentialId));
+    PublicKeyCredential cred = new PublicKeyCredential(credentialIdRecoded, type,
         BaseEncoding.base64Url().decode(credentialId), assertion);
 
     Credential savedCredential;

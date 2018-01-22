@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.fido.example.fido2apiexample",
+    "sha256_cert_fingerprints": [
+      "6E:77:D1:8C:2A:3D:9A:67:10:1C:6D:5C:67:23:BE:15:05:19:00:CE:CF:0D:FF:EF:EC:AB:5B:70:00:EC:ED:87"
+    ]
+  }
+}]

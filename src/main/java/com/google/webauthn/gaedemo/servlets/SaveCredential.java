@@ -67,7 +67,7 @@ public class SaveCredential extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    String currentUser = userService.getCurrentUser().getUserId();
+    String currentUser = userService.getCurrentUser().getEmail();
     String id = request.getParameter("id");
 
     Random rand = new Random();
