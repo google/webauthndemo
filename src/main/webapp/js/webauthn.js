@@ -45,77 +45,143 @@ async function addCredential() {
       advancedOptions.attestationConveyancePreference = app.attestationConveyancePreference;
     }
 
-    const options = await _fetch('/BeginMakeCredential', {
+    const _options = await _fetch('/BeginMakeCredential', {
       advanced: app.advanced,
       advancedOptions: JSON.stringify(advancedOptions)
     });
 
-    const makeCredentialOptions = {};
+    const options = {};
+    /**
+     * interface MakePublicKeyCredentialOptions {
+     *   rp: PublicKeyCredentialRpEntity;
+     *   user: PublicKeyCredentialUserEntity;
+     *   challenge: BufferSource;
+     *   pubKeyCredParams: PublicKeyCredentialParameters[];
+     *   timeout?: number;
+     *   excludeCredentials?: PublicKeyCredentialDescriptor[];
+     *   authenticatorSelection?: AuthenticatorSelectionCriteria;
+     *   attestation?: AttestationConveyancePreference;
+     *   extensions?: any;
+     * }
+     */
 
-    makeCredentialOptions.rp = options.rp;
-    makeCredentialOptions.user = options.user;
-    makeCredentialOptions.user.id = new TextEncoder().encode(options.user.id);
-    makeCredentialOptions.challenge = _strToBin(options.challenge);
-    makeCredentialOptions.pubKeyCredParams = options.pubKeyCredParams;
+    options.rp = _options.rp;
+    /**
+     * interface PublicKeyCredentialRpEntity {
+     *   id: string;
+     *   name: string;
+     * }
+     */
+    options.user = _options.user;
+    options.user.id = new TextEncoder().encode(_options.user.id);
+    /**
+     * interface PublicKeyCredentialUserEntity {
+     *   id: BufferSource;
+     *   name: string;
+     *   displayName: string;
+     * }
+     */
+    options.challenge = strToBin(_options.challenge);
+    options.pubKeyCredParams = _options.pubKeyCredParams;
+    /**
+     * interface PublicKeyCredentialParameters {
+     *   type: 'public-key';
+     *   alg: number;
+     * }
+     */
 
     // Optional parameters
-    if ('timeout' in options) {
-      makeCredentialOptions.timeout = options.timeout;
+    if ('timeout' in _options) {
+      options.timeout = _options.timeout;
     }
-    if ('excludeCredentials' in options) {
-      makeCredentialOptions.excludeCredentials = convertCredentialList(options.excludeCredentials);
+    if ('excludeCredentials' in _options) {
+      options.excludeCredentials = convertCredentialList(_options.excludeCredentials);
+      /**
+       * interface PublicKeyCredentialDescriptor {
+       *   type: 'public-key';
+       *   id: BufferSource;
+       *   transports?: AuthenticatorTransport[];
+       * }
+       * 
+       * type AuthenticatorTransport = 'usb'|'nfc'|'ble';
+       */
     }
-    if ('authenticatorSelection' in options) {
-      makeCredentialOptions.authenticatorSelection = options.authenticatorSelection;
+    if ('authenticatorSelection' in _options) {
+      options.authenticatorSelection = _options.authenticatorSelection;
+      /**
+       * interface AuthenticatorSelectionCriteria {
+       *   authenticatorAttachment?: AuthenticatorAttachment;
+       *   requireResidentKey?: boolean;
+       *   requireUserVerification?: string;
+       * }
+       * 
+       * type AuthenticatorAttachment = 'platform'|'cross-platform';
+       */
     }
-    if ('attestation' in options) {
-      makeCredentialOptions.attestation = options.attestation;
+    if ('attestation' in _options) {
+      options.attestation = _options.attestation;
+      /**
+       * type AttestationConveyancePreference = 'none'|'indirect'|'direct';
+       */
     }
-    if ('extensions' in options) {
-      makeCredentialOptions.extensions = options.extensions;
+    if ('extensions' in _options) {
+      options.extensions = _options.extensions;
     }
 
-    // Check to see if the browser supports credential creation
-    if (typeof navigator.credentials.create !== "function") {
-      throw "Browser does not support credential creation";
-    }
+    console.log('`navigator.credentials.create()` request:', options);
 
-    console.log('`navigator.credentials.create()` request:', makeCredentialOptions);
-
-    const attestation = await navigator.credentials.create({
-      publicKey: makeCredentialOptions
+    // Create public key and attestation object
+    const credential = await navigator.credentials.create({
+      publicKey: options
     }).catch(() => {
       throw 'Credential creation failed.';
     });
 
-    console.log('`navigator.credentials.create()`result:', attestation);
+    console.log('`navigator.credentials.create()`result:', credential);
 
     app.active = false;
 
-    const publicKeyCredential = {};
+    const attestation = {};
+    /**
+     * interface PublicKeyCredential {
+     *   id: string;
+     *   readonly type: 'public-key';
+     *   readonly rawId: ArrayBuffer;
+     *   readonly response: AuthenticatorAttestationResponse;
+     * }
+     */
 
-    if ('id' in attestation) {
-      publicKeyCredential.id = attestation.id;
+    if ('id' in credential) {
+      attestation.id = credential.id;
     }
-    if ('type' in attestation) {
-      publicKeyCredential.type = attestation.type;
+    if ('type' in credential) {
+      attestation.type = credential.type;
     }
-    if ('rawId' in attestation) {
-      publicKeyCredential.rawId = _binToStr(attestation.rawId);
+    if ('rawId' in credential) {
+      attestation.rawId = binToStr(credential.rawId);
     }
-    if (!attestation.response) {
+    if (!credential.response) {
       throw "Make Credential response lacking 'response' attribute";
     }
 
-    const response = {};
-
-    response.clientDataJSON = _binToStr(attestation.response.clientDataJSON);
-    response.attestationObject = _binToStr(attestation.response.attestationObject);
-    publicKeyCredential.response = response;
+    const response = credential.response;
+    /**
+     * interface AuthenticatorAttestationResponse extends AuthenticatorResponse {
+     *   readonly attestationObject: ArrayBuffer;
+     * }
+     * 
+     * interface AuthenticatorResponse {
+     *   readonly clientDataJSON: ArrayBuffer;
+     * }
+     */
+    attestation.response = {
+      clientDataJSON:     binToStr(response.clientDataJSON),
+      attestationObject:  binToStr(response.attestationObject)
+    };
 
     const result = await _fetch('/FinishMakeCredential', {
-      data: JSON.stringify(publicKeyCredential),
-      session: options.session.id
+      data: JSON.stringify(attestation),
+      session: _options.session.id
     });
 
     if (result && result.success) {
@@ -135,65 +201,98 @@ async function getAssertion() {
   app.active = true;
 
   try {
-    const parameters = await _fetch('/BeginGetAssertion');
-    const requestOptions = {};
+    const _options = await _fetch('/BeginGetAssertion');
+    const options = {};
+    /**
+     * interface PublicKeyCredentialRequestOptions {
+     *   challenge: BufferSource;
+     *   timeout: number;
+     *   rpId: string;
+     *   allowCredentials: PublicKeyCredentialDescriptor[];
+     *   userVerification?: 'required' | 'preferred' | 'discouraged';
+     *   extensions?: any;
+     * }
+     */
 
-    requestOptions.challenge = _strToBin(parameters.challenge);
-    if ('timeout' in parameters) {
-      requestOptions.timeout = parameters.timeout;
+    options.challenge = strToBin(_options.challenge);
+    if ('timeout' in _options) {
+      options.timeout = _options.timeout;
     }
-    if ('rpId' in parameters) {
-      requestOptions.rpId = parameters.rpId;
+    if ('rpId' in _options) {
+      options.rpId = _options.rpId;
     }
-    if ('allowCredentials' in parameters) {
-      requestOptions.allowCredentials = convertCredentialList(parameters.allowCredentials);
+    if ('allowCredentials' in _options) {
+      options.allowCredentials = convertCredentialList(_options.allowCredentials);
+      /**
+       * interface PublicKeyCredentialDescriptor {
+       *   type: 'public-key';
+       *   id: BufferSource;
+       *   transports?: string[];
+       * }
+       */
     }
 
-    if (typeof navigator.credentials.get !== "function") {
-      throw "Browser does not support credential lookup";
-    }
+    console.log('`navigator.credentials.get()` request:', options);
 
-    console.log('`navigator.credentials.get()` request:', requestOptions);
-
-    const assertion = await navigator.credentials.get({
-      publicKey: requestOptions
+    const credential = await navigator.credentials.get({
+      publicKey:options 
     }).catch(() => {
       throw 'Authentication failed';
     });
 
-    console.log('`navigator.credentials.get()` result:', assertion);
+    console.log('`navigator.credentials.get()` result:', credential);
 
     app.active = false;
 
-    const publicKeyCredential = {};
+    const assertion = {};
+    /**
+     * interface PublicKeyCredential {
+     *   id: string;
+     *   readonly type: 'public-key';
+     *   readonly rawId: ArrayBuffer;
+     *   readonly response: AuthenticatorAssertionResponse;
+     * }
+     */
 
-    if ('id' in assertion) {
-      publicKeyCredential.id = assertion.id;
+    if ('id' in credential) {
+      assertion.id = credential.id;
     }
-    if ('type' in assertion) {
-      publicKeyCredential.type = assertion.type;
+    if ('type' in credential) {
+      assertion.type = credential.type;
     }
-    if ('rawId' in assertion) {
-      publicKeyCredential.rawId = _binToStr(assertion.rawId);
+    if ('rawId' in credential) {
+      assertion.rawId = binToStr(credential.rawId);
     }
-    if (!assertion.response) {
+    if (!credential.response) {
       throw "Get assertion response lacking 'response' attribute";
     }
 
-    const response = {};
+    const response = credential.response;
+    /**
+     * interface AuthenticatorAssertionResponse extends AuthenticatorResponse {
+     *   readonly authenticatorData: ArrayBuffer;
+     *   readonly signature: ArrayBuffer;
+     *   readonly userHandle: ArrayBuffer;
+     * }
+     * 
+     * interface AuthenticatorResponse {
+     *   readonly clientDataJSON: ArrayBuffer;
+     * }
+     */
 
-    response.clientDataJSON = _binToStr(assertion.response.clientDataJSON);
-    response.authenticatorData = _binToStr(assertion.response.authenticatorData);
-    response.signature = _binToStr(assertion.response.signature);
-    response.userHandle = _binToStr(assertion.response.userHandle);
-    publicKeyCredential.response = response;
+    assertion.response = {
+      clientDataJSON:     binToStr(response.clientDataJSON),
+      authenticatorData:  binToStr(response.authenticatorData),
+      signature:          binToStr(response.signature),
+      userHandle:         binToStr(response.userHandle)
+    };
 
     const result = await _fetch('/FinishGetAssertion', {
-      data: JSON.stringify(publicKeyCredential),
-      session: parameters.session.id
+      data: JSON.stringify(assertion),
+      session: _options.session.id
     });
 
-    if (result &&result.success) {
+    if (result && result.success) {
       if (result.message) {
         showMessage(result.message);
       }
@@ -222,17 +321,17 @@ function convertCredentialList(list) {
   return list.map(item => {
     return {
       type: item.type,
-      id: _strToBin(item.id),
+      id: strToBin(item.id),
       transports: list.transports || undefined
     };
   });
 }
 
-function _strToBin(str) {
+function strToBin(str) {
   return Uint8Array.from(atob(str), c => c.charCodeAt(0));
 }
 
-function _binToStr(bin) {
+function binToStr(bin) {
   return btoa(new Uint8Array(bin).reduce(
     (s, byte) => s + String.fromCharCode(byte), ''
   ));
@@ -297,7 +396,6 @@ document.addEventListener('DOMContentLoaded', () => {
     getAssertion();
   });
   document.getElementById('credentials').addEventListener('click', e => {
-    e.stopPropagation();
     if (e.target.nodeName == 'PAPER-BUTTON') {
       removeCredential(e.target.id);
     }
