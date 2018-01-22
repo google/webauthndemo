@@ -15,298 +15,293 @@
  *
  */
 
-class WadApp {
-  constructor() {
-    this.app = document.querySelector('dom-bind');
-    this.app.active = false;
-    this.app.advanced = false;
-    this.app.excludeCredentials = false;
-    this.app.authenticatorAttachment = 'none';
-    this.app.attestationConveyancePreference = 'NA';
-    this.app.requireResidentKey = false;
-    this.app.userVerification = 'none';
+async function fetchCredentials() {
+  const response = await _fetch('/RegisteredKeys').catch(err => {
+    showMessage(`An error occurred during fetch [${err.toString()}]`);
+  });
+  app.credentials = response;
+}
 
-    this.toast = document.querySelector('#toast');
-
-    document.getElementById('add').addEventListener('click', () => {
-      this.addCredential();
-    });
-    document.getElementById('auth').addEventListener('click', () => {
-      this.getAssertion();
-    });
-    document.getElementById('credentials').addEventListener('click', e => {
-      e.stopPropagation();
-      if (e.target.nodeName == 'PAPER-BUTTON') {
-        this.delete(e.target.id);
-      }
-    });
-
-    this.fetchCredentials();
+async function removeCredential(id) {
+  try {
+    await _fetch('/RemoveCredential', { credentialId : id });
+  } catch (err) {
+    showMessage(`An error occurred during removal [${err.toString()}]`);
   }
+  fetchCredentials();
+}
 
-  _fetch(url, obj) {
-    let headers = new Headers({
-      'Content-Type': 'application/x-www-form-urlencoded'
-    });
-    let body = new URLSearchParams();
-    for (let key in obj) {
-      body.append(key, obj[key]);
+async function addCredential() {
+  app.active = true;
+
+  try {
+    const advancedOptions = {};
+
+    if (app.advanced) {
+      advancedOptions.requireResidentKey = app.requireResidentKey;
+      advancedOptions.excludeCredentials = app.excludeCredentials;
+      advancedOptions.userVerification = app.userVerification;
+      advancedOptions.authenticatorAttachment = app.authenticatorAttachment;
+      advancedOptions.attestationConveyancePreference = app.attestationConveyancePreference;
     }
-    return fetch(url, {
-      method: 'POST',
-      headers: headers,
-      credentials: 'include',
-      body: body
-    }).then(response => {
-      if (response.status === 200) {
-        return response.json();
-      } else {
-        throw response.statusText;
-      }
+
+    const options = await _fetch('/BeginMakeCredential', {
+      advanced: app.advanced,
+      advancedOptions: JSON.stringify(advancedOptions)
     });
-  }
 
-  fetchCredentials() {
-console.log('[/RegisteredKeys] request');
+    const makeCredentialOptions = {};
 
-    this._fetch('/RegisteredKeys').then(response => {
-      this.app.credentials = response;
-    });
-  }
+    makeCredentialOptions.rp = options.rp;
+    makeCredentialOptions.user = options.user;
+    makeCredentialOptions.user.id = new TextEncoder().encode(options.user.id);
+    makeCredentialOptions.challenge = _strToBin(options.challenge);
+    makeCredentialOptions.pubKeyCredParams = options.pubKeyCredParams;
 
-  async addCredential() {
-    this.app.active = true;
-
-    try {
-      const advancedOptions = {};
-
-      if (this.app.advanced) {
-        advancedOptions.requireResidentKey = this.app.requireResidentKey;
-        advancedOptions.excludeCredentials = this.app.excludeCredentials;
-        advancedOptions.userVerification = this.app.userVerification;
-        advancedOptions.authenticatorAttachment = this.app.authenticatorAttachment;
-        advancedOptions.attestationConveyancePreference = this.app.attestationConveyancePreference;
-      }
-
-  console.log('[/BeginMakeCredential] request options:', advancedOptions);
-
-      const options = await this._fetch('/BeginMakeCredential', {
-        advanced: this.app.advanced,
-        advancedOptions: JSON.stringify(advancedOptions)
-      });
-
-  console.log('[/BeginMakeCredential] response:', options);
-
-      const makeCredentialOptions = {};
-
-      makeCredentialOptions.rp = options.rp;
-      makeCredentialOptions.user = options.user;
-      makeCredentialOptions.user.id = new TextEncoder().encode(options.user.id);
-      makeCredentialOptions.challenge = this._strToBin(options.challenge);
-      makeCredentialOptions.pubKeyCredParams = options.pubKeyCredParams;
-
-      // Optional parameters
-      if ('timeout' in options) {
-        makeCredentialOptions.timeout = options.timeout;
-      }
-      if ('excludeCredentials' in options) {
-        makeCredentialOptions.excludeCredentials = this._credentialListConversion(options.excludeCredentials);
-      }
-      if ('authenticatorSelection' in options) {
-        makeCredentialOptions.authenticatorSelection = options.authenticatorSelection;
-      }
-      if ('attestation' in options) {
-        makeCredentialOptions.attestation = options.attestation;
-      }
-      if ('extensions' in options) {
-        makeCredentialOptions.extensions = options.extensions;
-      }
-
-  console.log('`navigator.credentials.create()` options:', makeCredentialOptions);
-
-      // Check to see if the browser supports credential creation
-      if (typeof navigator.credentials.create !== "function") {
-        throw "Browser does not support credential creation";
-      }
-
-      const attestation = await navigator.credentials.create({
-        publicKey: makeCredentialOptions
-      });
-
-      this.app.active = false;
-
-  console.log('`navigator.credentials.create()`result:', attestation);
-
-      const publicKeyCredential = {};
-
-      if ('id' in attestation) {
-        publicKeyCredential.id = attestation.id;
-      }
-      if ('type' in attestation) {
-        publicKeyCredential.type = attestation.type;
-      }
-      if ('rawId' in attestation) {
-        publicKeyCredential.rawId = this._binToStr(attestation.rawId);
-      }
-      if (!attestation.response) {
-        throw "Make Credential response lacking 'response' attribute";
-      }
-
-      const response = {};
-
-      response.clientDataJSON = this._binToStr(attestation.response.clientDataJSON);
-      response.attestationObject = this._binToStr(attestation.response.attestationObject);
-      publicKeyCredential.response = response;
-
-  console.log('[/FinishMakeCredential] request options:', publicKeyCredential);
-
-      const result = await this._fetch('/FinishMakeCredential', {
-        data: JSON.stringify(publicKeyCredential),
-        session: options.session.id
-      });
-
-  console.log('[/FinishMakeCredential] response:', result);
-
-      if (result && result.success) {
-        this._showMessage(result.message);
-        this.fetchCredentials();
-      } else {
-        throw 'Unexpected response received.';
-      }
-    } catch (err) {
-      this.app.active = false;
-
-      this._showMessage(`An error occurred during Make Credential operation [${err.toString()}]`);
+    // Optional parameters
+    if ('timeout' in options) {
+      makeCredentialOptions.timeout = options.timeout;
     }
-  }
+    if ('excludeCredentials' in options) {
+      makeCredentialOptions.excludeCredentials = convertCredentialList(options.excludeCredentials);
+    }
+    if ('authenticatorSelection' in options) {
+      makeCredentialOptions.authenticatorSelection = options.authenticatorSelection;
+    }
+    if ('attestation' in options) {
+      makeCredentialOptions.attestation = options.attestation;
+    }
+    if ('extensions' in options) {
+      makeCredentialOptions.extensions = options.extensions;
+    }
 
-  async getAssertion() {
-    this.app.active = true;
+    // Check to see if the browser supports credential creation
+    if (typeof navigator.credentials.create !== "function") {
+      throw "Browser does not support credential creation";
+    }
 
-    try {
-console.log('[/BeingGetAssertion] request');
+    console.log('`navigator.credentials.create()` request:', makeCredentialOptions);
 
-      const parameters = await this._fetch('/BeginGetAssertion');
-      const requestOptions = {};
-
-      requestOptions.challenge = this._strToBin(parameters.challenge);
-      if ('timeout' in parameters) {
-        requestOptions.timeout = parameters.timeout;
-      }
-      if ('rpId' in parameters) {
-        requestOptions.rpId = parameters.rpId;
-      }
-      if ('allowCredentials' in parameters) {
-        requestOptions.allowCredentials = this._credentialListConversion(parameters.allowCredentials);
-      }
-
-console.log('`navigator.credentials.get()` result:', requestOptions);
-
-      if (typeof navigator.credentials.get !== "function") {
-        throw "Browser does not support credential lookup";
-      }
-
-      const assertion = await navigator.credentials.get({
-        publicKey: requestOptions
-      });
-
-      this.app.active = false;
-
-console.log('`navigator.credentials.get()` result:', assertion);
-
-      const publicKeyCredential = {};
-
-      if ('id' in assertion) {
-        publicKeyCredential.id = assertion.id;
-      }
-      if ('type' in assertion) {
-        publicKeyCredential.type = assertion.type;
-      }
-      if ('rawId' in assertion) {
-        publicKeyCredential.rawId = this._binToStr(assertion.rawId);
-      }
-      if (!assertion.response) {
-        throw "Get assertion response lacking 'response' attribute";
-      }
-
-      const response = {};
-
-      response.clientDataJSON = this._binToStr(assertion.response.clientDataJSON);
-      response.authenticatorData = this._binToStr(assertion.response.authenticatorData);
-      response.signature = this._binToStr(assertion.response.signature);
-      response.userHandle = this._binToStr(assertion.response.userHandle);
-      publicKeyCredential.response = response;
-
-console.log('[/FinishGetAssertion] request options:', publicKeyCredential);
-
-      const result = await this._fetch('/FinishGetAssertion', {
-        data: JSON.stringify(publicKeyCredential),
-        session: parameters.session.id
-      });
-
-console.log('[/FinishGetAssertion] response:', result);
-
-      if (result && result.success) {
-        this._showMessage(result.message);
-        if ('handle' in result) {
-          this._blinkCard(result.handle);
-        }
-      } else {
-        throw 'Unexpected response received.';
-      }
-    } catch (err) {
-      this.app.active = false;
-
-      this._showMessage(`An error occurred during Assertion request [${err.toString()}]`);
-    };
-  }
-
-  _blinkCard(id) {
-    let card = document.getElementById(id);
-    card.animate([{
-      backgroundColor: 'rgb(255,64,129)'
-    },{
-      backgroundColor: 'white'
-    }], {
-      duration: 2000,
-      easing: 'ease-out'
+    const attestation = await navigator.credentials.create({
+      publicKey: makeCredentialOptions
+    }).catch(() => {
+      throw 'Credential creation failed.';
     });
-  }
 
-  _credentialListConversion(list) {
-    return list.map(item => {
-      return {
-        type: item.type,
-        id: this._strToBin(item.id),
-        transports: list.transports || undefined
-      };
+    console.log('`navigator.credentials.create()`result:', attestation);
+
+    app.active = false;
+
+    const publicKeyCredential = {};
+
+    if ('id' in attestation) {
+      publicKeyCredential.id = attestation.id;
+    }
+    if ('type' in attestation) {
+      publicKeyCredential.type = attestation.type;
+    }
+    if ('rawId' in attestation) {
+      publicKeyCredential.rawId = _binToStr(attestation.rawId);
+    }
+    if (!attestation.response) {
+      throw "Make Credential response lacking 'response' attribute";
+    }
+
+    const response = {};
+
+    response.clientDataJSON = _binToStr(attestation.response.clientDataJSON);
+    response.attestationObject = _binToStr(attestation.response.attestationObject);
+    publicKeyCredential.response = response;
+
+    const result = await _fetch('/FinishMakeCredential', {
+      data: JSON.stringify(publicKeyCredential),
+      session: options.session.id
     });
-  }
 
-  _strToBin(str) {
-    return Uint8Array.from(atob(str), c => c.charCodeAt(0));
-  }
+    if (result && result.success) {
+      showMessage(result.message);
+      fetchCredentials();
+    } else {
+      throw 'Unexpected response received.';
+    }
+  } catch (err) {
+    app.active = false;
 
-  _binToStr(bin) {
-    return btoa(new Uint8Array(bin).reduce(
-      (s, byte) => s + String.fromCharCode(byte), ''
-    ));
-  }
-
-  _showMessage(text) {
-    this.toast.text = text;
-    this.toast.show();
-  }
-
-  delete(id) {
-console.log('[/RemoveCredential] id:', id);
-
-    this._fetch('/RemoveCredential', {
-      credentialId : id
-    }).then(() => {
-      this.fetchCredentials();
-    });
+    showMessage(`An error occurred during Make Credential operation [${err.toString()}]`);
   }
 }
 
-const app = new WadApp();
+async function getAssertion() {
+  app.active = true;
+
+  try {
+    const parameters = await _fetch('/BeginGetAssertion');
+    const requestOptions = {};
+
+    requestOptions.challenge = _strToBin(parameters.challenge);
+    if ('timeout' in parameters) {
+      requestOptions.timeout = parameters.timeout;
+    }
+    if ('rpId' in parameters) {
+      requestOptions.rpId = parameters.rpId;
+    }
+    if ('allowCredentials' in parameters) {
+      requestOptions.allowCredentials = convertCredentialList(parameters.allowCredentials);
+    }
+
+    if (typeof navigator.credentials.get !== "function") {
+      throw "Browser does not support credential lookup";
+    }
+
+    console.log('`navigator.credentials.get()` request:', requestOptions);
+
+    const assertion = await navigator.credentials.get({
+      publicKey: requestOptions
+    }).catch(() => {
+      throw 'Authentication failed';
+    });
+
+    console.log('`navigator.credentials.get()` result:', assertion);
+
+    app.active = false;
+
+    const publicKeyCredential = {};
+
+    if ('id' in assertion) {
+      publicKeyCredential.id = assertion.id;
+    }
+    if ('type' in assertion) {
+      publicKeyCredential.type = assertion.type;
+    }
+    if ('rawId' in assertion) {
+      publicKeyCredential.rawId = _binToStr(assertion.rawId);
+    }
+    if (!assertion.response) {
+      throw "Get assertion response lacking 'response' attribute";
+    }
+
+    const response = {};
+
+    response.clientDataJSON = _binToStr(assertion.response.clientDataJSON);
+    response.authenticatorData = _binToStr(assertion.response.authenticatorData);
+    response.signature = _binToStr(assertion.response.signature);
+    response.userHandle = _binToStr(assertion.response.userHandle);
+    publicKeyCredential.response = response;
+
+    const result = await _fetch('/FinishGetAssertion', {
+      data: JSON.stringify(publicKeyCredential),
+      session: parameters.session.id
+    });
+
+    if (result &&result.success) {
+      if (result.message) {
+        showMessage(result.message);
+      }
+      if (result.handle) {
+        let card = document.getElementById(result.handle);
+        card.animate([{
+          backgroundColor: 'rgb(255,64,129)'
+        },{
+          backgroundColor: 'white'
+        }], {
+          duration: 2000,
+          easing: 'ease-out'
+        });
+      }
+    } else {
+      throw 'Unexpected response received.';
+    }
+  } catch (err) {
+    app.active = false;
+
+    showMessage(`An error occurred during Assertion operation [${err.toString()}]`);
+  }
+}
+
+function convertCredentialList(list) {
+  return list.map(item => {
+    return {
+      type: item.type,
+      id: _strToBin(item.id),
+      transports: list.transports || undefined
+    };
+  });
+}
+
+function _strToBin(str) {
+  return Uint8Array.from(atob(str), c => c.charCodeAt(0));
+}
+
+function _binToStr(bin) {
+  return btoa(new Uint8Array(bin).reduce(
+    (s, byte) => s + String.fromCharCode(byte), ''
+  ));
+}
+
+function showMessage(text) {
+  toast.text = text;
+  toast.show();
+}
+
+async function _fetch(url, obj) {
+  console.log(`[${url}] request:`, obj);
+
+  let headers = new Headers({
+    'Content-Type': 'application/x-www-form-urlencoded'
+  });
+  let body = new URLSearchParams();
+  for (let key in obj) {
+    body.append(key, obj[key]);
+  }
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: headers,
+    credentials: 'include',
+    body: body
+  });
+
+  if (response.status === 200) {
+    const result = await response.json();
+    console.log(`[${url}] response:`, result);
+    return result;
+  } else {
+    throw response.statusText;
+  }
+}
+
+const app = document.querySelector('dom-bind');
+const toast = document.querySelector('#toast');
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!navigator.credentials) {
+    showMessage('Your browser is not compatible with Credential Management API.');
+    return;
+  }
+  if (!window.PublicKeyCredential) {
+    showMessage('Your browser is not compatible with Web Authentication.');
+    return;
+  }
+
+  app.active = false;
+  app.advanced = false;
+  app.excludeCredentials = false;
+  app.authenticatorAttachment = 'none';
+  app.attestationConveyancePreference = 'NA';
+  app.requireResidentKey = false;
+  app.userVerification = 'none';
+
+  document.getElementById('add').addEventListener('click', () => {
+    addCredential();
+  });
+  document.getElementById('auth').addEventListener('click', () => {
+    getAssertion();
+  });
+  document.getElementById('credentials').addEventListener('click', e => {
+    e.stopPropagation();
+    if (e.target.nodeName == 'PAPER-BUTTON') {
+      removeCredential(e.target.id);
+    }
+  });
+
+  fetchCredentials();
+});

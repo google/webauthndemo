@@ -8,7 +8,6 @@
   "dependencies": {
     "polymer": "polymer/polymer#^2.0.0",
     "app-layout": "^2.0.4",
-    "iron-list": "^2.0.12",
     "paper-button": "^2.0.0",
     "paper-toggle-button": "^2.0.0",
     "paper-card": "PolymerElements/paper-card#^2.0.0",

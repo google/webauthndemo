@@ -9,7 +9,6 @@
 <link rel="import" href="../bower_components/neon-animation/web-animations.html">
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/app-layout/app-layout.html">
-<link rel="import" href="../bower_components/iron-list/iron-list.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
@@ -21,7 +20,6 @@
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/paper-progress/paper-progress.html">
 
-<!-- <link rel="import" href="components/wad-app.html"> -->
 <style>
   body {
     margin: 0;
@@ -151,13 +149,13 @@
               </div>
             </template>
           </section>
+          <template is="dom-if" if="{{active}}">
+            <section id="active">
+              <paper-progress indeterminate></paper-progress>
+              <h3 class="side-padding">Waiting for user touch</h3>
+            </section>
+          </template>
         </app-header>
-        <template is="dom-if" if="{{active}}">
-          <section id="active">
-            <paper-progress indeterminate class="blue"></paper-progress>
-            <h3 class="side-padding">Waiting for user touch</h3>
-          </section>
-        </template>
         <section id="credentials">
           <template is="dom-repeat" items="[[credentials]]">
             <paper-card elevation="1" id="[[item.handle]]" heading="[[item.name]]">
@@ -177,7 +175,7 @@
           </template>
         </section>
       </app-header-layout>
-      <paper-toast id="toast" duration="5000"></paper-toast>
+      <paper-toast id="toast" duration="8000"></paper-toast>
     </template>
   </dom-bind>
   <script src="js/webauthn.js"></script>
