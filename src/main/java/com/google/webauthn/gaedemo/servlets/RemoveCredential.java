@@ -42,7 +42,7 @@ public class RemoveCredential extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    String currentUser = userService.getCurrentUser().getUserId();
+    String currentUser = userService.getCurrentUser().getEmail();
     Credential.remove(currentUser, request.getParameter("id"));
 
 
@@ -61,7 +61,7 @@ public class RemoveCredential extends HttpServlet {
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    String currentUser = userService.getCurrentUser().getUserId();
+    String currentUser = userService.getCurrentUser().getEmail();
     Credential.remove(currentUser, request.getParameter("credentialId"));
 
     response.setContentType("text/json");

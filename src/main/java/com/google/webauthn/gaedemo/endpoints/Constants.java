@@ -12,7 +12,11 @@ public class Constants {
   // TODO: configure Client IDs for android and web clients.
   // ClientIds:
   // https://cloud.google.com/endpoints/docs/frameworks/java/creating-client-ids
-  public static final String WEB_CLIENT_ID = "";
-  public static final String ANDROID_CLIENT_ID = "";
+  public static final String WEB_CLIENT_ID =
+      "762961289381-hbbpkaqgi1kelev5mquj4dg4n8glr59p.apps.googleusercontent.com";
+  public static final String ANDROID_CLIENT_ID =
+      "762961289381-jtv7flspglhobn3scflagqgmcogikf10.apps.googleusercontent.com";
   public static final String ANDROID_AUDIENCE = WEB_CLIENT_ID;
+
+  public static final String APP_ID = "webauthndemo.appspot.com";
 }
