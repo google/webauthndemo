@@ -65,7 +65,7 @@ public class BeginMakeCredential extends HttpServlet {
     rpName = (rpName == null ? "" : rpName);
 
     MakePublicKeyCredentialOptions options =
-        new MakePublicKeyCredentialOptions(user.getNickname(), user.getUserId(), rpId, rpName);
+        new MakePublicKeyCredentialOptions(user.getNickname(), user.getEmail(), rpId, rpName);
 
     String hasAdvanced = request.getParameter("advanced");
     if (hasAdvanced.equals("true")) {
@@ -100,7 +100,7 @@ public class BeginMakeCredential extends HttpServlet {
 
         if (excludeCredentials) {
           List<PublicKeyCredentialDescriptor> credentials = new ArrayList<>();
-          String currentUser = userService.getCurrentUser().getUserId();
+          String currentUser = userService.getCurrentUser().getEmail();
           List<Credential> savedCreds = Credential.load(currentUser);
           for (Credential c : savedCreds) {
             credentials.add(convertCredentialToCredentialDescriptor(c));
