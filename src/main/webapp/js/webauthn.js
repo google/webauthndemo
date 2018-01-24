@@ -73,7 +73,7 @@ async function addCredential() {
      * }
      */
     options.user = _options.user;
-    options.user.id = new TextEncoder().encode(_options.user.id);
+    options.user.id = strToBin(_options.user.id);
     /**
      * interface PublicKeyCredentialUserEntity {
      *   id: BufferSource;
