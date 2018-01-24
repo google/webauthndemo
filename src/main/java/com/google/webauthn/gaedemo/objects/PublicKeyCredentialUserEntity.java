@@ -14,17 +14,17 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import com.google.gson.Gson;
+import com.google.common.io.BaseEncoding;
 import com.google.gson.JsonObject;
 
 public class PublicKeyCredentialUserEntity extends PublicKeyCredentialEntity {
   protected String displayName;
-  protected String id;
+  protected byte[] id;
 
   /**
    * @param displayName
    */
-  public PublicKeyCredentialUserEntity(String displayName, String id) {
+  public PublicKeyCredentialUserEntity(String displayName, byte[] id) {
     super();
     this.displayName = displayName;
     this.name = displayName;
@@ -36,7 +36,9 @@ public class PublicKeyCredentialUserEntity extends PublicKeyCredentialEntity {
    */
   @Override
   public JsonObject getJsonObject() {
-    Gson gson = new Gson();
-    return (JsonObject) gson.toJsonTree(this);
+    JsonObject superJson = super.getJsonObject();
+    superJson.addProperty("displayName", displayName);
+    superJson.addProperty("id", BaseEncoding.base64().encode(id));
+    return superJson;
   }
 }

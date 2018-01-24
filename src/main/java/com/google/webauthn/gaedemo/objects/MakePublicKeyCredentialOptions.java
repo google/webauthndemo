@@ -57,7 +57,7 @@ public class MakePublicKeyCredentialOptions {
     pubKeyCredParams = new ArrayList<PublicKeyCredentialParameters>();
     excludeCredentials = new ArrayList<PublicKeyCredentialDescriptor>();
     rp = new PublicKeyCredentialRpEntity(rpId, rpName, null);
-    user = new PublicKeyCredentialUserEntity(userName, userId);
+    user = new PublicKeyCredentialUserEntity(userName, userId.getBytes());
 
     challenge = new byte[CHALLENGE_LENGTH];
     random.nextBytes(challenge);

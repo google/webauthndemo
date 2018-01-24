@@ -159,7 +159,7 @@ function addCredential() {
     // Required parameters
     makeCredentialOptions.rp = options.rp;
     makeCredentialOptions.user = options.user;
-    makeCredentialOptions.user.id = new TextEncoder().encode(options.user.id);
+    makeCredentialOptions.user.id = Uint8Array.from(atob(options.user.id), c => c.charCodeAt(0));
     makeCredentialOptions.challenge = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
     makeCredentialOptions.pubKeyCredParams = options.pubKeyCredParams;
     
