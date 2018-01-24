@@ -14,7 +14,6 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 public class PublicKeyCredentialEntity {
@@ -39,7 +38,10 @@ public class PublicKeyCredentialEntity {
    * @return Encoded JsonObject representation of PublicKeyCredentialEntity
    */
   public JsonObject getJsonObject() {
-    Gson gson = new Gson();
-    return (JsonObject) gson.toJsonTree(this);
+    JsonObject json = new JsonObject();
+    json.addProperty("name", name);
+    if (icon != null)
+      json.addProperty("icon", icon);
+    return json;
   }
 }
