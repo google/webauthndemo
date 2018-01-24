@@ -44,7 +44,7 @@ public class GetSession extends HttpServlet {
     String id = request.getParameter("id");
     System.out.println(Long.valueOf(id));
     SessionData session =
-        SessionData.load(userService.getCurrentUser().getUserId(), Long.valueOf(id));
+        SessionData.load(userService.getCurrentUser().getEmail(), Long.valueOf(id));
 
     response.setContentType("application/json");
     if (session != null) {

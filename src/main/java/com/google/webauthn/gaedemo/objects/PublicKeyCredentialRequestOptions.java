@@ -58,11 +58,11 @@ public class PublicKeyCredentialRequestOptions {
       result.addProperty("timeout", timeout);
     }
     result.addProperty("rpId", rpId);
-    JsonArray allowList = new JsonArray();
+    JsonArray allowCredentials = new JsonArray();
     for (PublicKeyCredentialDescriptor credential : this.allowCredentials) {
-      allowList.add(credential.getJsonObject());
+      allowCredentials.add(credential.getJsonObject());
     }
-    result.add("allowList", allowList);
+    result.add("allowCredentials", allowCredentials);
 
     return result;
   }

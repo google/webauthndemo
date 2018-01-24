@@ -184,10 +184,9 @@ function addCredential() {
     let makeCredentialOptions = {};
     makeCredentialOptions.rp = options.rp;
     makeCredentialOptions.user = options.user;
-makeCredentialOptions.user.id = (new Uint8Array(1)).buffer;
-    makeCredentialOptions.challenge = (Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0))).buffer;
+    makeCredentialOptions.user.id = Uint8Array.from(atob(options.user.id), c => c.charCodeAt(0));
+    makeCredentialOptions.challenge = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
     makeCredentialOptions.pubKeyCredParams = options.pubKeyCredParams;
-makeCredentialOptions.pubKeyCredParams[0].alg = -7;
 
     // Optional parameters
     if ('timeout' in options) {
@@ -303,8 +302,8 @@ function getAssertion() {
     if ('rpId' in parameters) {
       requestOptions.rpId = parameters.rpId;
     }
-    if ('allowList' in parameters) {
-      requestOptions.allowList = credentialListConversion(parameters.allowList);
+    if ('allowCredentials' in parameters) {
+      requestOptions.allowCredentials = credentialListConversion(parameters.allowCredentials);
     }
 
     let credentialRequest = {};
@@ -343,6 +342,9 @@ function getAssertion() {
         .reduce((s, byte) => s + String.fromCharCode(byte), ''));
       response.signature = btoa(
         new Uint8Array(assertion.response.signature)
+        .reduce((s, byte) => s + String.fromCharCode(byte), ''));
+      response.userHandle = btoa(
+        new Uint8Array(assertion.response.userHandle)
         .reduce((s, byte) => s + String.fromCharCode(byte), ''));
       publicKeyCredential.response = response;
       finishAssertion(publicKeyCredential, parameters.session.id);

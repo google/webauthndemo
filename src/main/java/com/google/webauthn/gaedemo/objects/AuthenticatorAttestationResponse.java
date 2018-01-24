@@ -37,6 +37,17 @@ public class AuthenticatorAttestationResponse extends AuthenticatorResponse {
    */
   public AuthenticatorAttestationResponse() {}
 
+  public AuthenticatorAttestationResponse(String clientDataJSON, String attestationObject)
+      throws ResponseException {
+    clientData = CollectedClientData.decode(clientDataJSON);
+    clientDataBytes = clientDataJSON.getBytes();
+    try {
+      decodedObject = AttestationObject.decode(BaseEncoding.base64().decode(attestationObject));
+    } catch (CborException e) {
+      throw new ResponseException("Cannot decode attestation object");
+    }
+  }
+
   /**
    * @param data
    * @throws ResponseException

@@ -12,10 +12,10 @@
   <!-- [START set_versions] -->
   <properties>
     <appengine.app.version>1</appengine.app.version>
-    <appengine.sdk.version>1.9.60</appengine.sdk.version>
+    <appengine.sdk.version>1.9.54</appengine.sdk.version>
 
-    <objectify.version>6.0a1</objectify.version>
-    <guava.version>23.6-jre</guava.version>
+    <objectify.version>5.1.21</objectify.version>
+    <guava.version>19.0</guava.version>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -28,6 +28,11 @@
   <dependencies>
     <!-- Compile/runtime dependencies -->
     <dependency>
+      <groupId>com.google.endpoints</groupId>
+      <artifactId>endpoints-framework</artifactId>
+      <version>2.0.7</version>
+    </dependency>
+    <dependency>
       <groupId>com.google.appengine</groupId>
       <artifactId>appengine-api-1.0-sdk</artifactId>
       <version>${appengine.sdk.version}</version>
@@ -35,7 +40,7 @@
     <dependency>
       <groupId>co.nstant.in</groupId>
       <artifactId>cbor</artifactId>
-      <version>0.8</version>
+      <version>0.7</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
@@ -51,12 +56,12 @@
     <dependency>
       <groupId>com.google.endpoints</groupId>
       <artifactId>endpoints-management-control-appengine</artifactId>
-      <version>1.0.0-beta.11</version>
+      <version>1.0.4</version>
     </dependency>
     <dependency>
       <groupId>com.google.endpoints</groupId>
       <artifactId>endpoints-framework-auth</artifactId>
-      <version>1.0.0-beta.11</version>
+      <version>1.0.4</version>
     </dependency>
     <dependency>
       <groupId>javax.inject</groupId>
@@ -99,7 +104,7 @@
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.8.2</version>
+      <version>2.8.1</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -109,27 +114,33 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
-      <version>1.59</version>
+      <version>1.56</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
-      <version>2.9.3</version>
+      <version>2.9.0.pr4</version>
     </dependency>
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt</artifactId>
-      <version>0.9.0</version>
+      <version>0.7.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.api-client</groupId>
       <artifactId>google-api-client</artifactId>
-      <version>1.23.0</version>
+      <version>1.22.0</version>
+      <exclusions>
+        <exclusion>  <!-- declare the exclusion here -->
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava-jdk5</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.5.4</version>
+      <version>4.5.3</version>
     </dependency>
   </dependencies>
   <build>
@@ -139,7 +150,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>versions-maven-plugin</artifactId>
-        <version>2.5</version>
+        <version>2.1</version>
         <executions>
           <execution>
             <phase>compile</phase>
@@ -152,7 +163,7 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <version>3.7.0</version>
+        <version>3.2</version>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <source>1.7</source>
@@ -162,7 +173,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>3.2.0</version>
+        <version>2.6</version>
         <configuration>
           <archiveClasses>true</archiveClasses>
           <webResources>
