@@ -9,8 +9,6 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
   rel="stylesheet">
 <link href="stylesheets/webauthn.css" rel="stylesheet">
-<script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 <script src="//code.getmdl.io/1.3.0/material.min.js"></script>
 <script src="js/webauthn.js"></script>
 <title>WebAuthN Demo</title>
