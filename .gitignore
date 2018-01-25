@@ -3,3 +3,4 @@ target/
 .classpath
 .project
 src/main/java/META-INF/
+bower_components/

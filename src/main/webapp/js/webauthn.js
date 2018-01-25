@@ -15,338 +15,391 @@
  *
  */
 
-function fetchAllCredentials() {
-  $.post('/RegisteredKeys', {}, null, 'json')
-   .done(function(tokens) {
-     credentials.innerHTML='';
-     for (var i=0; i < tokens.length; i++) {
-       credentials.innerHTML=credentials.innerHTML+'<div id="credential"' + i + '>' +
-       tokens[i].id + ': ' + tokens[i].handle + '</div>';
-     }
-   });
+async function fetchCredentials() {
+  const response = await _fetch('/RegisteredKeys').catch(err => {
+    showMessage(`An error occurred during fetch [${err.toString()}]`);
+  });
+  app.credentials = response;
 }
 
-function fetchCredentials() {
-  $.post('/RegisteredKeys', {}, null, 'json')
-  .done(function(rsp) {
-    var credentials = '';
-    for (var i in rsp) {
-      var handle = rsp[i].handle;
-      var publicKey = rsp[i].publicKey;
-      var name = rsp[i].name;
-      var date = rsp[i].date;
-      var buttonId = 'delete' + i;
-      credentials +=
-        '<div class="mdl-cell mdl-cell--1-offset mdl-cell-4-col">\
-           <div class="mdl-card mdl-shadow--4dp" id="' + handle + '">\
-             <div class="mdl-card__title mdl-card--border">' + name + '</div>\
-             <div class="mdl-card__supporting-text">Enrolled ' + date +'</div>\
-             <div class="mdl-card__subtitle-text">Public Key</div>\
-             <div class="mdl-card__supporting-text">' + publicKey + '</div>\
-             <div class="mdl-card__subtitle-text">Key Handle</div>\
-             <div class="mdl-card__supporting-text">' + handle + '</div>\
-             <div class="mdl-card__menu">\
-               <button id="' + buttonId + '" \
-                 class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">\
-                 <i class="material-icons">delete_forever</i>\
-               </button>\
-             </div>\
-           </div>\
-         </div>\
-        ';
+async function removeCredential(id) {
+  try {
+    await _fetch('/RemoveCredential', { credentialId : id });
+  } catch (err) {
+    showMessage(`An error occurred during removal [${err.toString()}]`);
+  }
+  fetchCredentials();
+}
+
+async function addCredential() {
+  app.active = true;
+
+  try {
+    const advancedOptions = {};
+
+    if (app.advanced) {
+      advancedOptions.requireResidentKey = app.requireResidentKey;
+      advancedOptions.excludeCredentials = app.excludeCredentials;
+      advancedOptions.userVerification = app.userVerification;
+      advancedOptions.authenticatorAttachment = app.authenticatorAttachment;
+      advancedOptions.attestationConveyancePreference = app.attestationConveyancePreference;
     }
-    $("#credentials").html(credentials);
-    deleteCred = [];
-    for(let i = 0; i < rsp.length; ++i){
-      deleteCred[i] = function() {
-        console.log(rsp[i].id);
-        $.post('/RemoveCredential', {credentialId : rsp[i].id}, null, 'json')
-        .done(function(rsp) {
-          fetchCredentials();
+
+    const _options = await _fetch('/BeginMakeCredential', {
+      advanced: app.advanced,
+      advancedOptions: JSON.stringify(advancedOptions)
+    });
+
+    const options = {};
+    /**
+     * interface MakePublicKeyCredentialOptions {
+     *   rp: PublicKeyCredentialRpEntity;
+     *   user: PublicKeyCredentialUserEntity;
+     *   challenge: BufferSource;
+     *   pubKeyCredParams: PublicKeyCredentialParameters[];
+     *   timeout?: number;
+     *   excludeCredentials?: PublicKeyCredentialDescriptor[];
+     *   authenticatorSelection?: AuthenticatorSelectionCriteria;
+     *   attestation?: AttestationConveyancePreference;
+     *   extensions?: any;
+     * }
+     */
+
+    options.rp = _options.rp;
+    /**
+     * interface PublicKeyCredentialRpEntity {
+     *   id: string;
+     *   name: string;
+     * }
+     */
+    options.user = _options.user;
+    options.user.id = strToBin(_options.user.id);
+    /**
+     * interface PublicKeyCredentialUserEntity {
+     *   id: BufferSource;
+     *   name: string;
+     *   displayName: string;
+     * }
+     */
+    options.challenge = strToBin(_options.challenge);
+    options.pubKeyCredParams = _options.pubKeyCredParams;
+    /**
+     * interface PublicKeyCredentialParameters {
+     *   type: 'public-key';
+     *   alg: number;
+     * }
+     */
+
+    // Optional parameters
+    if ('timeout' in _options) {
+      options.timeout = _options.timeout;
+    }
+    if ('excludeCredentials' in _options) {
+      options.excludeCredentials = convertCredentialList(_options.excludeCredentials);
+      /**
+       * interface PublicKeyCredentialDescriptor {
+       *   type: 'public-key';
+       *   id: BufferSource;
+       *   transports?: AuthenticatorTransport[];
+       * }
+       * 
+       * type AuthenticatorTransport = 'usb'|'nfc'|'ble';
+       */
+    }
+    if ('authenticatorSelection' in _options) {
+      options.authenticatorSelection = _options.authenticatorSelection;
+      /**
+       * interface AuthenticatorSelectionCriteria {
+       *   authenticatorAttachment?: AuthenticatorAttachment;
+       *   requireResidentKey?: boolean;
+       *   requireUserVerification?: string;
+       * }
+       * 
+       * type AuthenticatorAttachment = 'platform'|'cross-platform';
+       */
+    }
+    if ('attestation' in _options) {
+      options.attestation = _options.attestation;
+      /**
+       * type AttestationConveyancePreference = 'none'|'indirect'|'direct';
+       */
+    }
+    if ('extensions' in _options) {
+      options.extensions = _options.extensions;
+    }
+
+    console.log('`navigator.credentials.create()` request:', options);
+
+    // Create public key and attestation object
+    const credential = await navigator.credentials.create({
+      publicKey: options
+    }).catch(() => {
+      throw 'Credential creation failed.';
+    });
+
+    console.log('`navigator.credentials.create()`result:', credential);
+
+    app.active = false;
+
+    const attestation = {};
+    /**
+     * interface PublicKeyCredential {
+     *   id: string;
+     *   readonly type: 'public-key';
+     *   readonly rawId: ArrayBuffer;
+     *   readonly response: AuthenticatorAttestationResponse;
+     * }
+     */
+
+    if ('id' in credential) {
+      attestation.id = credential.id;
+    }
+    if ('type' in credential) {
+      attestation.type = credential.type;
+    }
+    if ('rawId' in credential) {
+      attestation.rawId = binToStr(credential.rawId);
+    }
+    if (!credential.response) {
+      throw "Make Credential response lacking 'response' attribute";
+    }
+
+    const response = credential.response;
+    /**
+     * interface AuthenticatorAttestationResponse extends AuthenticatorResponse {
+     *   readonly attestationObject: ArrayBuffer;
+     * }
+     * 
+     * interface AuthenticatorResponse {
+     *   readonly clientDataJSON: ArrayBuffer;
+     * }
+     */
+    attestation.response = {
+      clientDataJSON:     binToStr(response.clientDataJSON),
+      attestationObject:  binToStr(response.attestationObject)
+    };
+
+    const result = await _fetch('/FinishMakeCredential', {
+      data: JSON.stringify(attestation),
+      session: _options.session.id
+    });
+
+    if (result && result.success) {
+      showMessage(result.message);
+      fetchCredentials();
+    } else {
+      throw 'Unexpected response received.';
+    }
+  } catch (err) {
+    app.active = false;
+
+    showMessage(`An error occurred during Make Credential operation [${err.toString()}]`);
+  }
+}
+
+async function getAssertion() {
+  app.active = true;
+
+  try {
+    const _options = await _fetch('/BeginGetAssertion');
+    const options = {};
+    /**
+     * interface PublicKeyCredentialRequestOptions {
+     *   challenge: BufferSource;
+     *   timeout: number;
+     *   rpId: string;
+     *   allowCredentials: PublicKeyCredentialDescriptor[];
+     *   userVerification?: 'required' | 'preferred' | 'discouraged';
+     *   extensions?: any;
+     * }
+     */
+
+    options.challenge = strToBin(_options.challenge);
+    if ('timeout' in _options) {
+      options.timeout = _options.timeout;
+    }
+    if ('rpId' in _options) {
+      options.rpId = _options.rpId;
+    }
+    if ('allowCredentials' in _options) {
+      options.allowCredentials = convertCredentialList(_options.allowCredentials);
+      /**
+       * interface PublicKeyCredentialDescriptor {
+       *   type: 'public-key';
+       *   id: BufferSource;
+       *   transports?: string[];
+       * }
+       */
+    }
+
+    console.log('`navigator.credentials.get()` request:', options);
+
+    const credential = await navigator.credentials.get({
+      publicKey:options 
+    }).catch(() => {
+      throw 'Authentication failed';
+    });
+
+    console.log('`navigator.credentials.get()` result:', credential);
+
+    app.active = false;
+
+    const assertion = {};
+    /**
+     * interface PublicKeyCredential {
+     *   id: string;
+     *   readonly type: 'public-key';
+     *   readonly rawId: ArrayBuffer;
+     *   readonly response: AuthenticatorAssertionResponse;
+     * }
+     */
+
+    if ('id' in credential) {
+      assertion.id = credential.id;
+    }
+    if ('type' in credential) {
+      assertion.type = credential.type;
+    }
+    if ('rawId' in credential) {
+      assertion.rawId = binToStr(credential.rawId);
+    }
+    if (!credential.response) {
+      throw "Get assertion response lacking 'response' attribute";
+    }
+
+    const response = credential.response;
+    /**
+     * interface AuthenticatorAssertionResponse extends AuthenticatorResponse {
+     *   readonly authenticatorData: ArrayBuffer;
+     *   readonly signature: ArrayBuffer;
+     *   readonly userHandle: ArrayBuffer;
+     * }
+     * 
+     * interface AuthenticatorResponse {
+     *   readonly clientDataJSON: ArrayBuffer;
+     * }
+     */
+
+    assertion.response = {
+      clientDataJSON:     binToStr(response.clientDataJSON),
+      authenticatorData:  binToStr(response.authenticatorData),
+      signature:          binToStr(response.signature),
+      userHandle:         binToStr(response.userHandle)
+    };
+
+    const result = await _fetch('/FinishGetAssertion', {
+      data: JSON.stringify(assertion),
+      session: _options.session.id
+    });
+
+    if (result && result.success) {
+      if (result.message) {
+        showMessage(result.message);
+      }
+      if (result.handle) {
+        let card = document.getElementById(result.handle);
+        card.animate([{
+          backgroundColor: 'rgb(255,64,129)'
+        },{
+          backgroundColor: 'white'
+        }], {
+          duration: 2000,
+          easing: 'ease-out'
         });
       }
-      var id = "#delete" + i;
-      $(id).click(function() {
-        deleteCred[i]();
-      });
+    } else {
+      throw 'Unexpected response received.';
     }
+  } catch (err) {
+    app.active = false;
+
+    showMessage(`An error occurred during Assertion operation [${err.toString()}]`);
+  }
+}
+
+function convertCredentialList(list) {
+  return list.map(item => {
+    return {
+      type: item.type,
+      id: strToBin(item.id),
+      transports: list.transports || undefined
+    };
   });
 }
 
-function getFunction(f) {
-    return function() { return val; };
+function strToBin(str) {
+  return Uint8Array.from(atob(str), c => c.charCodeAt(0));
 }
 
-function assignButtons() {
-  $("#credential-button").click(function() {
+function binToStr(bin) {
+  return btoa(new Uint8Array(bin).reduce(
+    (s, byte) => s + String.fromCharCode(byte), ''
+  ));
+}
+
+function showMessage(text) {
+  toast.text = text;
+  toast.show();
+}
+
+async function _fetch(url, obj) {
+  console.log(`[${url}] request:`, obj);
+
+  let headers = new Headers({
+    'Content-Type': 'application/x-www-form-urlencoded'
+  });
+  let body = new URLSearchParams();
+  for (let key in obj) {
+    body.append(key, obj[key]);
+  }
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: headers,
+    credentials: 'include',
+    body: body
+  });
+
+  if (response.status === 200) {
+    const result = await response.json();
+    console.log(`[${url}] response:`, result);
+    return result;
+  } else {
+    throw response.statusText;
+  }
+}
+
+const app = document.querySelector('dom-bind');
+const toast = document.querySelector('#toast');
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!navigator.credentials) {
+    showMessage('Your browser is not compatible with Credential Management API.');
+    return;
+  }
+  if (!window.PublicKeyCredential) {
+    showMessage('Your browser is not compatible with Web Authentication.');
+    return;
+  }
+
+  app.active = false;
+  app.advanced = false;
+  app.excludeCredentials = false;
+  app.authenticatorAttachment = 'none';
+  app.attestationConveyancePreference = 'NA';
+  app.requireResidentKey = false;
+  app.userVerification = 'none';
+
+  document.getElementById('add').addEventListener('click', () => {
     addCredential();
   });
-  $("#authenticate-button").click(function() {
+  document.getElementById('auth').addEventListener('click', () => {
     getAssertion();
   });
-  $("#switch-advanced").click(function() {
-    if ($("#switch-advanced").is(":checked")) {
-      $("#advanced").show();
-    } else {
-      $("#advanced").hide();
+  document.getElementById('credentials').addEventListener('click', e => {
+    if (e.target.nodeName == 'PAPER-BUTTON') {
+      removeCredential(e.target.id);
     }
   });
-}
 
-window.onload = function () {
-  assignButtons();
   fetchCredentials();
-};
-
-$(document).ready(function () {
-  $(".hidden").hide().removeClass("hidden");
 });
-
-function credentialListConversion(list) {
-  var result = [];
-  for (var i=0; i < list.length; i++) {
-    var credential = {};
-    credential.type = list[i].type;
-    credential.id = Uint8Array.from(atob(list[i].id), c => c.charCodeAt(0));
-    if ('transports' in list) {
-      credential.transports = list.transports;
-    }
-    result.push(credential);
-  }
-  return result;
-}
-
-function finishAddCredential(publicKeyCredential, sessionId) {
-  let dataStr = JSON.stringify(publicKeyCredential);
-  $.post('/FinishMakeCredential', { data: dataStr, session: sessionId },
-    null, 'json')
-    .done(function(parameters) {
-      console.log(parameters);
-      if ('success' in parameters && 'message' in parameters) {
-        addSuccessMsg(parameters.message);
-        fetchCredentials();
-      }
-      // TODO Validate response and display success/error message
-    });
-}
-
-function addCredential() {
-  removeMsgs();
-  addSpinner();
-  var advancedOptions = {};
-  if ($("#switch-advanced").is(":checked")) {
-    if ($("#switch-rk").is(":checked")) {
-      advancedOptions.requireResidentKey = $("#switch-rk").is(":checked");
-    }
-    if ($("#switch-rr").is(":checked")) {
-        advancedOptions.excludeCredentials = $("#switch-rr").is(":checked");
-    }
-    if ($('#userVerification').val() != "none") {
-        advancedOptions.userVerification = $('#userVerification').val();
-    }
-    if ($('#attachment').val() != "none") {
-      advancedOptions.authenticatorAttachment = $('#attachment').val();
-    }
-    if ($('#conveyance').val() != "NA") {
-      advancedOptions.attestationConveyancePreference = $('#conveyance').val();
-    }
-  }
-  $.post('/BeginMakeCredential',
-		  { advanced: $("#switch-advanced").is(":checked"), advancedOptions: JSON.stringify(advancedOptions) },
-		  null, 'json')
-  .done(function(options) {
-    var makeCredentialOptions = {};
-    // Required parameters
-    makeCredentialOptions.rp = options.rp;
-    makeCredentialOptions.user = options.user;
-    makeCredentialOptions.user.id = Uint8Array.from(atob(options.user.id), c => c.charCodeAt(0));
-    makeCredentialOptions.challenge = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
-    makeCredentialOptions.pubKeyCredParams = options.pubKeyCredParams;
-    
-    // Optional parameters
-    if ('timeout' in options) {
-      makeCredentialOptions.timeout = options.timeout;
-    }
-    if ('excludeCredentials' in options) {
-      makeCredentialOptions.excludeCredentials = credentialListConversion(options.excludeCredentials);
-    }
-    if ('authenticatorSelection' in options) {
-        makeCredentialOptions.authenticatorSelection = options.authenticatorSelection;
-    }
-    if ('attestation' in options) {
-    	makeCredentialOptions.attestation = options.attestation;
-    }
-    if ('extensions' in options) {
-      makeCredentialOptions.extensions = options.extensions;
-    }
-
-    //
-    var createParams = {};
-    createParams.publicKey = makeCredentialOptions;
-
-    console.log(makeCredentialOptions);
-
-    // Check to see if the browser supports credential creation
-    if (typeof navigator.credentials.create !== "function") {
-      addErrorMsg("Browser does not support credential creation");
-      return;
-    }
-
-    // Send credential options received from Relying Party to the browser
-    navigator.credentials.create({"publicKey": makeCredentialOptions})
-    .then(function (attestation) {
-      removeSpinner();
-      var publicKeyCredential = {};
-      if ('id' in attestation) {
-        publicKeyCredential.id = attestation.id;
-      }
-      if ('type' in attestation) {
-        publicKeyCredential.type = attestation.type;
-      }
-      if ('rawId' in attestation) {
-        publicKeyCredential.rawId = btoa(
-          new Uint8Array(attestation.rawId).reduce((s, byte) =>
-          s + String.fromCharCode(byte), ''));
-        publicKeyCredential.rawId = attestation.rawId;
-      }
-      if ('response' in attestation) {
-        var response = {};
-        response.clientDataJSON = btoa(
-          new Uint8Array(attestation.response.clientDataJSON)
-          .reduce((s, byte) => s + String.fromCharCode(byte), ''));
-        response.attestationObject = btoa(
-          new Uint8Array(attestation.response.attestationObject)
-          .reduce((s, byte) => s + String.fromCharCode(byte), ''));
-        publicKeyCredential.response = response;
-        
-        // Send new credential back to Relying Party for validation and storage
-        finishAddCredential(publicKeyCredential, options.session.id);
-      } else {
-    	  addErrorMsg("Make Credential response lacking 'response' attribute");
-      }
-    }).catch(function (err) {
-      removeSpinner();
-      console.log(err.toString());
-      addErrorMsg("An error occurred during Make Credential operation ["
-        + err.toString() + "]");
-    });
-  });
-}
-
-function finishAssertion(publicKeyCredential, sessionId) {
-  $.post('/FinishGetAssertion', { data: JSON.stringify(publicKeyCredential), session: sessionId },
-    null, 'json')
-    .done(function(parameters) {
-      console.log(parameters);
-      if ('success' in parameters && 'message' in parameters) {
-        addSuccessMsg(parameters.message);
-        if ('handle' in parameters) {
-          highlightCredential(parameters.handle);
-        }
-      }
-      // TODO Validate response and display success/error message
-    });
-}
-
-function highlightCredential(handle) {
-  $("#" + handle).effect("highlight", {color: '#FF4081'}, 7500);
-}
-
-function addSpinner() {
-  $("#active").show();
-}
-
-function removeSpinner() {
-  $("#active").hide();
-}
-
-function addErrorMsg(msg) {
-  document.getElementById("error-text").innerHTML = msg;
-  $("#error").show();
-}
-
-function removeErrorMsg() {
-  $("#error").hide();
-}
-
-function addSuccessMsg(msg) {
-  document.getElementById("success-text").innerHTML = msg;
-  $("#success").show();
-}
-
-function removeSuccessMsg() {
-  $("#success").hide();
-}
-
-function removeMsgs() {
-  removeErrorMsg();
-  removeSuccessMsg();
-}
-
-function getAssertion() {
-  removeMsgs();
-  addSpinner();
-  $.post('/BeginGetAssertion', {}, null, 'json')
-  .done(function(parameters) {
-    var requestOptions = {};
-    requestOptions.challenge = Uint8Array.from(atob(parameters.challenge), c => c.charCodeAt(0));
-    if ('timeout' in parameters) {
-      requestOptions.timeout = parameters.timeout;
-    }
-    if ('rpId' in parameters) {
-      requestOptions.rpId = parameters.rpId;
-    }
-    if ('allowCredentials' in parameters) {
-      requestOptions.allowCredentials = credentialListConversion(parameters.allowCredentials);
-    }
-
-    var credentialRequest = {};
-    credentialRequest.publicKey = requestOptions;
-    console.log(credentialRequest);
-
-    if (typeof navigator.credentials.get !== "function") {
-      addErrorMsg("Browser does not support credential lookup");
-      return;
-    }
-
-    navigator.credentials.get({"publicKey": requestOptions})
-      .then(function (assertion) {
-        removeSpinner();
-      var publicKeyCredential = {};
-      if ('id' in assertion) {
-        publicKeyCredential.id = assertion.id;
-      }
-      if ('type' in assertion) {
-        publicKeyCredential.type = assertion.type;
-      }
-      if ('rawId' in assertion) {
-        publicKeyCredential.rawId = btoa(
-          new Uint8Array(assertion.rawId).reduce((s, byte) =>
-          s + String.fromCharCode(byte), ''));
-        publicKeyCredential.rawId = assertion.rawId;
-      }
-      if ('response' in assertion) {
-        var response = {};
-        response.clientDataJSON = btoa(
-          new Uint8Array(assertion.response.clientDataJSON)
-          .reduce((s, byte) => s + String.fromCharCode(byte), ''));
-        response.authenticatorData = btoa(
-          new Uint8Array(assertion.response.authenticatorData)
-          .reduce((s, byte) => s + String.fromCharCode(byte), ''));
-        response.signature = btoa(
-          new Uint8Array(assertion.response.signature)
-          .reduce((s, byte) => s + String.fromCharCode(byte), ''));
-        response.userHandle = btoa(
-          new Uint8Array(assertion.response.userHandle)
-          .reduce((s, byte) => s + String.fromCharCode(byte), ''));
-        publicKeyCredential.response = response;
-        finishAssertion(publicKeyCredential, parameters.session.id);
-      }
-    }).catch(function (err) {
-      removeSpinner();
-      console.log(err.toString());
-      addErrorMsg("An error occurred during Assertion request ["
-        + err.toString() + "]");
-    });
-  });
-}

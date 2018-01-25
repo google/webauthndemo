@@ -1,0 +1,23 @@
+{
+  "name": "webauthndemo",
+  "authors": [
+    "WebAuthN Demo Authors"
+  ],
+  "license": "Apache 2.0",
+  "private": true,
+  "dependencies": {
+    "polymer": "polymer/polymer#^2.0.0",
+    "app-layout": "^2.0.4",
+    "paper-button": "^2.0.0",
+    "paper-toggle-button": "^2.0.0",
+    "paper-card": "PolymerElements/paper-card#^2.0.0",
+    "iron-icons": "^2.0.1",
+    "iron-icon": "^2.0.1",
+    "paper-dropdown-menu": "^2.0.1",
+    "paper-listbox": "^2.0.0",
+    "paper-item": "^2.0.0",
+    "web-animations-js": "^2.3.1",
+    "paper-toast": "^2.0.0",
+    "paper-progress": "^2.0.1"
+  }
+}

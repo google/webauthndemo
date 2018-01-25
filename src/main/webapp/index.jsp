@@ -4,93 +4,180 @@
 <head>
 <meta charset="utf-8">
 <link rel="shortcut icon" href="favicon.ico">
-<link rel="stylesheet"
-  href="https://code.getmdl.io/1.3.0/material.teal-pink.min.css" />
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-  rel="stylesheet">
-<link href="stylesheets/webauthn.css" rel="stylesheet">
-<script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-<script src="//code.getmdl.io/1.3.0/material.min.js"></script>
-<script src="js/webauthn.js"></script>
+<script src="bower_components/webcomponentsjs/webcomponents-loader.js"></script>
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/neon-animation/web-animations.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/app-layout/app-layout.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+
+<style>
+  body {
+    margin: 0;
+    font-family: 'Roboto', 'Noto', sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+    background-color: #eeeeee;
+  }
+  a {
+    color: white;
+    text-decoration: none;
+  }
+  app-header {
+    background-color: rgb(0,150,136);
+    color: white;
+  }
+  paper-button {
+    font-size: 14px;
+  }
+  app-toolbar paper-button {
+    background-color: rgb(255,64,129);
+  }
+  .logout {
+    background-color: transparent;
+  }
+  .side-padding {
+    padding: 0 16px;
+  }
+  .card-actions {
+    text-align: right;
+  }
+  paper-progress {
+    width: 100%;
+  }
+  #options {
+    padding: 16px;
+    background-color: white;
+  }
+  #advanced > * {
+    margin-right: 16px;
+  }
+  #advanced paper-toggle-button {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .subtitle-text {
+    font-size: 16px;
+    font-weight: bold;
+    color: rgba(0,0,0,.54);
+  }
+  .supporting-text {
+    padding-left: .2cm;
+    font-size: 14px;
+    font-style: italic;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    color: rgba(0,0,0,.54);
+  }
+</style>
 <title>WebAuthN Demo</title>
 </head>
 <body>
-  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-    <header class="mdl-layout__header">
-      <div class="mdl-layout-icon"></div>
-      <div class="mdl-layout__header-row">
-        <span class="mdl-layout__title">WebAuthN Demo - ${nickname}</span>
-        <div class="mdl-layout-spacer"></div>
-        <nav class="mdl-navigation">
-          <button id="credential-button"
-            class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect make-button">
-            Register New Credential</button>
-          <button id="authenticate-button"
-            class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect auth-button">
-            Authenticate</button>
-          <a href="${logoutUrl}">
-            <button
-              class="mdl-button mdl-js-button logout-button mdl-js-ripple-effect">
-              Logout</button>
-          </a>
-        </nav>
-      </div>
-    </header>
-    <main class="mdl-layout__content mdl-color--grey-100">
-    <div id="active" class="hidden activity-bar">
-      <h3 class="active-text">Waiting for user touch</h3>
-      <div
-        class="mdl-progress mdl-js-progress mdl-progress__indeterminate page-width"></div>
-    </div>
-    <div id="error" class="hidden">
-      <h3 class="error-text" id="error-text">An error has occurred</h3>
-    </div>
-    <div id="success" class="hidden">
-      <h3 class="success-text" id="success-text">Success</h3>
-    </div>
-    <div id="advanced-switch" class="advanced-switch">
-      <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-advanced">
-        <input type="checkbox" id="switch-advanced" class="mdl-switch__input">
-        <span class="mdl-switch__label">Advanced Options</span>
-      </label>
-    </div>
-    <div id="advanced" class="advanced hidden">
-      <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-rr">
-        <input type="checkbox" id="switch-rr" class="mdl-switch__input">
-        <span class="mdl-switch__label">Prevent Reregistration</span>
-      </label>
-      <label for="attachment" class="attachment">Attachment Type</label>
-      <select id="attachment" class="attachment">
-        <option value="none">N/A</option>
-        <option value="platform">Platform</option>
-        <option value="cross-platform">Cross-Platform</option>
-      </select>
-      <br />
-      <label for="conveyance" class="attachment">Conveyance Preference</label>
-      <select id="conveyance" class="attachment">
-        <option value="NA">N/A</option>
-        <option value="none">None</option>
-        <option value="indirect">Indirect</option>
-        <option value="direct">Direct</option>
-      </select>
-      <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-rk">
-        <input type="checkbox" id="switch-rk" class="mdl-switch__input">
-        <span class="mdl-switch__label">Require resident key</span>
-      </label>
-      <label for="userVerification" class="attachment">User Verification</label>
-      <select id="userVerification" class="attachment">
-        <option value="none">None</option>
-        <option value="required">Required</option>
-        <option value="preferred">Preferred</option>
-        <option value="discouraged">Discouraged</option>
-      </select>
-    </div>
-    <div id="credentials" class="mdl-grid mdl-grid--no-spacing"></div>
-    <div id="github" class="github-link">
-      <a href="https://github.com/google/webauthndemo">GitHub</a>
-    </div>
-    </main>
-  </div>
+  <dom-bind>
+    <template>
+      <custom-style>
+        <style is="custom-style">
+          paper-card {
+            margin: 30px;
+            max-width: 400px;
+            --paper-card-header: {
+              border-bottom: 1px solid #e8e8e8;
+            }
+            --paper-card-header-text: {
+              font-size: 18px;
+            }
+          }
+        </style>
+      </custom-style>
+      <app-header-layout>
+        <app-header slot="header" fixed shadow>
+          <app-toolbar>
+            <div main-title>WebAuthN Demo - ${nickname}</div>
+            <paper-button id="add" raised>Register New Credential</paper-button>
+            <paper-button id="auth" raised>Authenticate</paper-button>
+            <paper-button class="logout">
+              <a href="${logoutUrl}">Logout</a>
+            </paper-button>
+          </app-toolbar>
+          <section id="options">
+            <paper-toggle-button checked="{{advanced}}">Advanced Options</paper-toggle-button>
+            <template is="dom-if" if="[[advanced]]">
+              <div id="advanced">
+                <paper-toggle-button checked="{{excludeCredentials}}">Prevent Reregistration</paper-toggle-button>
+                <paper-dropdown-menu label="Attachment type">
+                  <paper-listbox
+                    attr-for-selected="item-name"
+                    selected="{{authenticatorAttachment}}"
+                    slot="dropdown-content">
+                    <paper-item item-name="none">N/A</paper-item>
+                    <paper-item item-name="platform">Platform</paper-item>
+                    <paper-item item-name="cross-platform">Cross-Platform</paper-item>
+                  </paper-listbox>
+                </paper-dropdown-menu>
+                <paper-dropdown-menu label="Conveyance Preference">
+                  <paper-listbox
+                    attr-for-selected="item-name"
+                    selected="{{attestationConveyancePreference}}"
+                    slot="dropdown-content">
+                    <paper-item item-name="NA">N/A</paper-item>
+                    <paper-item item-name="none">None</paper-item>
+                    <paper-item item-name="indirect">Indirect</paper-item>
+                    <paper-item item-name="direct">Direct</paper-item>
+                  </paper-listbox>
+                </paper-dropdown-menu>
+                <paper-toggle-button checked="{{requireResidentKey}}">Require resident key</paper-toggle-button>
+                <paper-dropdown-menu label="User Verification">
+                  <paper-listbox
+                    attr-for-selected="item-name"
+                    selected="{{userVerification}}"
+                    slot="dropdown-content">
+                    <paper-item item-name="none">None</paper-item>
+                    <paper-item item-name="required">Required</paper-item>
+                    <paper-item item-name="preferred">Preferred</paper-item>
+                    <paper-item item-name="discouraged">Discouraged</paper-item>
+                  </paper-listbox>
+                </paper-dropdown-menu>
+              </div>
+            </template>
+          </section>
+          <template is="dom-if" if="{{active}}">
+            <section id="active">
+              <paper-progress indeterminate></paper-progress>
+              <h3 class="side-padding">Waiting for user touch</h3>
+            </section>
+          </template>
+        </app-header>
+        <section id="credentials">
+          <template is="dom-repeat" items="[[credentials]]">
+            <paper-card elevation="1" id="[[item.handle]]" heading="[[item.name]]">
+              <div class="card-content">
+                <div class="supporting-text">[[item.date]]</div>
+                <div class="subtitle-text">Public Key</div>
+                <div class="supporting-text">[[item.publicKey]]</div>
+                <div class="subtitle-text">Key Handle</div>
+                <div class="supporting-text">[[item.handle]]</div>
+              </div>
+              <div class="card-actions">
+                <paper-button raised id="[[item.id]]">
+                  <iron-icon icon="delete"></iron-icon>Delete
+                </paper-button>
+              </div>
+            </paper-card>
+          </template>
+        </section>
+      </app-header-layout>
+      <paper-toast id="toast" duration="8000"></paper-toast>
+    </template>
+  </dom-bind>
+  <script src="js/webauthn.js"></script>
 </body>
 </html>
