@@ -90,6 +90,10 @@ public enum Algorithm {
         return RS384;
       case -42:
         return RS512;
+      case -260:
+        return ES256;
+      case -261:
+        return ES512;
     }
     return Algorithm.UNDEFINED;
   }
