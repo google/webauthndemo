@@ -22,6 +22,7 @@ import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.EccKey;
 import com.google.webauthn.gaedemo.objects.FidoU2fAttestationStatement;
+import com.google.webauthn.gaedemo.objects.PackedAttestationStatement;
 import com.google.webauthn.gaedemo.objects.RsaKey;
 import com.google.webauthn.gaedemo.storage.SessionData;
 import com.google.webauthn.gaedemo.storage.AttestationSessionData;
@@ -41,6 +42,7 @@ public class OfyHelper implements ServletContextListener {
     ObjectifyService.register(RsaKey.class);
     ObjectifyService.register(EccKey.class);
     ObjectifyService.register(FidoU2fAttestationStatement.class);
+    ObjectifyService.register(PackedAttestationStatement.class);
     ObjectifyService.register(AndroidSafetyNetAttestationStatement.class);
   }
 
