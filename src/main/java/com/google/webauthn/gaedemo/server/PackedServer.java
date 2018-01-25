@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 
 import com.google.common.primitives.Bytes;
+import com.google.webauthn.gaedemo.crypto.AlgorithmIdentifierMapper;
 import com.google.webauthn.gaedemo.crypto.Crypto;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
@@ -34,7 +35,6 @@ import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.EccKey;
 import com.google.webauthn.gaedemo.objects.PackedAttestationStatement;
-// import com.google.webauthn.gaedemo.objects.PackedAttestationStatement;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.google.webauthn.gaedemo.storage.Credential;
 
@@ -51,6 +51,7 @@ public class PackedServer extends Server {
    * @param sessionId
    * @throws ServletException
    */
+  @Deprecated
   public static void verifyAssertion(PublicKeyCredential cred, String currentUser, String sessionId,
       Credential savedCredential) throws ServletException {
     AuthenticatorAssertionResponse assertionResponse =
@@ -69,37 +70,7 @@ public class PackedServer extends Server {
       throw new ServletException("U2f-capable key not provided");
     }
 
-    EccKey publicKey =
-        (EccKey) storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
-    // try {
-    // /*
-    // * U2F authentication signatures are signed over the concatenation of
-    // *
-    // * 32 byte application parameter hash
-    // *
-    // * 1 byte user presence
-    // *
-    // * 4 byte big-endian representation of the counter
-    // *
-    // * 32 byte challenge parameter (ie SHA256 hash of clientData)
-    // */
-    // String clientDataJson = assertionResponse.getClientDataString();
-    // byte[] clientDataHash = Crypto.sha256Digest(clientDataJson.getBytes());
-    //
-    // byte[] signedBytes = Bytes.concat(
-    // storedAttData.getAttestationObject().getAuthenticatorData().getRpIdHash(),
-    // new byte[] {
-    // (assertionResponse.getAuthenticatorData().isUP() == true ? (byte) 1 : (byte) 0)},
-    // ByteBuffer.allocate(4).putInt(assertionResponse.getAuthenticatorData().getSignCount())
-    // .array(),
-    // clientDataHash);
-    // if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()),
-    // signedBytes, assertionResponse.getSignature())) {
-    // throw new ServletException("Signature invalid");
-    // }
-    // } catch (WebAuthnException e) {
-    // throw new ServletException("Failure while verifying signature");
-    // }
+
 
     // if (assertionResponse.getAuthenticatorData().getSignCount() <=
     // savedCredential.getSignCount()) {
@@ -158,10 +129,6 @@ public class PackedServer extends Server {
     PackedAttestationStatement attStmt =
         (PackedAttestationStatement) attResponse.decodedObject.getAttestationStatement();
 
-    EccKey publicKey =
-        (EccKey) attResponse.decodedObject.getAuthenticatorData().getAttData().getPublicKey();
-
-
     try {
       /*
        * Signatures are signed over the concatenation of Authenticator data and Client Data Hash
@@ -183,7 +150,18 @@ public class PackedServer extends Server {
       X509Certificate attestationCertificate = (X509Certificate) CertificateFactory
           .getInstance("X.509").generateCertificate(inputStream);
 
-      if (!Crypto.verifySignature(attestationCertificate, signedBytes, attStmt.sig)) {
+      String signatureAlgorithm;
+      try {
+        signatureAlgorithm = AlgorithmIdentifierMapper.get(
+            attResponse.decodedObject.getAuthenticatorData().getAttData().getPublicKey().getAlg())
+            .getJavaAlgorithm();
+      } catch (Exception e) {
+        // Default to ES256
+        signatureAlgorithm = "SHA256withECDSA";
+      }
+
+      if (!Crypto.verifySignature(attestationCertificate, signedBytes, attStmt.sig,
+          signatureAlgorithm)) {
         throw new ServletException("Signature invalid");
       }
     } catch (CertificateException e) {

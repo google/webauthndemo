@@ -47,6 +47,7 @@ public class U2fServer extends Server {
    * @param sessionId
    * @throws ServletException
    */
+  @Deprecated
   public static void verifyAssertion(PublicKeyCredential cred, String currentUser, String sessionId,
       Credential savedCredential) throws ServletException {
     AuthenticatorAssertionResponse assertionResponse =
