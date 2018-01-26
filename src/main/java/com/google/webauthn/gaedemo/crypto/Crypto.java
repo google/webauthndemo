@@ -79,7 +79,14 @@ public class Crypto {
     return verifySignature(attestationCertificate.getPublicKey(), signedBytes, signature);
   }
 
-  public static boolean verifySignature (PublicKey publicKey, byte[] message, byte[] signature, String signatureAlgorithm) throws WebAuthnException {
+  public static boolean verifySignature(X509Certificate attestationCertificate, byte[] signedBytes,
+      byte[] signature, String signatureAlgorithm) throws WebAuthnException {
+    return verifySignature(attestationCertificate.getPublicKey(), signedBytes, signature,
+        signatureAlgorithm);
+  }
+
+  public static boolean verifySignature(PublicKey publicKey, byte[] message, byte[] signature,
+      String signatureAlgorithm) throws WebAuthnException {
     if (signatureAlgorithm == null || signatureAlgorithm.isEmpty()) {
       throw new WebAuthnException("Signature algorithm is null or empty");
     }
@@ -122,11 +129,13 @@ public class Crypto {
       throw new WebAuthnException("Error when generate RSA public key", e);
     }
   }
+
   public static PublicKey getECPublicKey(EccKey eccKey) throws WebAuthnException {
     BigInteger x = new BigInteger(eccKey.getX());
     BigInteger y = new BigInteger(eccKey.getY());
     java.security.spec.ECPoint w = new java.security.spec.ECPoint(x, y);
-    EcdsaUsingShaAlgorithm algorithm = (EcdsaUsingShaAlgorithm) AlgorithmIdentifierMapper.get(eccKey.getAlg());
+    EcdsaUsingShaAlgorithm algorithm =
+        (EcdsaUsingShaAlgorithm) AlgorithmIdentifierMapper.get(eccKey.getAlg());
     String curveName = algorithm.getCurveName();
     try {
       return getECPublicKey(w, curveName);
@@ -135,16 +144,19 @@ public class Crypto {
     }
   }
 
-  public static PublicKey getRSAPublicKey(BigInteger n, BigInteger e) throws NoSuchAlgorithmException, InvalidKeySpecException {
+  public static PublicKey getRSAPublicKey(BigInteger n, BigInteger e)
+      throws NoSuchAlgorithmException, InvalidKeySpecException {
     KeySpec keySpec = new RSAPublicKeySpec(n, e);
     KeyFactory keyFactory = KeyFactory.getInstance("RSA");
     return keyFactory.generatePublic(keySpec);
   }
 
-  public static PublicKey getECPublicKey(java.security.spec.ECPoint w, String stdCurveName) throws NoSuchAlgorithmException, InvalidKeySpecException {
+  public static PublicKey getECPublicKey(java.security.spec.ECPoint w, String stdCurveName)
+      throws NoSuchAlgorithmException, InvalidKeySpecException {
     ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(stdCurveName);
-    java.security.spec.ECParameterSpec params = new ECNamedCurveSpec(parameterSpec.getName(), parameterSpec.getCurve(),
-            parameterSpec.getG(), parameterSpec.getN(), parameterSpec.getH(), parameterSpec.getSeed());
+    java.security.spec.ECParameterSpec params = new ECNamedCurveSpec(parameterSpec.getName(),
+        parameterSpec.getCurve(), parameterSpec.getG(), parameterSpec.getN(), parameterSpec.getH(),
+        parameterSpec.getSeed());
     KeySpec keySpec = new java.security.spec.ECPublicKeySpec(w, params);
     KeyFactory keyFactory = KeyFactory.getInstance("EC");
     return keyFactory.generatePublic(keySpec);
