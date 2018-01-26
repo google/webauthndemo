@@ -249,7 +249,7 @@ function finishAssertion(publicKeyCredential, sessionId) {
 }
 
 function highlightCredential(handle) {
-  $("#" + handle).effect("highlight", {color: '#FF4081'}, 7500);
+  $("#" + handle).effect("highlight", {color: '#009688'}, 7500);
 }
 
 function addSpinner() {
