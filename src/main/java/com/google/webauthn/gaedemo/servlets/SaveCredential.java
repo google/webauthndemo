@@ -98,7 +98,7 @@ public class SaveCredential extends HttpServlet {
     AttestationData attData = new AttestationData(aaguid, aaguid, ecc);
     byte[] rpIdHash = Crypto.sha256Digest(
         ((request.isSecure() ? "https://" : "http://") + request.getHeader("Host")).getBytes());
-    AuthenticatorData authData = new AuthenticatorData(rpIdHash, (byte) (1 << 6), 0, attData);
+    AuthenticatorData authData = new AuthenticatorData(rpIdHash, (byte) (1 << 6), 0, attData, null);
     FidoU2fAttestationStatement attStmt = new FidoU2fAttestationStatement();
     AttestationObject attObj = new AttestationObject(authData, "fido-u2f", attStmt);
     AuthenticatorAttestationResponse attRsp = new AuthenticatorAttestationResponse();

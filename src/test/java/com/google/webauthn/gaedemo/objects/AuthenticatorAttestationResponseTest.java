@@ -63,7 +63,7 @@ public class AuthenticatorAttestationResponseTest {
     byte flags = 1 << 6;
     byte[] rpIdHash = new byte[32];
 
-    AuthenticatorData authData = new AuthenticatorData(rpIdHash, flags, 0, attData);
+    AuthenticatorData authData = new AuthenticatorData(rpIdHash, flags, 0, attData, null);
 
     String authenticatorBase64 = null;
     try {
