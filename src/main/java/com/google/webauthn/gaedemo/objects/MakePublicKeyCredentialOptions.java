@@ -23,115 +23,125 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 public class MakePublicKeyCredentialOptions {
-	private static final int CHALLENGE_LENGTH = 32;
-	private final SecureRandom random = new SecureRandom();
+  private static final int CHALLENGE_LENGTH = 32;
+  private final SecureRandom random = new SecureRandom();
 
-	PublicKeyCredentialEntity rp;
-	PublicKeyCredentialUserEntity user;
-	public byte[] challenge;
-	ArrayList<PublicKeyCredentialParameters> pubKeyCredParams;
+  PublicKeyCredentialEntity rp;
+  PublicKeyCredentialUserEntity user;
+  public byte[] challenge;
+  ArrayList<PublicKeyCredentialParameters> pubKeyCredParams;
 
-	long timeout;
-	ArrayList<PublicKeyCredentialDescriptor> excludeCredentials;
-	protected AuthenticatorSelectionCriteria authenticatorSelection;
-	protected AttestationConveyancePreference attestation;
-	protected AuthenticationExtensions extensions;
+  long timeout;
+  ArrayList<PublicKeyCredentialDescriptor> excludeCredentials;
+  protected AuthenticatorSelectionCriteria authenticatorSelection;
+  protected AttestationConveyancePreference attestation;
+  protected AuthenticationExtensions extensions;
 
-	/**
-	 * 
-	 */
-	public MakePublicKeyCredentialOptions() {
-		pubKeyCredParams = new ArrayList<PublicKeyCredentialParameters>();
-		excludeCredentials = new ArrayList<PublicKeyCredentialDescriptor>();
-		extensions = null;
-		authenticatorSelection = null;
-	}
+  /**
+   * 
+   */
+  public MakePublicKeyCredentialOptions() {
+    pubKeyCredParams = new ArrayList<PublicKeyCredentialParameters>();
+    excludeCredentials = new ArrayList<PublicKeyCredentialDescriptor>();
+    extensions = null;
+    authenticatorSelection = null;
+  }
 
-	/**
-	 * @param userId
-	 * @param rpId
-	 * @param rpName
-	 */
-	public MakePublicKeyCredentialOptions(String userName, String userId, String rpId, String rpName) {
-		pubKeyCredParams = new ArrayList<PublicKeyCredentialParameters>();
-		excludeCredentials = new ArrayList<PublicKeyCredentialDescriptor>();
-		rp = new PublicKeyCredentialRpEntity(rpId, rpName, null);
-		user = new PublicKeyCredentialUserEntity(userName, userId.getBytes());
+  /**
+   * @param userId
+   * @param rpId
+   * @param rpName
+   */
+  public MakePublicKeyCredentialOptions(String userName, String userId, String rpId,
+      String rpName) {
+    pubKeyCredParams = new ArrayList<PublicKeyCredentialParameters>();
+    excludeCredentials = new ArrayList<PublicKeyCredentialDescriptor>();
+    rp = new PublicKeyCredentialRpEntity(rpId, rpName, null);
+    user = new PublicKeyCredentialUserEntity(userName, userId.getBytes());
 
-		challenge = new byte[CHALLENGE_LENGTH];
-		random.nextBytes(challenge);
-		pubKeyCredParams.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.ES256));
-		pubKeyCredParams.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.ES384));
-		pubKeyCredParams.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.ES512));
-		pubKeyCredParams.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.RS256));
-		pubKeyCredParams.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.RS384));
-		pubKeyCredParams.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.RS512));
-		pubKeyCredParams.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.PS256));
-		pubKeyCredParams.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.PS384));
-		pubKeyCredParams.add(new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.PS512));
-		extensions = null;
-	}
+    challenge = new byte[CHALLENGE_LENGTH];
+    random.nextBytes(challenge);
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.ES256));
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.ES384));
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.ES512));
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.RS256));
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.RS384));
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.RS512));
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.PS256));
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.PS384));
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.PS512));
+    extensions = null;
+  }
 
-	public void setExtensions(AuthenticationExtensions extensions) {
-		this.extensions = extensions;
-	}
+  public void setExtensions(AuthenticationExtensions extensions) {
+    this.extensions = extensions;
+  }
 
-	public void setCriteria(AuthenticatorSelectionCriteria criteria) {
-		this.authenticatorSelection = criteria;
-	}
+  public void setCriteria(AuthenticatorSelectionCriteria criteria) {
+    this.authenticatorSelection = criteria;
+  }
 
-	public void setTimeout(long timeout) {
-		this.timeout = timeout;
-	}
+  public void setTimeout(long timeout) {
+    this.timeout = timeout;
+  }
 
-	public void excludeCredential(PublicKeyCredentialDescriptor credential) {
-		excludeCredentials.add(credential);
-	}
+  public void excludeCredential(PublicKeyCredentialDescriptor credential) {
+    excludeCredentials.add(credential);
+  }
 
-	public void setExcludeCredentials(Collection<PublicKeyCredentialDescriptor> excludeCredentials) {
-		this.excludeCredentials.clear();
-		this.excludeCredentials.addAll(excludeCredentials);
-	}
+  public void setExcludeCredentials(Collection<PublicKeyCredentialDescriptor> excludeCredentials) {
+    this.excludeCredentials.clear();
+    this.excludeCredentials.addAll(excludeCredentials);
+  }
 
-	public void setAttestationConveyancePreference(AttestationConveyancePreference attestation) {
-		this.attestation = attestation;
-	}
+  public void setAttestationConveyancePreference(AttestationConveyancePreference attestation) {
+    this.attestation = attestation;
+  }
 
-	/**
-	 * @return Encoded JsonObect representation of MakeCredentialOptions
-	 */
-	public JsonObject getJsonObject() {
-		// Required parameters
-		JsonObject result = new JsonObject();
-		result.add("rp", rp.getJsonObject());
-		result.add("user", user.getJsonObject());
-		result.addProperty("challenge", BaseEncoding.base64().encode(challenge));
-		JsonArray params = new JsonArray();
-		for (PublicKeyCredentialParameters param : pubKeyCredParams)
-			params.add(param.getJsonObject());
-		result.add("pubKeyCredParams", params);
+  /**
+   * @return Encoded JsonObect representation of MakeCredentialOptions
+   */
+  public JsonObject getJsonObject() {
+    // Required parameters
+    JsonObject result = new JsonObject();
+    result.add("rp", rp.getJsonObject());
+    result.add("user", user.getJsonObject());
+    result.addProperty("challenge", BaseEncoding.base64().encode(challenge));
+    JsonArray params = new JsonArray();
+    for (PublicKeyCredentialParameters param : pubKeyCredParams)
+      params.add(param.getJsonObject());
+    result.add("pubKeyCredParams", params);
 
-		// Optional parameters
-		if (this.timeout > 0) {
-			result.addProperty("timeout", timeout);
-		}
-		if (this.excludeCredentials != null && this.excludeCredentials.size() > 0) {
-			JsonArray excludeParams = new JsonArray();
-			for (PublicKeyCredentialDescriptor descriptor : excludeCredentials) {
-				excludeParams.add(descriptor.getJsonObject());
-			}
-			result.add("excludeCredentials", excludeParams);
-		}
-		if (this.authenticatorSelection != null) {
-			result.add("authenticatorSelection", authenticatorSelection.getJsonObject());
-		}
-		if (this.attestation != null) {
-			result.addProperty("attestation", this.attestation.toString());
-		}
-		if (extensions != null) {
-			// TODO
-		}
+    // Optional parameters
+    if (this.timeout > 0) {
+      result.addProperty("timeout", timeout);
+    }
+    if (this.excludeCredentials != null && this.excludeCredentials.size() > 0) {
+      JsonArray excludeParams = new JsonArray();
+      for (PublicKeyCredentialDescriptor descriptor : excludeCredentials) {
+        excludeParams.add(descriptor.getJsonObject());
+      }
+      result.add("excludeCredentials", excludeParams);
+    }
+    if (this.authenticatorSelection != null) {
+      result.add("authenticatorSelection", authenticatorSelection.getJsonObject());
+    }
+    if (this.attestation != null) {
+      result.addProperty("attestation", this.attestation.toString());
+    }
+    if (extensions != null) {
+      // TODO
+    }
 
-		return result;
-	}
+    return result;
+  }
 }
