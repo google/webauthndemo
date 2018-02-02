@@ -63,6 +63,22 @@ public class MakePublicKeyCredentialOptions {
     random.nextBytes(challenge);
     pubKeyCredParams.add(
         new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.ES256));
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.ES384));
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.ES512));
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.RS256));
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.RS384));
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.RS512));
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.PS256));
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.PS384));
+    pubKeyCredParams.add(
+        new PublicKeyCredentialParameters(PublicKeyCredentialType.PUBLIC_KEY, Algorithm.PS512));
     extensions = null;
   }
 

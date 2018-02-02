@@ -29,6 +29,7 @@ public class AuthenticatorData {
   private int signCount;
   // optional
   AttestationData attData;
+  private byte[] extensions;
 
   /**
    * @param rpIdHash
@@ -36,16 +37,19 @@ public class AuthenticatorData {
    * @param signCount
    * @param attData
    */
-  public AuthenticatorData(byte[] rpIdHash, byte flags, int signCount, AttestationData attData) {
+  public AuthenticatorData(byte[] rpIdHash, byte flags, int signCount,
+		  AttestationData attData, byte[] extensions) {
     this.rpIdHash = rpIdHash;
     this.flags = flags;
     this.signCount = signCount;
     this.attData = attData;
+    this.extensions = extensions;
   }
 
   AuthenticatorData() {
     rpIdHash = new byte[32];
     attData = new AttestationData();
+    this.extensions = null;
   }
 
 
@@ -54,6 +58,7 @@ public class AuthenticatorData {
     this.flags = flags;
     this.signCount = signCount;
     this.attData = null;
+    this.extensions = null;
   }
 
 
@@ -131,6 +136,8 @@ public class AuthenticatorData {
     int signCount =
         Ints.fromBytes(authData[index++], authData[index++], authData[index++], authData[index++]);
 
+    int definedIndex = index;
+
     AttestationData attData = null;
     // Bit 6 determines whether attestation data was included
     if ((flags & 1 << 6) != 0) {
@@ -143,7 +150,22 @@ public class AuthenticatorData {
       }
     }
 
-    return new AuthenticatorData(rpIdHash, flags, signCount, attData);
+    byte[] extensions = null;
+    // Bit 7 determines whether extensions are included.
+    if ((flags & 1 << 7) != 0) {
+      try {
+        int start = definedIndex + attData.encode().length;
+        if (authData.length > start) {
+          byte[] remainder = new byte[authData.length - start];
+          System.arraycopy(authData, start, remainder, 0, authData.length - start);
+          extensions = remainder;
+        }
+      } catch (CborException e) {
+        throw new ResponseException("Error decoding authenticator extensions");
+      }
+    }
+
+    return new AuthenticatorData(rpIdHash, flags, signCount, attData, extensions);
   }
 
   /**
@@ -159,6 +181,9 @@ public class AuthenticatorData {
       result = Bytes.concat(rpIdHash, flags, signCount, attData);
     } else {
       result = Bytes.concat(rpIdHash, flags, signCount);
+    }
+    if (this.extensions != null) {
+      result = Bytes.concat(result, extensions);
     }
     return result;
   }

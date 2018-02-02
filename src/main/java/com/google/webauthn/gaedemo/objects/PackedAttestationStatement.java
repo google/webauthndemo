@@ -14,17 +14,20 @@
 
 package com.google.webauthn.gaedemo.objects;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import com.googlecode.objectify.annotation.Subclass;
+
 import co.nstant.in.cbor.CborDecoder;
 import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.Array;
 import co.nstant.in.cbor.model.ByteString;
 import co.nstant.in.cbor.model.DataItem;
 import co.nstant.in.cbor.model.Map;
+import co.nstant.in.cbor.model.NegativeInteger;
 import co.nstant.in.cbor.model.UnicodeString;
-import com.googlecode.objectify.annotation.Subclass;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 @Subclass
 public class PackedAttestationStatement extends AttestationStatement {
@@ -106,7 +109,8 @@ public class PackedAttestationStatement extends AttestationStatement {
         } else if (((UnicodeString) data).getString().equals("sig")) {
           result.sig = ((ByteString) (given.get(data))).getBytes();
         } else if (((UnicodeString) data).getString().equals("alg")) {
-          result.alg = Algorithm.decode(((UnicodeString) (given.get(data))).getString());
+          int algInt = (((NegativeInteger) (given.get(data))).getValue()).intValueExact();
+          result.alg = Algorithm.decode(algInt);
         } else if (((UnicodeString) data).getString().equals("ecdaaKeyId")) {
           result.ecdaaKeyId = ((ByteString) (given.get(data))).getBytes();
         }
