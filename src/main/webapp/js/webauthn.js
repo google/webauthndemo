@@ -15,40 +15,40 @@
  *
  */
 
-const $ = query => {
-  return document.querySelector(query);
+const $ = q => {
+  return document.querySelector(q);
 };
 
-const show = query => {
-  $(query).style.display = 'block';
+const show = q => {
+  $(q).style.display = 'block';
 };
 
-const hide = query => {
-  $(query).style.display = 'none';
+const hide = q => {
+  $(q).style.display = 'none';
 };
 
-const isChecked = query => {
-  return $(query).checked;
+const isChecked = q => {
+  return $(q).checked;
 };
 
-const onClick = (query, func) => {
-  $(query).addEventListener('click', func);
+const onClick = (q, func) => {
+  $(q).addEventListener('click', func);
 };
 
 function addErrorMsg(msg) {
   $('#error-text').innerHTML = msg;
   show('#error');
-}
+};
 
 function addSuccessMsg(msg) {
   $('#success-text').innerHTML = msg;
   show('#success');
-}
+};
 
 function removeMsgs() {
   hide('#error');
   hide('#success');
-}
+};
 
 async function _fetch(url, obj) {
   let headers = new Headers({
@@ -72,10 +72,10 @@ async function _fetch(url, obj) {
 };
 
 function fetchCredentials() {
-  _fetch('/RegisteredKeys').then(rsp => {
+  _fetch('/RegisteredKeys').then(response => {
     let credentials = '';
-    for (let i in rsp) {
-      let { handle, publicKey, name, date } = rsp[i];
+    for (let i in response) {
+      let { handle, publicKey, name, date, id } = response[i];
       let buttonId = `delete${i}`;
       credentials +=
         `<div class="mdl-cell mdl-cell--1-offset mdl-cell-4-col">
@@ -95,47 +95,24 @@ function fetchCredentials() {
            </div>
          </div>
         `;
+      onClick(`#delete${i}`, removeCredential(id));
     }
     $('#credentials').innerHTML = credentials;
-    for (let i in rsp){
-      onClick(`#delete${i}`, removeCredential(i));
-    }
   });
 }
 
 function removeCredential(id) {
-  return id => {
+  return () => {
     _fetch('/RemoveCredential', {
       credentialId : id
     }).then(() => {
       fetchCredentials();
     }).catch(err => {
-      showMessage(`An error occurred during removal [${err.toString()}]`);
+      addErrorMsg(`An error occurred during removal [${err.toString()}]`);
     });
   }
 }
 
-
-document.addEventListener('DOMContentLoaded', () => {
-  let hiddens = document.querySelectorAll('.hidden');
-  for (let hidden of hiddens) {
-    hidden.style.display = 'none';
-    hidden.classList.remove('hidden');
-  }
-});
-
-window.addEventListener('load', () => {
-  onClick('#credential-button', addCredential);
-  onClick('#authenticate-button', getAssertion);
-  onClick('#switch-advanced', () => {
-    if (isChecked('#switch-advanced')) {
-      show('#advanced');
-    } else {
-      hide('#advanced');
-    }
-  });
-  fetchCredentials();
-});
 
 function credentialListConversion(list) {
   return list.map(item => {
@@ -205,11 +182,6 @@ async function addCredential() {
 
     console.log(makeCredentialOptions);
 
-    // Check to see if the browser supports credential creation
-    if (typeof navigator.credentials.create !== "function") {
-      throw "Browser does not support credential creation";
-    }
-
     const attestation = await navigator.credentials.create({
       "publicKey": makeCredentialOptions
     });
@@ -276,10 +248,6 @@ async function getAssertion() {
     }
 
     console.log(requestOptions);
-
-    if (typeof navigator.credentials.get !== "function") {
-      throw "Browser does not support credential lookup";
-    }
 
     const assertion = await navigator.credentials.get({
       "publicKey": requestOptions
@@ -350,3 +318,28 @@ function binToStr(bin) {
     (s, byte) => s + String.fromCharCode(byte), ''
   ));
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  let hiddens = document.querySelectorAll('.hidden');
+  for (let hidden of hiddens) {
+    hidden.style.display = 'none';
+    hidden.classList.remove('hidden');
+  }
+  if (navigator.credentials.create) {
+    fetchCredentials();
+  } else {
+    addErrorMsg('Your browser doesn\'t support WebAuthn');
+  }
+});
+
+window.addEventListener('load', () => {
+  onClick('#credential-button', addCredential);
+  onClick('#authenticate-button', getAssertion);
+  onClick('#switch-advanced', () => {
+    if (isChecked('#switch-advanced')) {
+      show('#advanced');
+    } else {
+      hide('#advanced');
+    }
+  });
+});
