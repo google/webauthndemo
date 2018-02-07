@@ -36,6 +36,7 @@ import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.EccKey;
 import com.google.webauthn.gaedemo.objects.PackedAttestationStatement;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
+import com.google.webauthn.gaedemo.objects.RsaKey;
 import com.google.webauthn.gaedemo.storage.Credential;
 
 import co.nstant.in.cbor.CborException;
@@ -122,8 +123,9 @@ public class PackedServer extends Server {
     }
 
     if (!(attResponse.decodedObject.getAuthenticatorData().getAttData()
-        .getPublicKey() instanceof EccKey)) {
-      throw new ServletException("U2f-capable key not provided");
+        .getPublicKey() instanceof EccKey) && !(attResponse.decodedObject.getAuthenticatorData().getAttData()
+            .getPublicKey() instanceof RsaKey)) {
+      throw new ServletException("Supported key not provided");
     }
 
     PackedAttestationStatement attStmt =
