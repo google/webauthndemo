@@ -14,21 +14,21 @@
 
 package com.google.webauthn.gaedemo.server;
 
-
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.EccKey;
 import com.google.webauthn.gaedemo.objects.FidoU2fAttestationStatement;
+import com.google.webauthn.gaedemo.objects.NoneAttestationStatement;
 import com.google.webauthn.gaedemo.objects.PackedAttestationStatement;
 import com.google.webauthn.gaedemo.objects.RsaKey;
-import com.google.webauthn.gaedemo.storage.SessionData;
 import com.google.webauthn.gaedemo.storage.AttestationSessionData;
 import com.google.webauthn.gaedemo.storage.Credential;
+import com.google.webauthn.gaedemo.storage.SessionData;
 import com.google.webauthn.gaedemo.storage.User;
 import com.googlecode.objectify.ObjectifyService;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 
 public class OfyHelper implements ServletContextListener {
   @Override
@@ -44,6 +44,7 @@ public class OfyHelper implements ServletContextListener {
     ObjectifyService.register(FidoU2fAttestationStatement.class);
     ObjectifyService.register(PackedAttestationStatement.class);
     ObjectifyService.register(AndroidSafetyNetAttestationStatement.class);
+    ObjectifyService.register(NoneAttestationStatement.class);
   }
 
   @Override
