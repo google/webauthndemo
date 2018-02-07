@@ -36,7 +36,7 @@ public class PublicKeyCredential {
   }
 
   /**
-   * 
+   *
    */
   public PublicKeyCredential() {}
 
@@ -71,6 +71,8 @@ public class PublicKeyCredential {
         return AttestationStatementEnum.FIDOU2F;
       } else if (attStmt instanceof PackedAttestationStatement) {
         return AttestationStatementEnum.PACKED;
+      } else if (attStmt instanceof NoneAttestationStatement) {
+        return AttestationStatementEnum.NONE;
       }
     } catch (ClassCastException e) {
       return null;
