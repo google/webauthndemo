@@ -22,7 +22,7 @@ import com.google.common.io.BaseEncoding;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-public class MakePublicKeyCredentialOptions {
+public class PublicKeyCredentialCreationOptions {
   private static final int CHALLENGE_LENGTH = 32;
   private final SecureRandom random = new SecureRandom();
 
@@ -40,7 +40,7 @@ public class MakePublicKeyCredentialOptions {
   /**
    * 
    */
-  public MakePublicKeyCredentialOptions() {
+  public PublicKeyCredentialCreationOptions() {
     pubKeyCredParams = new ArrayList<PublicKeyCredentialParameters>();
     excludeCredentials = new ArrayList<PublicKeyCredentialDescriptor>();
     extensions = null;
@@ -52,7 +52,7 @@ public class MakePublicKeyCredentialOptions {
    * @param rpId
    * @param rpName
    */
-  public MakePublicKeyCredentialOptions(String userName, String userId, String rpId,
+  public PublicKeyCredentialCreationOptions(String userName, String userId, String rpId,
       String rpName) {
     pubKeyCredParams = new ArrayList<PublicKeyCredentialParameters>();
     excludeCredentials = new ArrayList<PublicKeyCredentialDescriptor>();

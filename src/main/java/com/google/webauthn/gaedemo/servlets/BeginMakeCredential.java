@@ -35,7 +35,7 @@ import com.google.webauthn.gaedemo.objects.AttestationConveyancePreference;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttachment;
 import com.google.webauthn.gaedemo.objects.AuthenticatorSelectionCriteria;
 import com.google.webauthn.gaedemo.objects.AuthenticatorTransport;
-import com.google.webauthn.gaedemo.objects.MakePublicKeyCredentialOptions;
+import com.google.webauthn.gaedemo.objects.PublicKeyCredentialCreationOptions;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredentialDescriptor;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredentialType;
 import com.google.webauthn.gaedemo.objects.UserVerificationRequirement;
@@ -64,8 +64,8 @@ public class BeginMakeCredential extends HttpServlet {
     String rpName = getServletContext().getInitParameter("name");
     rpName = (rpName == null ? "" : rpName);
 
-    MakePublicKeyCredentialOptions options =
-        new MakePublicKeyCredentialOptions(user.getNickname(), user.getEmail(), rpId, rpName);
+    PublicKeyCredentialCreationOptions options =
+        new PublicKeyCredentialCreationOptions(user.getNickname(), user.getEmail(), rpId, rpName);
 
     String hasAdvanced = request.getParameter("advanced");
     if (hasAdvanced.equals("true")) {
@@ -83,7 +83,7 @@ public class BeginMakeCredential extends HttpServlet {
     response.getWriter().println(optionsJson.toString());
   }
 
-  private void parseAdvancedOptions(String jsonString, MakePublicKeyCredentialOptions options) {
+  private void parseAdvancedOptions(String jsonString, PublicKeyCredentialCreationOptions options) {
     JsonElement jsonElement = new JsonParser().parse(jsonString);
     JsonObject jsonObject = jsonElement.getAsJsonObject();
     Set<Map.Entry<String, JsonElement>> entries = jsonObject.entrySet();
