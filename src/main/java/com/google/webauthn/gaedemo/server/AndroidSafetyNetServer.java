@@ -68,10 +68,6 @@ public class AndroidSafetyNetServer extends Server {
       throw new ServletException("Unable to verify session and challenge data");
     }
 
-    if (!attResponse.getClientData().getOrigin().equals(rpId)) {
-      throw new ServletException("Couldn't verify client data");
-    }
-
     AndroidSafetyNetAttestationStatement attStmt =
         (AndroidSafetyNetAttestationStatement) attResponse.decodedObject.getAttestationStatement();
 
