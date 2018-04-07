@@ -14,6 +14,7 @@
 
 package com.google.webauthn.gaedemo.objects;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -109,7 +110,7 @@ public class PackedAttestationStatement extends AttestationStatement {
         } else if (((UnicodeString) data).getString().equals("sig")) {
           result.sig = ((ByteString) (given.get(data))).getBytes();
         } else if (((UnicodeString) data).getString().equals("alg")) {
-          int algInt = (((NegativeInteger) (given.get(data))).getValue()).intValueExact();
+          int algInt = new BigDecimal(((NegativeInteger) (given.get(data))).getValue()).intValueExact();
           result.alg = Algorithm.decode(algInt);
         } else if (((UnicodeString) data).getString().equals("ecdaaKeyId")) {
           result.ecdaaKeyId = ((ByteString) (given.get(data))).getBytes();
