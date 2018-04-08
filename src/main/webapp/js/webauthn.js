@@ -297,7 +297,7 @@ async function getAssertion() {
       if ('handle' in result) {
         let card = document.getElementById(result.handle);
         card.animate([{
-          backgroundColor: '#FF4081'
+          backgroundColor: '#009688'
         },{
           backgroundColor: 'white'
         }], {
