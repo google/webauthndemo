@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import co.nstant.in.cbor.CborException;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class EccKeyTest {
@@ -52,7 +53,8 @@ public class EccKeyTest {
     assertNotEquals(four, three);
   }
 
-  //@Test
+  @Test
+  @Ignore
   public void testEncode() {
     EccKey testKey = new EccKey();
     testKey.alg = Algorithm.ES256;

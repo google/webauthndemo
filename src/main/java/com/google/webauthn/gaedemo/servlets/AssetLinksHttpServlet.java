@@ -48,7 +48,7 @@ public class AssetLinksHttpServlet extends HttpServlet {
   @Override
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
-    doPost(request, response);
+    doGet(request, response);
   }
 
   private String readResource(String resName) throws IOException {

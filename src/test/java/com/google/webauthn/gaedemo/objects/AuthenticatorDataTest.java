@@ -21,11 +21,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import co.nstant.in.cbor.CborException;
+import com.google.api.client.util.Base64;
 import com.google.common.primitives.Bytes;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
-import java.util.Base64;
 
 import org.junit.Test;
 
@@ -63,8 +63,8 @@ public class AuthenticatorDataTest {
     random.nextBytes(randomRpIdHash);
     byte[] flags = {1 << 6};
     AttestationData attData = new AttestationData();
-    EccKey eccKey = new EccKey(Base64.getDecoder().decode("NNxD3LBXs6iF1jiBGZ4Qqhd997NKcmDLJyyILL49V90"),
-        Base64.getDecoder().decode("MJtVZlRRfTscLy06DSHLBfA8O03pZJ1K01DbCILr0rA"));
+    EccKey eccKey = new EccKey(Base64.decodeBase64("NNxD3LBXs6iF1jiBGZ4Qqhd997NKcmDLJyyILL49V90"),
+        Base64.decodeBase64("MJtVZlRRfTscLy06DSHLBfA8O03pZJ1K01DbCILr0rA"));
     random.nextBytes(attData.aaguid);
     eccKey.alg = Algorithm.ES256;
     attData.publicKey = eccKey;

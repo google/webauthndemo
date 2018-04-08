@@ -1,4 +1,8 @@
 language: java
+jdk:
+  - openjdk7
+  - oraclejdk8
+  - oraclejdk9
 before_script:
 - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then openssl aes-256-cbc -K $encrypted_abed99774422_key
   -iv $encrypted_abed99774422_iv -in client-secret.json.enc -out client-secret.json

@@ -104,6 +104,8 @@ public class FinishMakeCredential extends HttpServlet {
       case PACKED:
         PackedServer.registerCredential(cred, currentUser, session, rpId);
         break;
+      case NONE:
+        break;
     }
 
     Credential credential = new Credential(cred);
