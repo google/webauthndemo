@@ -191,6 +191,8 @@ public class Fido2RequestHandler {
       case PACKED:
         PackedServer.verifyAssertion(cred, user.getEmail(), session, savedCredential);
         break;
+      case NONE:
+        break;
     }
 
     List<String> resultList = new ArrayList<String>();
