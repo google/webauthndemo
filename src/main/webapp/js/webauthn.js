@@ -71,6 +71,7 @@ async function _fetch(url, obj) {
   }
 };
 
+
 function fetchCredentials() {
   _fetch('/RegisteredKeys').then(response => {
     let credentials = '';
@@ -95,9 +96,13 @@ function fetchCredentials() {
            </div>
          </div>
         `;
-      onClick(`#delete${i}`, removeCredential(id));
     }
     $('#credentials').innerHTML = credentials;
+
+    for (let i in response) {
+      let { handle, publicKey, name, date, id } = response[i];
+      onClick(`#delete${i}`, removeCredential(id));
+    }
   });
 }
 
@@ -112,7 +117,6 @@ function removeCredential(id) {
     });
   }
 }
-
 
 function credentialListConversion(list) {
   return list.map(item => {
