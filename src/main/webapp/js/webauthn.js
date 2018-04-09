@@ -141,7 +141,7 @@ async function addCredential() {
         advancedOptions.requireResidentKey = isChecked('#switch-rk');
       }
       if (isChecked('#switch-rr')) {
-        advancedOptions.excludeCredentials = isChecked('#switch-rk');
+        advancedOptions.excludeCredentials = isChecked('#switch-rr');
       }
       if ($('#userVerification').value != "none") {
         advancedOptions.userVerification = $('#userVerification').value;
