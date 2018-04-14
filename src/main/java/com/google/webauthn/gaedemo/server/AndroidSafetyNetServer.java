@@ -138,7 +138,7 @@ public class AndroidSafetyNetServer extends Server {
     }
 
     if (assertionResponse.getAuthenticatorData().getSignCount() <= savedCredential.getSignCount()
-        && savedCredential.getSignCount() != 0) {
+        && savedCredential.getSignCount() != 0L) {
       throw new ServletException("Sign count invalid");
     }
 

@@ -86,7 +86,9 @@ public class U2fServer extends Server {
           Bytes.concat(storedAttData.getAttestationObject().getAuthenticatorData().getRpIdHash(),
               new byte[] {
                   (assertionResponse.getAuthenticatorData().isUP() == true ? (byte) 1 : (byte) 0)},
-              ByteBuffer.allocate(4).putInt(assertionResponse.getAuthenticatorData().getSignCount())
+                  ByteBuffer.allocate(4)
+                      .put(ByteBuffer.allocate(8)
+                          .putLong(assertionResponse.getAuthenticatorData().getSignCount()).array(), 4, 4)
                   .array(),
               clientDataHash);
       if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()),

@@ -40,15 +40,15 @@ public class AuthenticatorDataTest {
     byte[] randomRpIdHash = new byte[32];
     random.nextBytes(randomRpIdHash);
     byte[] flags = {0};
-    int countInt = random.nextInt(Integer.MAX_VALUE);
-    byte[] count = ByteBuffer.allocate(4).putInt(countInt).array();
+    long countUnsignedInt = random.nextLong() & 0xffffffffL;
+    byte[] count = ByteBuffer.allocate(4).put(ByteBuffer.allocate(8).putLong(countUnsignedInt).array(), 4, 4).array();
     byte[] data = Bytes.concat(randomRpIdHash, flags, count);
 
     try {
       AuthenticatorData result = AuthenticatorData.decode(data);
 
       assertArrayEquals(randomRpIdHash, result.getRpIdHash());
-      assertEquals(countInt, result.getSignCount());
+      assertEquals(countUnsignedInt, result.getSignCount());
     } catch (ResponseException e) {
       fail("Exception occurred");
     }
@@ -68,8 +68,8 @@ public class AuthenticatorDataTest {
     random.nextBytes(attData.aaguid);
     eccKey.alg = Algorithm.ES256;
     attData.publicKey = eccKey;
-    int countInt = random.nextInt(Integer.MAX_VALUE);
-    byte[] count = ByteBuffer.allocate(4).putInt(countInt).array();
+    long countUnsignedInt = random.nextLong() & 0xffffffffL;
+    byte[] count = ByteBuffer.allocate(4).put(ByteBuffer.allocate(8).putLong(countUnsignedInt).array(), 4, 4).array();
     byte[] data = null;
     try {
       data = Bytes.concat(randomRpIdHash, flags, count, attData.encode());
@@ -81,7 +81,7 @@ public class AuthenticatorDataTest {
       AuthenticatorData result = AuthenticatorData.decode(data);
       assertTrue(result.getAttData().getPublicKey().equals(eccKey));
       assertArrayEquals(randomRpIdHash, result.getRpIdHash());
-      assertEquals(countInt, result.getSignCount());
+      assertEquals(countUnsignedInt, result.getSignCount());
     } catch (ResponseException e) {
       fail("Exception occurred");
     }
