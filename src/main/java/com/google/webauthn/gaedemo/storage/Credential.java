@@ -32,7 +32,7 @@ public class Credential {
   public Long id;
 
   private Date date;
-  private long signCount;
+  private int signCount;
   private PublicKeyCredential credential;
 
   public Credential() {
@@ -91,14 +91,14 @@ public class Credential {
   /**
    * @return the signCount
    */
-  public long getSignCount() {
+  public int getSignCount() {
     return signCount;
   }
 
   /**
    * @param signCount
    */
-  public void updateSignCount(long signCount) {
+  public void updateSignCount(int signCount) {
     this.signCount = signCount;
     ofy().save().entity(this).now();
   }

@@ -19,7 +19,6 @@ import java.util.Arrays;
 
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Ints;
-import com.google.common.primitives.UnsignedInts;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 
 import co.nstant.in.cbor.CborException;
@@ -27,7 +26,7 @@ import co.nstant.in.cbor.CborException;
 public class AuthenticatorData {
   private byte[] rpIdHash;
   private byte flags;
-  private long signCount;
+  private int signCount;
   // optional
   AttestationData attData;
   private byte[] extensions;
@@ -38,7 +37,7 @@ public class AuthenticatorData {
    * @param signCount
    * @param attData
    */
-  public AuthenticatorData(byte[] rpIdHash, byte flags, long signCount,
+  public AuthenticatorData(byte[] rpIdHash, byte flags, int signCount,
 		  AttestationData attData, byte[] extensions) {
     this.rpIdHash = rpIdHash;
     this.flags = flags;
@@ -54,7 +53,7 @@ public class AuthenticatorData {
   }
 
 
-  AuthenticatorData(byte[] rpIdHash, byte flags, long signCount) {
+  AuthenticatorData(byte[] rpIdHash, byte flags, int signCount) {
     this.rpIdHash = rpIdHash;
     this.flags = flags;
     this.signCount = signCount;
@@ -108,7 +107,7 @@ public class AuthenticatorData {
   /**
    * @return the signCount
    */
-  public long getSignCount() {
+  public int getSignCount() {
     return signCount;
   }
 
@@ -134,8 +133,8 @@ public class AuthenticatorData {
     System.arraycopy(authData, 0, rpIdHash, 0, 32);
     index += 32;
     byte flags = authData[index++];
-    long signCount =
-        UnsignedInts.toLong(Ints.fromBytes(authData[index++], authData[index++], authData[index++], authData[index++]));
+    int signCount =
+        Ints.fromBytes(authData[index++], authData[index++], authData[index++], authData[index++]);
 
     int definedIndex = index;
 
@@ -175,7 +174,7 @@ public class AuthenticatorData {
    */
   public byte[] encode() throws CborException {
     byte[] flags = {this.flags};
-    byte[] signCount = ByteBuffer.allocate(4).put(ByteBuffer.allocate(8).putLong(this.signCount).array(), 4, 4).array();
+    byte[] signCount = ByteBuffer.allocate(4).putInt(this.signCount).array();
     byte[] result;
     if (this.attData != null) {
       byte[] attData = this.attData.encode();
