@@ -97,7 +97,8 @@ public class U2fServer extends Server {
       throw new ServletException("Failure while verifying signature");
     }
 
-    if (assertionResponse.getAuthenticatorData().getSignCount() <= savedCredential.getSignCount()) {
+    if (Integer.compareUnsigned(assertionResponse.getAuthenticatorData().getSignCount(),
+        savedCredential.getSignCount()) <= 0) {
       throw new ServletException("Sign count invalid");
     }
 

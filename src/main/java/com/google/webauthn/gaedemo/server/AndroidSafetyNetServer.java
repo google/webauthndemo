@@ -137,7 +137,8 @@ public class AndroidSafetyNetServer extends Server {
       throw new ServletException("Failure while verifying authenticator data");
     }
 
-    if (assertionResponse.getAuthenticatorData().getSignCount() <= savedCredential.getSignCount()
+    if (Integer.compareUnsigned(assertionResponse.getAuthenticatorData().getSignCount(),
+        savedCredential.getSignCount()) <= 0
         && savedCredential.getSignCount() != 0) {
       throw new ServletException("Sign count invalid");
     }
