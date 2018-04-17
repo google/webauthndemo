@@ -50,7 +50,7 @@ function removeMsgs() {
   hide('#success');
 };
 
-async function _fetch(url, obj) {
+function _fetch(url, obj) {
   let headers = new Headers({
     'Content-Type': 'application/x-www-form-urlencoded'
   });
@@ -58,17 +58,18 @@ async function _fetch(url, obj) {
   for (let key in obj) {
     body.append(key, obj[key]);
   }
-  const response = await fetch(url, {
+  return fetch(url, {
     method: 'POST',
     headers: headers,
     credentials: 'include',
     body: body
+  }).then(response => {
+    if (response.status === 200) {
+      return response.json();
+    } else {
+      throw response.statusText;
+    }
   });
-  if (response.status === 200) {
-    return response.json();
-  } else {
-    throw response.statusText;
-  }
 };
 
 
@@ -131,35 +132,37 @@ function credentialListConversion(list) {
   });
 }
 
-async function addCredential() {
+function addCredential() {
   removeMsgs();
   show('#active');
-  try {
-    const advancedOptions = {};
-    if (isChecked('#switch-advanced')) {
-      if (isChecked('#switch-rk')) {
-        advancedOptions.requireResidentKey = isChecked('#switch-rk');
-      }
-      if (isChecked('#switch-rr')) {
-        advancedOptions.excludeCredentials = isChecked('#switch-rr');
-      }
-      if ($('#userVerification').value != "none") {
-        advancedOptions.userVerification = $('#userVerification').value;
-      }
-      if ($('#attachment').value != "none") {
-        advancedOptions.authenticatorAttachment = $('#attachment').value;
-      }
-      if ($('#conveyance').value != "NA") {
-        advancedOptions.attestationConveyancePreference = $('#conveyance').value;
-      }
+
+  let _options;
+  const advancedOptions = {};
+  if (isChecked('#switch-advanced')) {
+    if (isChecked('#switch-rk')) {
+      advancedOptions.requireResidentKey = isChecked('#switch-rk');
     }
+    if (isChecked('#switch-rr')) {
+      advancedOptions.excludeCredentials = isChecked('#switch-rr');
+    }
+    if ($('#userVerification').value != "none") {
+      advancedOptions.userVerification = $('#userVerification').value;
+    }
+    if ($('#attachment').value != "none") {
+      advancedOptions.authenticatorAttachment = $('#attachment').value;
+    }
+    if ($('#conveyance').value != "NA") {
+      advancedOptions.attestationConveyancePreference = $('#conveyance').value;
+    }
+  }
 
-    const options = await _fetch('/BeginMakeCredential', {
-      advanced: isChecked('#switch-advanced'),
-      advancedOptions: JSON.stringify(advancedOptions)
-    });
+  return _fetch('/BeginMakeCredential', {
+    advanced: isChecked('#switch-advanced'),
+    advancedOptions: JSON.stringify(advancedOptions)
 
+  }).then(options => {
     const makeCredentialOptions = {};
+    _options = options;
 
     makeCredentialOptions.rp = options.rp;
     makeCredentialOptions.user = options.user;
@@ -186,10 +189,11 @@ async function addCredential() {
 
     console.log(makeCredentialOptions);
 
-    const attestation = await navigator.credentials.create({
+    return navigator.credentials.create({
       "publicKey": makeCredentialOptions
     });
 
+  }).then(attestation => {
     hide('#active');
 
     const publicKeyCredential = {};
@@ -212,11 +216,12 @@ async function addCredential() {
     response.attestationObject = binToStr(attestation.response.attestationObject);
     publicKeyCredential.response = response;
 
-    const parameters = await _fetch('/FinishMakeCredential', {
+    return _fetch('/FinishMakeCredential', {
       data: JSON.stringify(publicKeyCredential),
-      session: options.session.id
+      session: _options.session.id
     });
 
+  }).then(parameters => {
     console.log(parameters);
 
     if (parameters && parameters.success) {
@@ -225,21 +230,23 @@ async function addCredential() {
     } else {
       throw 'Unexpected response received.';
     }
-  } catch (err) {
+
+  }).catch(err => {
     hide('#active');
     console.log(err.toString());
     addErrorMsg(`An error occurred during Make Credential operation [${err.toString()}]`);
-  };
+  });
 }
 
-async function getAssertion() {
+function getAssertion() {
   removeMsgs();
   show('#active');
 
-  try {
-    const parameters = await _fetch('/BeginGetAssertion');
-
+  let _parameters;
+  _fetch('/BeginGetAssertion').then(parameters => {
     const requestOptions = {};
+    _parameters = parameters;
+
     requestOptions.challenge = strToBin(parameters.challenge);
     if ('timeout' in parameters) {
       requestOptions.timeout = parameters.timeout;
@@ -253,12 +260,13 @@ async function getAssertion() {
 
     console.log(requestOptions);
 
-    const assertion = await navigator.credentials.get({
+    return navigator.credentials.get({
       "publicKey": requestOptions
     }).catch(() => {
       throw 'Authentication failed';
     });
 
+  }).then(assertion => {
     hide('#active');
 
     const publicKeyCredential = {};
@@ -285,11 +293,12 @@ async function getAssertion() {
       userHandle:         binToStr(_response.userHandle)
     };
 
-    const result = await _fetch('/FinishGetAssertion', {
+    return _fetch('/FinishGetAssertion', {
       data: JSON.stringify(publicKeyCredential),
-      session: parameters.session.id
+      session: _parameters.session.id
     });
 
+  }).then(result => {
     console.log(result);
 
     if (result && result.success) {
@@ -306,11 +315,11 @@ async function getAssertion() {
         });
       }
     }
-  } catch (err) {
+  }).catch(err => {
     hide('#active');
     console.log(err.toString());
     addErrorMsg(`An error occurred during Assertion request [${err.toString()}]`);
-  };
+  });
 }
 
 function strToBin(str) {
