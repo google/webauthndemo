@@ -54,9 +54,18 @@ function _fetch(url, obj) {
   let headers = new Headers({
     'Content-Type': 'application/x-www-form-urlencoded'
   });
-  let body = new URLSearchParams();
-  for (let key in obj) {
-    body.append(key, obj[key]);
+  let body;
+  if (typeof URLSearchParams === "function") {
+    body = new URLSearchParams();
+    for (let key in obj) {
+      body.append(key, obj[key]);
+    }
+  } else {
+    // Add parameters to body manually if browser doesn't support URLSearchParams
+    body = "";
+    for (let key in obj) {
+      body += encodeURIComponent(key) + "=" + encodeURIComponent(obj[key]) + "&";
+    }
   }
   return fetch(url, {
     method: 'POST',
@@ -333,7 +342,7 @@ function binToStr(bin) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  let hiddens = document.querySelectorAll('.hidden');
+  let hiddens = Array.from(document.querySelectorAll('.hidden'));
   for (let hidden of hiddens) {
     hidden.style.display = 'none';
     hidden.classList.remove('hidden');
