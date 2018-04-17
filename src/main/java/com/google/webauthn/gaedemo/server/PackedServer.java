@@ -73,8 +73,8 @@ public class PackedServer extends Server {
 
 
 
-    // if (assertionResponse.getAuthenticatorData().getSignCount() <=
-    // savedCredential.getSignCount()) {
+    // if (Integer.compareUnsigned(assertionResponse.getAuthenticatorData().getSignCount(),
+    // savedCredential.getSignCount()) <= 0) {
     // throw new ServletException("Sign count invalid");
     // }
 

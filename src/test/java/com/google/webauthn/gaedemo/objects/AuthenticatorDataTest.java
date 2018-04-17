@@ -16,7 +16,6 @@
 package com.google.webauthn.gaedemo.objects;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -40,15 +39,15 @@ public class AuthenticatorDataTest {
     byte[] randomRpIdHash = new byte[32];
     random.nextBytes(randomRpIdHash);
     byte[] flags = {0};
-    int countInt = random.nextInt(Integer.MAX_VALUE);
-    byte[] count = ByteBuffer.allocate(4).putInt(countInt).array();
+    int countUnsignedInt = Integer.parseUnsignedInt("" + (random.nextLong() & 0xffffffffL));
+    byte[] count = ByteBuffer.allocate(4).putInt(countUnsignedInt).array();
     byte[] data = Bytes.concat(randomRpIdHash, flags, count);
 
     try {
       AuthenticatorData result = AuthenticatorData.decode(data);
 
       assertArrayEquals(randomRpIdHash, result.getRpIdHash());
-      assertEquals(countInt, result.getSignCount());
+      assertTrue(Integer.compareUnsigned(countUnsignedInt, result.getSignCount()) == 0);
     } catch (ResponseException e) {
       fail("Exception occurred");
     }
@@ -68,8 +67,8 @@ public class AuthenticatorDataTest {
     random.nextBytes(attData.aaguid);
     eccKey.alg = Algorithm.ES256;
     attData.publicKey = eccKey;
-    int countInt = random.nextInt(Integer.MAX_VALUE);
-    byte[] count = ByteBuffer.allocate(4).putInt(countInt).array();
+    int countUnsignedInt = Integer.parseUnsignedInt("" + (random.nextLong() & 0xffffffffL));
+    byte[] count = ByteBuffer.allocate(4).putInt(countUnsignedInt).array();
     byte[] data = null;
     try {
       data = Bytes.concat(randomRpIdHash, flags, count, attData.encode());
@@ -81,7 +80,7 @@ public class AuthenticatorDataTest {
       AuthenticatorData result = AuthenticatorData.decode(data);
       assertTrue(result.getAttData().getPublicKey().equals(eccKey));
       assertArrayEquals(randomRpIdHash, result.getRpIdHash());
-      assertEquals(countInt, result.getSignCount());
+      assertTrue(Integer.compareUnsigned(countUnsignedInt, result.getSignCount()) == 0);
     } catch (ResponseException e) {
       fail("Exception occurred");
     }
