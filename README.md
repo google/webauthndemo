@@ -5,6 +5,6 @@ specification](https://w3c.github.io/webauthn/).
 ### Install
 The demo is written on top of Google App Engine. Run
 ```sh
-$ mvn appengine:devserver
+$ ./mvnw appengine:devserver
 ```
 for a local development server instance.
