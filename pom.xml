@@ -12,16 +12,17 @@
   <!-- [START set_versions] -->
   <properties>
     <appengine.app.version>1</appengine.app.version>
-    <appengine.sdk.version>1.9.54</appengine.sdk.version>
+    <appengine.sdk.version>1.9.63</appengine.sdk.version>
 
-    <objectify.version>5.1.21</objectify.version>
-    <guava.version>19.0</guava.version>
+    <objectify.version>5.1.22</objectify.version>
+    <guava.version>24.1-jre</guava.version>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.version>1.8</java.version>
   </properties>
 
   <prerequisites>
-    <maven>3.1.0</maven>
+    <maven>3.7.0</maven>
   </prerequisites>
   <!-- [END set_versions] -->
 
@@ -30,7 +31,7 @@
     <dependency>
       <groupId>com.google.endpoints</groupId>
       <artifactId>endpoints-framework</artifactId>
-      <version>2.0.7</version>
+      <version>2.0.13</version>
     </dependency>
     <dependency>
       <groupId>com.google.appengine</groupId>
@@ -40,28 +41,17 @@
     <dependency>
       <groupId>co.nstant.in</groupId>
       <artifactId>cbor</artifactId>
-      <version>0.7</version>
-    </dependency>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <version>3.0-alpha-1</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>jstl</groupId>
-      <artifactId>jstl</artifactId>
-      <version>1.2</version>
+      <version>0.8</version>
     </dependency>
     <dependency>
       <groupId>com.google.endpoints</groupId>
       <artifactId>endpoints-management-control-appengine</artifactId>
-      <version>1.0.4</version>
+      <version>1.0.7</version>
     </dependency>
     <dependency>
       <groupId>com.google.endpoints</groupId>
       <artifactId>endpoints-framework-auth</artifactId>
-      <version>1.0.4</version>
+      <version>1.0.7</version>
     </dependency>
     <dependency>
       <groupId>javax.inject</groupId>
@@ -104,7 +94,7 @@
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.8.1</version>
+      <version>2.8.2</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -114,22 +104,22 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
-      <version>1.56</version>
+      <version>1.59</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
-      <version>2.9.0.pr4</version>
+      <version>2.9.5</version>
     </dependency>
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt</artifactId>
-      <version>0.7.0</version>
+      <version>0.9.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.api-client</groupId>
       <artifactId>google-api-client</artifactId>
-      <version>1.22.0</version>
+      <version>1.23.0</version>
       <exclusions>
         <exclusion>  <!-- declare the exclusion here -->
           <groupId>com.google.guava</groupId>
@@ -140,7 +130,7 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.5.3</version>
+      <version>4.5.5</version>
     </dependency>
   </dependencies>
   <build>
@@ -150,7 +140,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>versions-maven-plugin</artifactId>
-        <version>2.1</version>
+        <version>2.5</version>
         <executions>
           <execution>
             <phase>compile</phase>
@@ -164,16 +154,31 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.3</version>
+        <version>3.7.0</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <compilerId>javac-with-errorprone</compilerId>
+          <forceJavacCompilerUse>true</forceJavacCompilerUse>
+          <showWarnings>true</showWarnings>
         </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-compiler-javac-errorprone</artifactId>
+            <version>2.8.4</version>
+          </dependency>
+          <dependency>
+            <groupId>com.google.errorprone</groupId>
+            <artifactId>error_prone_core</artifactId>
+            <version>2.3.1</version>
+          </dependency>
+        </dependencies>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
-        <version>2.6</version>
+        <version>3.2.0</version>
         <configuration>
           <archiveClasses>true</archiveClasses>
           <webResources>
@@ -203,39 +208,5 @@
       </plugin>
     </plugins>
   </build>
-  <profiles>
-    <profile>
-      <id>errorprone</id>
-      <activation>
-        <jdk>[1.8,</jdk>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.3</version>
-            <configuration>
-              <compilerId>javac-with-errorprone</compilerId>
-              <forceJavacCompilerUse>true</forceJavacCompilerUse>
-              <showWarnings>true</showWarnings>
-            </configuration>
-            <dependencies>
-              <dependency>
-                <groupId>org.codehaus.plexus</groupId>
-                <artifactId>plexus-compiler-javac-errorprone</artifactId>
-                <version>2.8.3</version>
-              </dependency>
-              <dependency>
-                <groupId>com.google.errorprone</groupId>
-                <artifactId>error_prone_core</artifactId>
-                <version>2.2.0</version>
-              </dependency>
-            </dependencies>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 
 </project>
