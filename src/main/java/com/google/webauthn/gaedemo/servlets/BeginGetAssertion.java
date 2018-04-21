@@ -33,8 +33,6 @@ public class BeginGetAssertion extends HttpServlet {
   private static final long serialVersionUID = 1L;
   private final UserService userService = UserServiceFactory.getUserService();
 
-  public BeginGetAssertion() {}
-
   @Override
   protected void doGet(HttpServletRequest q, HttpServletResponse p)
       throws ServletException, IOException {
