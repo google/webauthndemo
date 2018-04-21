@@ -43,11 +43,6 @@ public class FinishGetAssertion extends HttpServlet {
   private static final long serialVersionUID = 1L;
   private final UserService userService = UserServiceFactory.getUserService();
 
-
-  public FinishGetAssertion() {
-
-  }
-
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {

@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 public class AssetLinksHttpServlet extends HttpServlet {
 
   private static final String PATH = "/well-known/assetlinks.json";
-  public AssetLinksHttpServlet() {}
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response)

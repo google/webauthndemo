@@ -32,12 +32,6 @@ public class CreateSession extends HttpServlet {
   private static final long serialVersionUID = 1L;
   private final UserService userService = UserServiceFactory.getUserService();
 
-
-  /**
-   * @see HttpServlet#HttpServlet()
-   */
-  public CreateSession() {}
-
   /**
    * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
    */

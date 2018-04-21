@@ -50,13 +50,6 @@ public class SaveCredential extends HttpServlet {
   private static final long serialVersionUID = 1L;
   private final UserService userService = UserServiceFactory.getUserService();
 
-  /**
-   * @see HttpServlet#HttpServlet()
-   */
-  public SaveCredential() {
-    super();
-  }
-
   static {
     Security.addProvider(new BouncyCastleProvider());
   }

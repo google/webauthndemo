@@ -32,11 +32,6 @@ public class RemoveCredential extends HttpServlet {
   private final UserService userService = UserServiceFactory.getUserService();
 
   /**
-   * @see HttpServlet#HttpServlet()
-   */
-  public RemoveCredential() {}
-
-  /**
    * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
    */
   @Override

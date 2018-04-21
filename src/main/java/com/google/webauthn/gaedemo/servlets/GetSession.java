@@ -31,11 +31,6 @@ public class GetSession extends HttpServlet {
   private final UserService userService = UserServiceFactory.getUserService();
 
   /**
-   * @see HttpServlet#HttpServlet()
-   */
-  public GetSession() {}
-
-  /**
    * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
    */
   @Override
