@@ -15,9 +15,9 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import co.nstant.in.cbor.CborException;
 import com.google.common.io.BaseEncoding;
@@ -25,20 +25,23 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
 import java.security.SecureRandom;
 import java.util.Arrays;
-import org.junit.Test;
 
-public class AuthenticatorAssertionResponseTest {
+class AuthenticatorAssertionResponseTest {
   final SecureRandom random = new SecureRandom();
 
   /**
    * Test method for
-   * {@link com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse#AuthenticatorAssertionResponse(java.lang.String)}.
+   * {@link com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse#AuthenticatorAssertionResponse(JsonElement)}.
    * @throws ResponseException 
    */
-  //@Test
-  public void testAuthenticatorAssertionResponse() throws ResponseException {
+  @Test
+  @Disabled
+  void testAuthenticatorAssertionResponse() throws ResponseException {
     Gson gson = new Gson();
     CollectedClientData clientData = new CollectedClientData();
     clientData.challenge = "challengeString";

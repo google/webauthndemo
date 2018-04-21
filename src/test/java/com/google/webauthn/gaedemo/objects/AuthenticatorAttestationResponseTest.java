@@ -15,9 +15,9 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import co.nstant.in.cbor.CborException;
 import com.google.common.io.BaseEncoding;
@@ -25,19 +25,22 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
 import java.security.SecureRandom;
 import java.util.Arrays;
-import org.junit.Test;
 
-public class AuthenticatorAttestationResponseTest {
+class AuthenticatorAttestationResponseTest {
   final SecureRandom random = new SecureRandom();
 
   /**
    * Test method for
    * {@link com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse#AuthenticatorAttestationResponse}.
    */
-  //@Test
-  public void testAuthenticatorAttestationResponse() {
+  @Test
+  @Disabled
+  void testAuthenticatorAttestationResponse() {
 
     Gson gson = new Gson();
     CollectedClientData clientData = new CollectedClientData();

@@ -15,20 +15,20 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import co.nstant.in.cbor.CborException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CredentialPublicKeyTest {
+class CredentialPublicKeyTest {
 
   /**
    * Test method for {@link com.google.webauthn.gaedemo.objects.CredentialPublicKey#decode(byte[])}.
    */
   @Test
-  public void testDecode() {
+  void testDecode() {
     EccKey eccKey = new EccKey();
     eccKey.alg = Algorithm.decode("-7");
     eccKey.x = new byte[] {0, 1, 2, 3};

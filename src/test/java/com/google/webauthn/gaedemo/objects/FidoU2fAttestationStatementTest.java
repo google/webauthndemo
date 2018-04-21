@@ -15,19 +15,21 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import co.nstant.in.cbor.CborException;
+import org.junit.jupiter.api.Test;
+
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import org.junit.Test;
 
-public class FidoU2fAttestationStatementTest {
+class FidoU2fAttestationStatementTest {
   final SecureRandom rand = new SecureRandom();
 
   @Test
-  public void testEncode() {
+  void testEncode() {
     FidoU2fAttestationStatement attStmt = new FidoU2fAttestationStatement();
     attStmt.attestnCert = new byte[32];
     rand.nextBytes(attStmt.attestnCert);

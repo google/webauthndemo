@@ -15,22 +15,23 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import co.nstant.in.cbor.CborException;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
-import java.util.Random;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AttestationDataTest {
+import java.util.Random;
+
+class AttestationDataTest {
 
   /**
    * Test method for {@link com.google.webauthn.gaedemo.objects.AttestationData#encode()}.
    */
   @Test
-  public void testEncode() {
+  void testEncode() {
     AttestationData attData = new AttestationData();
     Random rand = new Random();
     rand.nextBytes(attData.aaguid);
@@ -57,7 +58,7 @@ public class AttestationDataTest {
    * {@link com.google.webauthn.gaedemo.objects.AttestationData#equals(java.lang.Object)}.
    */
   @Test
-  public void testEquals() {
+  void testEquals() {
     AttestationData one = new AttestationData();
     AttestationData two = new AttestationData();
     assertEquals(one, two);

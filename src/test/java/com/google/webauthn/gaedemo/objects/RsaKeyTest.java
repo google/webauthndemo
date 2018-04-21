@@ -15,18 +15,19 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import co.nstant.in.cbor.CborException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class RsaKeyTest {
+class RsaKeyTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     RsaKey one = new RsaKey();
     RsaKey two = new RsaKey();
     assertEquals(one, two);
@@ -49,7 +50,7 @@ public class RsaKeyTest {
   }
 
   @Test
-  public void testEncode() {
+  void testEncode() {
     RsaKey rsaKey = new RsaKey();
     rsaKey.alg = Algorithm.PS256;
     rsaKey.e = "e".getBytes();

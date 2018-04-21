@@ -15,17 +15,18 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.DataItem;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
-import java.security.SecureRandom;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class AndroidSafetyNetAttestationStatementTest {
+import java.security.SecureRandom;
+
+class AndroidSafetyNetAttestationStatementTest {
 
   /**
    * Test method for
@@ -33,7 +34,7 @@ public class AndroidSafetyNetAttestationStatementTest {
    * {@link com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement#decode(co.nstant.in.cbor.model.DataItem)}.
    */
   @Test
-  public void testEncode() {
+  void testEncode() {
     SecureRandom random = new SecureRandom();
     AndroidSafetyNetAttestationStatement attStmt = new AndroidSafetyNetAttestationStatement();
     attStmt.ver = "10";
@@ -55,7 +56,7 @@ public class AndroidSafetyNetAttestationStatementTest {
    * {@link com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement#equals(java.lang.Object)}.
    */
   @Test
-  public void testEqualsObject() {
+  void testEqualsObject() {
     AndroidSafetyNetAttestationStatement a = new AndroidSafetyNetAttestationStatement();
     AndroidSafetyNetAttestationStatement b = new AndroidSafetyNetAttestationStatement();
     assertEquals(a, b);

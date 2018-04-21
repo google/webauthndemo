@@ -15,18 +15,18 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import co.nstant.in.cbor.CborException;
 import com.google.api.client.util.Base64;
 import com.google.common.primitives.Bytes;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
+import org.junit.jupiter.api.Test;
+
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
-
-import org.junit.Test;
 
 public class AuthenticatorDataTest {
   private final SecureRandom random = new SecureRandom();
@@ -35,7 +35,7 @@ public class AuthenticatorDataTest {
    * Test method for {@link com.google.webauthn.gaedemo.objects.AuthenticatorData#decode(byte[])}.
    */
   @Test
-  public void testDecodeWithoutAttestation() {
+  void testDecodeWithoutAttestation() {
     byte[] randomRpIdHash = new byte[32];
     random.nextBytes(randomRpIdHash);
     byte[] flags = {0};
@@ -57,7 +57,7 @@ public class AuthenticatorDataTest {
    * Test method for {@link com.google.webauthn.gaedemo.objects.AuthenticatorData#decode(byte[])}.
    */
   @Test
-  public void testDecodeWithAttestation() {
+  void testDecodeWithAttestation() {
     byte[] randomRpIdHash = new byte[32];
     random.nextBytes(randomRpIdHash);
     byte[] flags = {1 << 6};

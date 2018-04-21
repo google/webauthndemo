@@ -15,19 +15,19 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import co.nstant.in.cbor.CborException;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-public class EccKeyTest {
+class EccKeyTest {
 
   @Test
-  public void testEquals() {
+  void testEquals() {
     EccKey one = new EccKey();
     EccKey two = new EccKey();
     assertEquals(one, two);
@@ -54,8 +54,8 @@ public class EccKeyTest {
   }
 
   @Test
-  @Ignore
-  public void testEncode() {
+  @Disabled
+  void testEncode() {
     EccKey testKey = new EccKey();
     testKey.alg = Algorithm.ES256;
     testKey.x = "testX".getBytes();
