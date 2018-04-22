@@ -21,13 +21,13 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 
 import com.google.common.primitives.Bytes;
 import com.google.webauthn.gaedemo.crypto.Crypto;
+import com.google.webauthn.gaedemo.exceptions.DuplicateAuthenticatorException;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
@@ -115,20 +115,13 @@ public class U2fServer extends Server {
    * @throws ServletException
    */
   public static void registerCredential(PublicKeyCredential cred, String currentUser,
-      String session, String originString, String rpId) throws ServletException {
+      String session, String originString, String rpId) throws ServletException, DuplicateAuthenticatorException {
 
-    if (!(cred.getResponse() instanceof AuthenticatorAttestationResponse)) {
-      throw new ServletException("Invalid response structure");
-    }
-
-    AuthenticatorAttestationResponse attResponse =
-        (AuthenticatorAttestationResponse) cred.getResponse();
-
-    List<Credential> savedCreds = Credential.load(currentUser);
-    for (Credential c : savedCreds) {
-      if (c.getCredential().id.equals(cred.id)) {
-        throw new ServletException("Credential already registerd for this user");
-      }
+    AuthenticatorAttestationResponse attResponse;
+    try {
+      attResponse = verifyAttestationResponse(cred, currentUser);
+    } catch (ResponseException e) {
+      throw new ServletException(e.getMessage());
     }
 
     try {

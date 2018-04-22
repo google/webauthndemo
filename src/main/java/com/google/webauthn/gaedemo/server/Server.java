@@ -17,6 +17,7 @@ package com.google.webauthn.gaedemo.server;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -25,8 +26,10 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.Bytes;
 import com.google.webauthn.gaedemo.crypto.AlgorithmIdentifierMapper;
 import com.google.webauthn.gaedemo.crypto.Crypto;
+import com.google.webauthn.gaedemo.exceptions.DuplicateAuthenticatorException;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
+import com.google.webauthn.gaedemo.objects.AttestationStatement;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.AuthenticatorResponse;
@@ -109,6 +112,37 @@ public abstract class Server {
     }
 
     return credential;
+  }
+
+  public static AuthenticatorAttestationResponse verifyAttestationResponse(PublicKeyCredential cred, String currentUser)
+      throws ResponseException, DuplicateAuthenticatorException {
+
+    if (!(cred.getResponse() instanceof AuthenticatorAttestationResponse)) {
+      throw new ResponseException("Invalid response structure");
+    }
+
+    AuthenticatorAttestationResponse attResponse = (AuthenticatorAttestationResponse) cred.getResponse();
+    AttestationStatement attStmt = attResponse.decodedObject.getAttestationStatement();
+
+    List<Credential> savedCreds = Credential.load(currentUser);
+
+    for (Credential c : savedCreds) {
+      if (Objects.equals(c.getCredential().id, cred.id)) {
+        throw new DuplicateAuthenticatorException(
+            "Credential already registered for this user", c.getCredential().rawId);
+      }
+
+      if (c.getCredential().getAttestationType() == attStmt.getAttestationType()) {
+        AttestationStatement savedAttStmt =
+            ((AuthenticatorAttestationResponse) c.getCredential().getResponse()).decodedObject.getAttestationStatement();
+        if (Arrays.equals(savedAttStmt.getCert(), attStmt.getCert())) {
+          throw new DuplicateAuthenticatorException(
+              "This authenticator already registered for this user", c.getCredential().rawId);
+        }
+      }
+    }
+
+    return attResponse;
   }
 
   /**

@@ -126,4 +126,14 @@ public class FidoU2fAttestationStatement extends AttestationStatement {
   public String getName() {
     return "FIDO U2F Authenticator";
   }
+
+  @Override
+  public AttestationStatementEnum getAttestationType() {
+    return AttestationStatementEnum.FIDOU2F;
+  }
+
+  @Override
+  public byte[] getCert() {
+    return attestnCert;
+  }
 }
