@@ -35,6 +35,17 @@ const onClick = (q, func) => {
   $(q).addEventListener('click', func);
 };
 
+const easing = (id, color) => {
+  document.getElementById(id).animate([{
+    backgroundColor: color
+  },{
+    backgroundColor: 'white'
+  }], {
+    duration: 2000,
+    easing: 'ease-out'
+  });
+};
+
 function addErrorMsg(msg) {
   $('#error-text').innerHTML = msg;
   show('#error');
@@ -48,6 +59,14 @@ function addSuccessMsg(msg) {
 function removeMsgs() {
   hide('#error');
   hide('#success');
+};
+
+function highlightSuccessCard(cardId) {
+  easing(cardId, '#009688')
+};
+
+function highlightErrorCard(cardId) {
+  easing(cardId, '#F44336')
 };
 
 function _fetch(url, obj) {
@@ -230,12 +249,19 @@ function addCredential() {
       session: _options.session.id
     });
 
-  }).then(parameters => {
-    console.log(parameters);
+  }).then(result => {
+    console.log(result);
 
-    if (parameters && parameters.success) {
-      addSuccessMsg(parameters.message);
-      fetchCredentials();
+    if (result) {
+      if (result.success) {
+        addSuccessMsg(result.message);
+        fetchCredentials();
+      } else if ('handle' in result) {
+        addErrorMsg(result.message);
+        highlightErrorCard(result.handle);
+      } else {
+        addErrorMsg(result.message);
+      }
     } else {
       throw 'Unexpected response received.';
     }
@@ -313,15 +339,7 @@ function getAssertion() {
     if (result && result.success) {
       addSuccessMsg(result.message);
       if ('handle' in result) {
-        let card = document.getElementById(result.handle);
-        card.animate([{
-          backgroundColor: '#009688'
-        },{
-          backgroundColor: 'white'
-        }], {
-          duration: 2000,
-          easing: 'ease-out'
-        });
+        highlightSuccessCard(result.handle);
       }
     }
   }).catch(err => {

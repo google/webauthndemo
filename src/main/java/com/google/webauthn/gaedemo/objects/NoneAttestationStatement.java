@@ -14,7 +14,6 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import co.nstant.in.cbor.CborDecoder;
 import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.DataItem;
 import co.nstant.in.cbor.model.Map;
@@ -41,5 +40,15 @@ public class NoneAttestationStatement extends AttestationStatement {
   @Override
   public String getName() {
     return "NONE ATTESTATION";
+  }
+
+  @Override
+  public AttestationStatementEnum getAttestationType() {
+    return AttestationStatementEnum.NONE;
+  }
+
+  @Override
+  public byte[] getCert() {
+    return null;
   }
 }
