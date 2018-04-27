@@ -169,4 +169,9 @@ public class PackedAttestationStatement extends AttestationStatement {
   public String getName() {
     return "Packed Attestation";
   }
+
+  @Override
+  public AttestationStatementEnum getAttestationType() {
+    return AttestationStatementEnum.PACKED;
+  }
 }

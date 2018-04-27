@@ -105,4 +105,9 @@ public class AndroidSafetyNetAttestationStatement extends AttestationStatement {
   public String getName() {
     return "Android SafetyNet";
   }
+
+  @Override
+  public AttestationStatementEnum getAttestationType() {
+    return AttestationStatementEnum.ANDROIDSAFETYNET;
+  }
 }

@@ -65,19 +65,10 @@ public class PublicKeyCredential {
     try {
       AuthenticatorAttestationResponse attRsp = (AuthenticatorAttestationResponse) response;
       AttestationStatement attStmt = attRsp.decodedObject.getAttestationStatement();
-      if (attStmt instanceof AndroidSafetyNetAttestationStatement) {
-        return AttestationStatementEnum.ANDROIDSAFETYNET;
-      } else if (attStmt instanceof FidoU2fAttestationStatement) {
-        return AttestationStatementEnum.FIDOU2F;
-      } else if (attStmt instanceof PackedAttestationStatement) {
-        return AttestationStatementEnum.PACKED;
-      } else if (attStmt instanceof NoneAttestationStatement) {
-        return AttestationStatementEnum.NONE;
-      }
+      return attStmt.getAttestationType();
     } catch (ClassCastException e) {
       return null;
     }
-    return null;
   }
 
   /**

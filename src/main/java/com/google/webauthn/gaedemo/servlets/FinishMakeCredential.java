@@ -21,6 +21,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import com.google.webauthn.gaedemo.exceptions.DuplicateAuthenticatorException;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
@@ -34,6 +35,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.DatatypeConverter;
 
 public class FinishMakeCredential extends HttpServlet {
 
@@ -94,18 +96,27 @@ public class FinishMakeCredential extends HttpServlet {
 
     String domain = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
     String rpId = request.getHeader("Host").split(":")[0];
-    switch (cred.getAttestationType()) {
-      case FIDOU2F:
-        U2fServer.registerCredential(cred, currentUser, session, domain, rpId);
-        break;
-      case ANDROIDSAFETYNET:
-        AndroidSafetyNetServer.registerCredential(cred, currentUser, session, rpId);
-        break;
-      case PACKED:
-        PackedServer.registerCredential(cred, currentUser, session, rpId);
-        break;
-      case NONE:
-        break;
+    try {
+      switch (cred.getAttestationType()) {
+        case FIDOU2F:
+          U2fServer.registerCredential(cred, currentUser, session, domain, rpId);
+          break;
+        case ANDROIDSAFETYNET:
+          AndroidSafetyNetServer.registerCredential(cred, currentUser, session, rpId);
+          break;
+        case PACKED:
+          PackedServer.registerCredential(cred, currentUser, session, rpId);
+          break;
+        case NONE:
+          break;
+      }
+    } catch (DuplicateAuthenticatorException e) {
+      String handle = DatatypeConverter.printHexBinary(e.getRawId());
+      PublicKeyCredentialResponse rsp =
+          new PublicKeyCredentialResponse(false, e.getMessage(), handle);
+      response.setContentType("application/json");
+      response.getWriter().println(rsp.toJson());
+      return;
     }
 
     Credential credential = new Credential(cred);

@@ -15,5 +15,35 @@
 package com.google.webauthn.gaedemo.objects;
 
 public enum AttestationStatementEnum {
-  FIDOU2F, ANDROIDSAFETYNET, PACKED, NONE;
+  FIDOU2F("fido-u2f"),
+  ANDROIDSAFETYNET("android-safetynet"),
+  PACKED("packed"),
+  NONE("none");
+
+  private final String name;
+
+  /**
+   * @param name
+   */
+  private AttestationStatementEnum(String name) {
+    this.name = name;
+  }
+
+  /**
+   * @param s
+   * @return Attestation Statement Format Identifiers corresponding to the input string
+   */
+  public static AttestationStatementEnum decode(String s) {
+    for (AttestationStatementEnum t : AttestationStatementEnum.values()) {
+      if (t.name.equals(s)) {
+        return t;
+      }
+    }
+    throw new IllegalArgumentException(s + " not a valid Attestation Statement Format Identifiers");
+  }
+
+  @Override
+  public String toString() {
+    return name;
+  }
 }

@@ -17,6 +17,7 @@ package com.google.webauthn.gaedemo.server;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -25,6 +26,7 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.primitives.Bytes;
 import com.google.webauthn.gaedemo.crypto.AlgorithmIdentifierMapper;
 import com.google.webauthn.gaedemo.crypto.Crypto;
+import com.google.webauthn.gaedemo.exceptions.DuplicateAuthenticatorException;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
@@ -73,6 +75,27 @@ public abstract class Server {
       throw new ResponseException("Returned challenge incorrect");
     }
     Log.info("Successfully verified session and challenge data");
+  }
+
+  public static AuthenticatorAttestationResponse validateAndGetAttestationResponse(PublicKeyCredential cred, String currentUser)
+      throws ResponseException, DuplicateAuthenticatorException {
+
+    if (!(cred.getResponse() instanceof AuthenticatorAttestationResponse)) {
+      throw new ResponseException("Invalid response structure");
+    }
+
+    AuthenticatorAttestationResponse attResponse = (AuthenticatorAttestationResponse) cred.getResponse();
+
+    List<Credential> savedCreds = Credential.load(currentUser);
+
+    for (Credential c : savedCreds) {
+      if (Objects.equals(c.getCredential().id, cred.id)) {
+        throw new DuplicateAuthenticatorException(
+            "Credential already registered for this user", c.getCredential().rawId);
+      }
+    }
+
+    return attResponse;
   }
 
   public static Credential validateAndFindCredential(PublicKeyCredential cred, String currentUser,

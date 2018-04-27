@@ -5,14 +5,12 @@ import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.appengine.api.oauth.OAuthRequestException;
 import com.google.appengine.api.users.User;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.io.BaseEncoding;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.webauthn.gaedemo.crypto.Crypto;
+import com.google.webauthn.gaedemo.exceptions.DuplicateAuthenticatorException;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
 import com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement;
@@ -104,20 +102,24 @@ public class Fido2RequestHandler {
     PublicKeyCredential cred = new PublicKeyCredential(credentialId, type,
         BaseEncoding.base64Url().decode(credentialId), attestation);
 
-    switch (cred.getAttestationType()) {
-      case FIDOU2F:
-        U2fServer.registerCredential(cred, user.getEmail(),
-            session, Constants.APP_ID, Constants.APP_ID);
-        break;
-      case ANDROIDSAFETYNET:
-        AndroidSafetyNetServer.registerCredential(
-            cred, user.getEmail(), session, Constants.APP_ID);
-        break;
-      case PACKED:
-        PackedServer.registerCredential(cred, user.getEmail(), session, Constants.APP_ID);
-        break;
-      default:
-        // This should never happen.
+    try {
+      switch (cred.getAttestationType()) {
+        case FIDOU2F:
+          U2fServer.registerCredential(cred, user.getEmail(),
+              session, Constants.APP_ID, Constants.APP_ID);
+          break;
+        case ANDROIDSAFETYNET:
+          AndroidSafetyNetServer.registerCredential(
+              cred, user.getEmail(), session, Constants.APP_ID);
+          break;
+        case PACKED:
+          PackedServer.registerCredential(cred, user.getEmail(), session, Constants.APP_ID);
+          break;
+        default:
+          // This should never happen.
+      }
+    } catch (DuplicateAuthenticatorException e) {
+      throw new ServletException(e.getMessage());
     }
 
     Credential credential = new Credential(cred);
