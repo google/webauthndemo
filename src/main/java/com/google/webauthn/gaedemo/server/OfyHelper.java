@@ -27,24 +27,31 @@ import com.google.webauthn.gaedemo.storage.Credential;
 import com.google.webauthn.gaedemo.storage.SessionData;
 import com.google.webauthn.gaedemo.storage.User;
 import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.VoidWork;
+
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 public class OfyHelper implements ServletContextListener {
   @Override
   public void contextInitialized(ServletContextEvent event) {
-    ObjectifyService.register(User.class);
-    ObjectifyService.register(Credential.class);
-    ObjectifyService.register(AttestationSessionData.class);
-    ObjectifyService.register(SessionData.class);
-    ObjectifyService.register(AuthenticatorAttestationResponse.class);
-    ObjectifyService.register(AuthenticatorAssertionResponse.class);
-    ObjectifyService.register(RsaKey.class);
-    ObjectifyService.register(EccKey.class);
-    ObjectifyService.register(FidoU2fAttestationStatement.class);
-    ObjectifyService.register(PackedAttestationStatement.class);
-    ObjectifyService.register(AndroidSafetyNetAttestationStatement.class);
-    ObjectifyService.register(NoneAttestationStatement.class);
+    ObjectifyService.run(new VoidWork() {
+      public void vrun() {
+        ObjectifyService.register(User.class);
+        ObjectifyService.register(Credential.class);
+        ObjectifyService.register(AttestationSessionData.class);
+        ObjectifyService.register(SessionData.class);
+        ObjectifyService.register(AuthenticatorAttestationResponse.class);
+        ObjectifyService.register(AuthenticatorAssertionResponse.class);
+        ObjectifyService.register(RsaKey.class);
+        ObjectifyService.register(EccKey.class);
+        ObjectifyService.register(FidoU2fAttestationStatement.class);
+        ObjectifyService.register(PackedAttestationStatement.class);
+        ObjectifyService.register(AndroidSafetyNetAttestationStatement.class);
+        ObjectifyService.register(NoneAttestationStatement.class);
+      }
+  });
+
   }
 
   @Override
