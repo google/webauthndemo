@@ -91,7 +91,14 @@ public class U2fServer extends Server {
               clientDataHash);
       if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()),
           signedBytes, assertionResponse.getSignature())) {
-        throw new ServletException("Signature invalid");
+        signedBytes[storedAttData.getAttestationObject().getAuthenticatorData()
+            .getRpIdHash().length] = assertionResponse.getAuthenticatorData().getFlags();
+        //TODO Remove this hack.
+        if (!Crypto.verifySignature(Crypto.decodePublicKey(publicKey.getX(), publicKey.getY()),
+            signedBytes, assertionResponse.getSignature())) {
+          throw new ServletException("Signature invalid");
+        }
+        //
       }
     } catch (WebAuthnException e) {
       throw new ServletException("Failure while verifying signature");

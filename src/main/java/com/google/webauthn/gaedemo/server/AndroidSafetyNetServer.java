@@ -86,7 +86,13 @@ public class AndroidSafetyNetServer extends Server {
       byte[] expectedNonce = Crypto.sha256Digest(Bytes.concat(
           attResponse.getAttestationObject().getAuthenticatorData().encode(), clientDataHash));
       if (!Arrays.equals(expectedNonce, stmt.getNonce())) {
-        throw new ServletException("Nonce does not match");
+        //TODO(cpiper) Remove this hack.
+        expectedNonce = Bytes.concat(
+            attResponse.getAttestationObject().getAuthenticatorData().encode(), clientDataHash);
+        if (!Arrays.equals(expectedNonce, stmt.getNonce())) {
+          throw new ServletException("Nonce does not match");
+        }
+        //
       }
     } catch (CborException e) {
       throw new ServletException("Error encoding authdata");
