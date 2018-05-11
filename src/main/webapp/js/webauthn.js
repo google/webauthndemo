@@ -271,8 +271,6 @@ function getAssertion() {
 
     return navigator.credentials.get({
       "publicKey": requestOptions
-    }).catch(() => {
-      throw 'Authentication failed';
     });
 
   }).then(assertion => {
