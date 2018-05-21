@@ -60,6 +60,8 @@ function _fetch(url, obj) {
     for (let key in obj) {
       body.append(key, obj[key]);
     }
+    // Set body to string value to handle an Edge case
+    body = body.toString();
   } else {
     // Add parameters to body manually if browser doesn't support URLSearchParams
     body = "";
@@ -345,10 +347,11 @@ document.addEventListener('DOMContentLoaded', () => {
     hidden.style.display = 'none';
     hidden.classList.remove('hidden');
   }
-  if (navigator.credentials.create) {
+  if (navigator.credentials && navigator.credentials.create) {
     fetchCredentials();
   } else {
     addErrorMsg('Your browser doesn\'t support WebAuthn');
+    fetchCredentials();
   }
 });
 
