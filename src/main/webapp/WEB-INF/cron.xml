@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cronentries>
+  <cron>
+    <url>/DeleteOldSessions</url>
+    <description>Daily session cleanup</description>
+    <schedule>every 60 minutes</schedule>
+  </cron>
+</cronentries>

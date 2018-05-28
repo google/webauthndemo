@@ -24,6 +24,15 @@
     </web-resource-collection>
     <!-- OMIT auth-constraint -->
   </security-constraint>
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>cron</web-resource-name>
+      <url-pattern>/DeleteOldSessions</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>admin</role-name>
+    </auth-constraint>
+  </security-constraint>
 
   <security-constraint>
     <web-resource-collection>
@@ -150,6 +159,16 @@
   <servlet-mapping>
     <servlet-name>SaveCredential</servlet-name>
     <url-pattern>/SaveCredential</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>DeleteOldSessions</display-name>
+    <servlet-name>DeleteOldSessions</servlet-name>
+    <servlet-class>com.google.webauthn.gaedemo.servlets.DeleteOldSessions</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DeleteOldSessions</servlet-name>
+    <url-pattern>/DeleteOldSessions</url-pattern>
   </servlet-mapping>
 
   <servlet>

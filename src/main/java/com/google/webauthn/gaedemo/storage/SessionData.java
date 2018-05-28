@@ -90,6 +90,15 @@ public class SessionData {
     }
   }
 
+  public static void removeAllOldSessions() {
+	Date date = new Date(System.currentTimeMillis() - (1 * 60 * 60 * 1000));
+	List<Key<SessionData>> keys = ofy().load().type(SessionData.class)
+			.filter("created < ", date).keys().list();
+    if (keys.size() > 0) {
+      ofy().delete().keys(keys).now();
+    }
+  }
+
   public static SessionData load(String currentUser, Long id) {
     Key<User> user = Key.create(User.class, currentUser);
     Key<SessionData> session = Key.create(user, SessionData.class, id);
