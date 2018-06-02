@@ -30,6 +30,81 @@
   word-wrap: break-word;
 }
 
+.login-card.mdl-card {
+  width: 350px;
+  height: 350px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 20px;
+}
+
+.outer-next {
+  position: absolute;
+  text-align: right;
+  bottom: .5cm;
+  right: .5cm;
+}
+
+.login-card.mdl-card__title {
+	margin-bottom: 2cm;
+}
+
+.username-card {
+  position: relative;
+  display: block;
+  margin : 0 auto;
+}
+
+.boxes {
+	position: relative;
+	height: 50px;
+}
+
+.top-box {
+	position: absolute;
+	top: 5px;
+}
+
+.bottom-box {
+  position: absolute;
+  top: 5px;
+}
+
+.instructions {
+  height: 200px;
+}
+
+.auth-spinner {
+  position: relative;
+  display: block;
+  margin : 0 auto;
+}
+
+.mdl-spinner {
+  width: 84px;
+  height: 84px;
+}
+
+.mdl-spinner__circle {
+  border-width: 6px;
+}
+
+.signin-title {
+	height: 75px;
+}
+
+.instruction-text {
+  transition: opacity 0.8s;
+}
+
+.gone {
+	opacity: 0;
+}
+
+.next-button.mdl-button {
+	width: 100px;
+}
+
 .advanced-switch {
   background-color: white;
   padding-top: .2cm;

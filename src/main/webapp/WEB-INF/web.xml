@@ -116,9 +116,29 @@
     <servlet-name>Home</servlet-name>
     <servlet-class>com.google.webauthn.gaedemo.servlets.Home</servlet-class>
   </servlet>
+  <servlet>
+    <description></description>
+    <display-name>Cable</display-name>
+    <servlet-name>Cable</servlet-name>
+    <servlet-class>com.google.webauthn.gaedemo.servlets.Cable</servlet-class>
+  </servlet>
+  <servlet>
+    <description></description>
+    <display-name>Login</display-name>
+    <servlet-name>Login</servlet-name>
+    <servlet-class>com.google.webauthn.gaedemo.servlets.Login</servlet-class>
+  </servlet>
   <servlet-mapping>
     <servlet-name>Home</servlet-name>
     <url-pattern>/Home</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>Cable</servlet-name>
+    <url-pattern>/Cable</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>Login</servlet-name>
+    <url-pattern>/Login</url-pattern>
   </servlet-mapping>
   <servlet>
     <description></description>
