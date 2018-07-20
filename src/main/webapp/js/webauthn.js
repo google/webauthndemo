@@ -249,6 +249,24 @@ function addCredential() {
   });
 }
 
+function isUVPAA() {
+  removeMsgs();
+  if (PublicKeyCredential &&
+      PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
+    PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(response => {
+      if (response === true) {
+        addSuccessMsg(`User verifying platform authenticator is available.`);
+      } else {
+        addErrorMsg(`User verifying platform authenticator is NOT available.`);
+      }
+    }).catch(err => {
+      addErrorMsg(`UVPAA failed: [${err.toString()}]`);
+    });
+  } else {
+    addErrorMsg(`User verifying platform authenticator is not available on this browser.`);
+  }
+}
+
 function getAssertion() {
   removeMsgs();
   show('#active');
@@ -358,6 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('load', () => {
   onClick('#credential-button', addCredential);
   onClick('#authenticate-button', getAssertion);
+  onClick('#isuvpaa-button', isUVPAA);
   onClick('#switch-advanced', () => {
     if (isChecked('#switch-advanced')) {
       show('#advanced');
