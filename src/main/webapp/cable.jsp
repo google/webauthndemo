@@ -10,22 +10,17 @@
   rel="stylesheet">
 <link href="stylesheets/webauthn.css" rel="stylesheet">
 <script src="//code.getmdl.io/1.3.0/material.min.js"></script>
-<!-- Web Animations polyfill for Edge. -->
-<script src="https://rawgit.com/web-animations/web-animations-js/master/web-animations.min.js"></script>
-<script src="js/webauthn.js"></script>
-<title>WebAuthn Demo</title>
+<script src="js/webauthn-cable.js"></script>
+<title>WebAuthN Demo</title>
 </head>
 <body>
   <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
     <header class="mdl-layout__header">
       <div class="mdl-layout-icon"></div>
       <div class="mdl-layout__header-row">
-        <span class="mdl-layout__title">WebAuthn Demo - ${nickname}</span>
+        <span class="mdl-layout__title">WebAuthN Demo - ${nickname}</span>
         <div class="mdl-layout-spacer"></div>
         <nav class="mdl-navigation">
-          <button id="isuvpaa-button"
-            class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect isuvpaa-button">
-            Check isUVPAA</button>
           <button id="credential-button"
             class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect make-button">
             Register New Credential</button>
@@ -43,10 +38,8 @@
     <main class="mdl-layout__content mdl-color--grey-100">
     <div id="active" class="hidden activity-bar">
       <h3 class="active-text">Waiting for user touch</h3>
-      <!-- Temporarily removing spinner due to https://bugs.chromium.org/p/chromium/issues/detail?id=846403
       <div
         class="mdl-progress mdl-js-progress mdl-progress__indeterminate page-width"></div>
-        -->
     </div>
     <div id="error" class="hidden">
       <h3 class="error-text" id="error-text">An error has occurred</h3>
@@ -57,7 +50,13 @@
     <div id="advanced-switch" class="advanced-switch">
       <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-advanced">
         <input type="checkbox" id="switch-advanced" class="mdl-switch__input">
-        <span class="mdl-switch__label">Advanced Options</span>
+        <span class="mdl-switch__label">Advanced Registration Options</span>
+      </label>
+    </div>
+    <div id="advanced-switch-auth" class="advanced-switch">
+      <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-advanced-auth">
+        <input type="checkbox" id="switch-advanced-auth" class="mdl-switch__input">
+        <span class="mdl-switch__label">Advanced Authentication Options</span>
       </label>
     </div>
     <div id="advanced" class="advanced hidden">
@@ -90,6 +89,20 @@
         <option value="preferred">Preferred</option>
         <option value="discouraged">Discouraged</option>
       </select>
+    </div>
+    <div id="advanced-auth" class="advanced hidden">
+      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input type="text" id="cable-client-eid" class="mdl-textfield__input" pattern="[a-fA-F\d]+">
+        <label class="mdl-textfield__label" for="cable-client-eid">caBLE Client EID</label>
+      </div>
+      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input type="text" id="cable-authenticator-eid" class="mdl-textfield__input" pattern="[a-fA-F\d]+">
+        <label class="mdl-textfield__label" for="cable-authenticator-eid">caBLE Authenticator EID</label>
+      </div>
+      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input type="text" id="cable-session-pre-key" class="mdl-textfield__input" pattern="[a-fA-F\d]+">
+        <label class="mdl-textfield__label" for="cable-session-pre-key">caBLE Session Pre Key</label>
+      </div>
     </div>
     <div id="credentials" class="mdl-grid mdl-grid--no-spacing"></div>
     <div id="github" class="github-link">

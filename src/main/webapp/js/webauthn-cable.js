@@ -63,7 +63,8 @@ function _fetch(url, obj) {
     // Set body to string value to handle an Edge case
     body = body.toString();
   } else {
-    // Add parameters to body manually if browser doesn't support URLSearchParams
+    // Add parameters to body manually if browser doesn't support
+    // URLSearchParams
     body = "";
     for (let key in obj) {
       body += encodeURIComponent(key) + "=" + encodeURIComponent(obj[key]) + "&";
@@ -141,6 +142,13 @@ function credentialListConversion(list) {
     }
     return cred;
   });
+}
+
+function hexToBuffer(hex) {
+  let array = new Uint8Array(hex.toUpperCase().match(/[\dA-F]{2}/gi).map(function (b) {
+    return parseInt(b, 16)
+  }));
+  return array.buffer;
 }
 
 function addCredential() {
@@ -249,24 +257,6 @@ function addCredential() {
   });
 }
 
-function isUVPAA() {
-  removeMsgs();
-  if (PublicKeyCredential &&
-      PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
-    PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(response => {
-      if (response === true) {
-        addSuccessMsg(`User verifying platform authenticator is available.`);
-      } else {
-        addErrorMsg(`User verifying platform authenticator is NOT available.`);
-      }
-    }).catch(err => {
-      addErrorMsg(`UVPAA failed: [${err.toString()}]`);
-    });
-  } else {
-    addErrorMsg(`User verifying platform authenticator is not available on this browser.`);
-  }
-}
-
 function getAssertion() {
   removeMsgs();
   show('#active');
@@ -287,8 +277,26 @@ function getAssertion() {
       requestOptions.allowCredentials = credentialListConversion(parameters.allowCredentials);
     }
 
-    console.log(requestOptions);
+    // Add options if selected
+    if (isChecked('#switch-advanced-auth')) {
+      let extensions = {};
+      if ($('#cable-client-eid').value !== '' ||
+          $('#cable-authenticator-eid').value !== '' ||
+          $('#cable-session-pre-key').value !== '') {
+        let cable = {};
+        cable.version = 1;
+        cable.clientEid = hexToBuffer($('#cable-client-eid').value);
+        cable.authenticatorEid = hexToBuffer($('#cable-authenticator-eid').value);
+        cable.sessionPreKey = hexToBuffer($('#cable-session-pre-key').value);
+        extensions.cableAuthentication = [cable];
+      }
+      if (Object.keys(extensions).length !== 0) {
+        requestOptions.extensions = extensions;
+      }
+    }
 
+    console.log(requestOptions);
+    
     return navigator.credentials.get({
       "publicKey": requestOptions
     });
@@ -374,14 +382,30 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('load', () => {
+  if (isChecked('#switch-advanced')) {
+    show('#advanced');
+  } else {
+    hide('#advanced');
+  }
+  if (isChecked('#switch-advanced-auth')) {
+    show('#advanced-auth');
+  } else {
+    hide('#advanced-auth');
+  }
   onClick('#credential-button', addCredential);
   onClick('#authenticate-button', getAssertion);
-  onClick('#isuvpaa-button', isUVPAA);
   onClick('#switch-advanced', () => {
     if (isChecked('#switch-advanced')) {
       show('#advanced');
     } else {
       hide('#advanced');
+    }
+  });
+  onClick('#switch-advanced-auth', () => {
+    if (isChecked('#switch-advanced-auth')) {
+      show('#advanced-auth');
+    } else {
+      hide('#advanced-auth');
     }
   });
 });
