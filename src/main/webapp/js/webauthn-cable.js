@@ -90,6 +90,7 @@ function fetchCredentials() {
     let credentials = '';
     for (let i in response) {
       let { handle, publicKey, name, date, id } = response[i];
+      let hasCable = response[i].hasCable ? "Yes" : "No";
       let buttonId = `delete${i}`;
       credentials +=
         `<div class="mdl-cell mdl-cell--1-offset mdl-cell-4-col">
@@ -100,6 +101,8 @@ function fetchCredentials() {
              <div class="mdl-card__supporting-text">${publicKey}</div>
              <div class="mdl-card__subtitle-text">Key Handle</div>
              <div class="mdl-card__supporting-text">${handle}</div>
+             <div class="mdl-card__subtitle-text">Supports caBLE</div>
+             <div class="mdl-card__supporting-text">${hasCable}</div>
              <div class="mdl-card__menu">
                <button id="${buttonId}"
                  class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
@@ -275,6 +278,18 @@ function getAssertion() {
     }
     if ('allowCredentials' in parameters) {
       requestOptions.allowCredentials = credentialListConversion(parameters.allowCredentials);
+    }
+    if ('extensions' in parameters) {
+      requestOptions.extensions = parameters.extensions;
+      // Convert ByteArrays
+      if ('cableAuthentication' in requestOptions.extensions) {
+        var cableSessionDatas = requestOptions.extensions.cableAuthentication;
+        cableSessionDatas.forEach(sd => {
+          sd.clientEid = base64.decode(sd.clientEid);
+          sd.authenticatorEid = base64.decode(sd.authenticatorEid);
+          sd.sessionPreKey = base64.decode(sd.sessionPreKey);
+        });
+      }
     }
 
     // Add options if selected

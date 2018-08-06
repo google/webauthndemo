@@ -69,6 +69,7 @@ public class RegisteredKeys extends HttpServlet {
       cJson.addProperty("name", attObj.getAttestationStatement().getName());
       cJson.addProperty("date", c.getDate().toString());
       cJson.addProperty("id", c.id);
+      cJson.addProperty("hasCable", c.hasCablePairingData());
       result.add(cJson);
     }
     response.getWriter().print(result.toString());

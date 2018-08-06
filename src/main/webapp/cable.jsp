@@ -10,6 +10,7 @@
   rel="stylesheet">
 <link href="stylesheets/webauthn.css" rel="stylesheet">
 <script src="//code.getmdl.io/1.3.0/material.min.js"></script>
+<script src="js/base64-arraybuffer.js"></script>
 <script src="js/webauthn-cable.js"></script>
 <title>WebAuthN Demo</title>
 </head>

@@ -15,9 +15,15 @@
 package com.google.webauthn.gaedemo.objects;
 
 import com.google.common.io.BaseEncoding;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.webauthn.gaedemo.crypto.Cable;
+import com.google.webauthn.gaedemo.crypto.Crypto;
 import com.google.webauthn.gaedemo.storage.Credential;
+import org.bouncycastle.util.Arrays;
+
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +69,9 @@ public class PublicKeyCredentialRequestOptions {
       allowCredentials.add(credential.getJsonObject());
     }
     result.add("allowCredentials", allowCredentials);
+    if (extensions != null) {
+      result.add("extensions", extensions.getJsonObject());
+    }
 
     return result;
   }
@@ -79,6 +88,15 @@ public class PublicKeyCredentialRequestOptions {
       PublicKeyCredentialDescriptor pkcd =
           new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PUBLIC_KEY, storedCred.rawId);
       allowCredentials.add(pkcd);
+
+      Cable cableCrypto = new Cable();
+      CablePairingData cablePairingData = c.getCablePairingData();
+      if (cablePairingData != null) {
+        if (extensions == null) {
+          extensions = new AuthenticationExtensions();
+        }
+        extensions.addCableSessionData(cableCrypto.generateSessionData(cablePairingData));
+      }
     }
   }
 }
