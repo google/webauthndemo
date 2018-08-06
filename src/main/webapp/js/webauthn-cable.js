@@ -285,9 +285,9 @@ function getAssertion() {
       if ('cableAuthentication' in requestOptions.extensions) {
         var cableSessionDatas = requestOptions.extensions.cableAuthentication;
         cableSessionDatas.forEach(sd => {
-          sd.clientEid = base64.decode(sd.clientEid);
-          sd.authenticatorEid = base64.decode(sd.authenticatorEid);
-          sd.sessionPreKey = base64.decode(sd.sessionPreKey);
+          sd.clientEid = hexToBuffer(sd.clientEid);
+          sd.authenticatorEid = hexToBuffer(sd.authenticatorEid);
+          sd.sessionPreKey = hexToBuffer(sd.sessionPreKey);
         });
       }
     }
