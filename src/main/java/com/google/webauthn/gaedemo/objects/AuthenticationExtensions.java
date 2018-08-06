@@ -16,10 +16,37 @@ package com.google.webauthn.gaedemo.objects;
 
 import com.google.gson.Gson;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import java.util.ArrayList;
+import java.util.List;
+
 public class AuthenticationExtensions {
+
+  public List<CableSessionData> cableAuthentication;
 
   public static AuthenticationExtensions parse(String parameter) {
     Gson gson = new Gson();
     return gson.fromJson(parameter, AuthenticationExtensions.class);
   }
+
+  public void addCableSessionData(CableSessionData cableSessionData) {
+    if (cableAuthentication == null) {
+      cableAuthentication = new ArrayList();
+    }
+    cableAuthentication.add(cableSessionData);
+  }
+
+  public JsonObject getJsonObject() {
+    JsonObject result = new JsonObject();
+    if (cableAuthentication != null) {
+      JsonArray cableSessionDatas = new JsonArray();
+      for (CableSessionData sessionData : cableAuthentication) {
+        cableSessionDatas.add(sessionData.getJsonObject());
+      }
+      result.add("cableAuthentication", cableSessionDatas);
+    }
+    return result;
+  }
+
 }

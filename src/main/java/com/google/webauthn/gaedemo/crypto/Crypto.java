@@ -22,6 +22,10 @@ import com.google.webauthn.gaedemo.objects.RsaKey;
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.generators.HKDFBytesGenerator;
+import org.bouncycastle.crypto.macs.HMac;
+import org.bouncycastle.crypto.params.HKDFParameters;
+import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
@@ -37,6 +41,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.Arrays;
 
 public class Crypto {
 
@@ -50,6 +55,24 @@ public class Crypto {
     byte[] result = new byte[digest.getDigestSize()];
     digest.doFinal(result, 0);
     return result;
+  }
+
+  public static byte[] hmacSha256(byte[] key, byte[] data, int outputLength) {
+    HMac hmac = new HMac(new SHA256Digest());
+    hmac.init(new KeyParameter(key));
+    hmac.update(data, 0, data.length);
+    byte[] output = new byte[hmac.getMacSize()];
+    hmac.doFinal(output, 0);
+    return Arrays.copyOf(output, outputLength);
+  }
+
+  public static byte[] hkdfSha256(byte[] ikm, byte[] salt, byte[] info, int outputLength) {
+    byte[] output = new byte[outputLength];
+    HKDFParameters params = new HKDFParameters(ikm, salt, info);
+    HKDFBytesGenerator hkdf = new HKDFBytesGenerator(new SHA256Digest());
+    hkdf.init(params);
+    hkdf.generateBytes(output, 0, outputLength);
+    return output;
   }
 
   public static byte[] digest(byte[] input, String alg) throws NoSuchAlgorithmException {
@@ -161,4 +184,5 @@ public class Crypto {
     KeyFactory keyFactory = KeyFactory.getInstance("EC");
     return keyFactory.generatePublic(keySpec);
   }
+
 }

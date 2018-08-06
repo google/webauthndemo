@@ -112,6 +112,16 @@
   </servlet-mapping>
   <servlet>
     <description></description>
+    <display-name>UpdateCredential</display-name>
+    <servlet-name>UpdateCredential</servlet-name>
+    <servlet-class>com.google.webauthn.gaedemo.servlets.UpdateCredential</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>UpdateCredential</servlet-name>
+    <url-pattern>/UpdateCredential</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
     <display-name>Home</display-name>
     <servlet-name>Home</servlet-name>
     <servlet-class>com.google.webauthn.gaedemo.servlets.Home</servlet-class>
