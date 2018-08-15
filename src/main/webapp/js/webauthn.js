@@ -251,6 +251,12 @@ function addCredential() {
 
 function isUVPAA() {
   removeMsgs();
+  try {
+    eval(PublicKeyCredential);
+  } catch(err) {
+    addErrorMsg(`UVPAA failed: [${err.toString()}]`);
+    return;
+  }
   if (PublicKeyCredential &&
       PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
     PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(response => {
