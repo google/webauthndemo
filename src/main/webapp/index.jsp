@@ -90,6 +90,12 @@
         <option value="preferred">Preferred</option>
         <option value="discouraged">Discouraged</option>
       </select>
+      <br />
+      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input class="mdl-textfield__input" type="text" pattern="-?[0-9]*(\.[0-9]+)?" id="customTimeout">
+        <label class="mdl-textfield__label" for="customTimeout">Timeout (milliseconds)</label>
+        <span class="mdl-textfield__error">Input is not a number!</span>
+      </div>
     </div>
     <div id="credentials" class="mdl-grid mdl-grid--no-spacing"></div>
     <div id="github" class="github-link">

@@ -182,8 +182,8 @@ function addCredential() {
     makeCredentialOptions.pubKeyCredParams = options.pubKeyCredParams;
 
     // Optional parameters
-    if ('timeout' in options) {
-      makeCredentialOptions.timeout = options.timeout;
+    if ($('#customTimeout').value != '') {
+      makeCredentialOptions.timeout = $('#customTimeout').value;
     }
     if ('excludeCredentials' in options) {
       makeCredentialOptions.excludeCredentials = credentialListConversion(options.excludeCredentials);
@@ -277,8 +277,8 @@ function getAssertion() {
     _parameters = parameters;
 
     requestOptions.challenge = strToBin(parameters.challenge);
-    if ('timeout' in parameters) {
-      requestOptions.timeout = parameters.timeout;
+    if ($('#customTimeout').value != '') {
+      requestOptions.timeout = $('#customTimeout').value;
     }
     if ('rpId' in parameters) {
       requestOptions.rpId = parameters.rpId;
