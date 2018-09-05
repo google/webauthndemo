@@ -43,10 +43,7 @@
     <main class="mdl-layout__content mdl-color--grey-100">
     <div id="active" class="hidden activity-bar">
       <h3 class="active-text">Waiting for user touch</h3>
-      <!-- Temporarily removing spinner due to https://bugs.chromium.org/p/chromium/issues/detail?id=846403
-      <div
-        class="mdl-progress mdl-js-progress mdl-progress__indeterminate page-width"></div>
-        -->
+    <div class="mdl-progress mdl-js-progress mdl-progress__indeterminate page-width"></div>
     </div>
     <div id="error" class="hidden">
       <h3 class="error-text" id="error-text">An error has occurred</h3>
