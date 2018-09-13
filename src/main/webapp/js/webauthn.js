@@ -35,20 +35,24 @@ const onClick = (q, func) => {
   $(q).addEventListener('click', func);
 };
 
-function addErrorMsg(msg) {
-  $('#error-text').innerHTML = msg;
-  show('#error');
+function showErrorMsg(msg) {
+  $('#snack-bar').MaterialSnackbar.showSnackbar({
+    message: msg,
+    timeout: 5000
+  });
 };
 
-function addSuccessMsg(msg) {
-  $('#success-text').innerHTML = msg;
-  show('#success');
+function showSuccessMsg(msg) {
+  $('#snack-bar').MaterialSnackbar.showSnackbar({
+    message: msg,
+    timeout: 5000
+  });
 };
 
-function removeMsgs() {
-  hide('#error');
-  hide('#success');
-};
+// function removeMsgs() {
+//   hide('#error');
+//   hide('#success');
+// };
 
 function _fetch(url, obj) {
   let headers = new Headers({
@@ -91,7 +95,7 @@ function fetchCredentials() {
       let { handle, publicKey, name, date, id } = response[i];
       let buttonId = `delete${i}`;
       credentials +=
-        `<div class="mdl-cell mdl-cell--1-offset mdl-cell-4-col">
+        `<div class="mdl-cell mdl-cell--1-offset-desktop mdl-cell-4-col">
            <div class="mdl-card mdl-shadow--4dp" id="${handle}">
              <div class="mdl-card__title mdl-card--border">${name}</div>
              <div class="mdl-card__supporting-text">Enrolled ${date}</div>
@@ -125,7 +129,7 @@ function removeCredential(id) {
     }).then(() => {
       fetchCredentials();
     }).catch(err => {
-      addErrorMsg(`An error occurred during removal [${err.toString()}]`);
+      showErrorMsg(`An error occurred during removal [${err.toString()}]`);
     });
   }
 }
@@ -144,31 +148,29 @@ function credentialListConversion(list) {
 }
 
 function addCredential() {
-  removeMsgs();
+  // removeMsgs();
   show('#active');
 
   let _options;
   const advancedOptions = {};
-  if (isChecked('#switch-advanced')) {
-    if (isChecked('#switch-rk')) {
-      advancedOptions.requireResidentKey = isChecked('#switch-rk');
-    }
-    if (isChecked('#switch-rr')) {
-      advancedOptions.excludeCredentials = isChecked('#switch-rr');
-    }
-    if ($('#userVerification').value != "none") {
-      advancedOptions.userVerification = $('#userVerification').value;
-    }
-    if ($('#attachment').value != "none") {
-      advancedOptions.authenticatorAttachment = $('#attachment').value;
-    }
-    if ($('#conveyance').value != "NA") {
-      advancedOptions.attestationConveyancePreference = $('#conveyance').value;
-    }
+  if (isChecked('#switch-rk')) {
+    advancedOptions.requireResidentKey = isChecked('#switch-rk');
+  }
+  if (isChecked('#switch-rr')) {
+    advancedOptions.excludeCredentials = isChecked('#switch-rr');
+  }
+  if ($('#userVerification').value != "none") {
+    advancedOptions.userVerification = $('#userVerification').value;
+  }
+  if ($('#attachment').value != "none") {
+    advancedOptions.authenticatorAttachment = $('#attachment').value;
+  }
+  if ($('#conveyance').value != "NA") {
+    advancedOptions.attestationConveyancePreference = $('#conveyance').value;
   }
 
   return _fetch('/BeginMakeCredential', {
-    advanced: isChecked('#switch-advanced'),
+    advanced: true,
     advancedOptions: JSON.stringify(advancedOptions)
 
   }).then(options => {
@@ -219,7 +221,7 @@ function addCredential() {
       publicKeyCredential.rawId = binToStr(attestation.rawId);
     }
     if (!attestation.response) {
-      addErrorMsg("Make Credential response lacking 'response' attribute");
+      showErrorMsg("Make Credential response lacking 'response' attribute");
     }
 
     const response = {};
@@ -236,7 +238,7 @@ function addCredential() {
     console.log(parameters);
 
     if (parameters && parameters.success) {
-      addSuccessMsg(parameters.message);
+      showSuccessMsg(parameters.message);
       fetchCredentials();
     } else {
       throw 'Unexpected response received.';
@@ -245,36 +247,12 @@ function addCredential() {
   }).catch(err => {
     hide('#active');
     console.log(err.toString());
-    addErrorMsg(`An error occurred during Make Credential operation [${err.toString()}]`);
+    showErrorMsg(`An error occurred during Make Credential operation [${err.toString()}]`);
   });
 }
 
-function isUVPAA() {
-  removeMsgs();
-  try {
-    eval(PublicKeyCredential);
-  } catch(err) {
-    addErrorMsg(`UVPAA failed: [${err.toString()}]`);
-    return;
-  }
-  if (PublicKeyCredential &&
-      PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
-    PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(response => {
-      if (response === true) {
-        addSuccessMsg(`User verifying platform authenticator is available.`);
-      } else {
-        addErrorMsg(`User verifying platform authenticator is NOT available.`);
-      }
-    }).catch(err => {
-      addErrorMsg(`UVPAA failed: [${err.toString()}]`);
-    });
-  } else {
-    addErrorMsg(`User verifying platform authenticator is not available on this browser.`);
-  }
-}
-
 function getAssertion() {
-  removeMsgs();
+  // removeMsgs();
   show('#active');
 
   let _parameters;
@@ -335,7 +313,7 @@ function getAssertion() {
     console.log(result);
 
     if (result && result.success) {
-      addSuccessMsg(result.message);
+      showSuccessMsg(result.message);
       if ('handle' in result) {
         let card = document.getElementById(result.handle);
         card.animate([{
@@ -351,7 +329,7 @@ function getAssertion() {
   }).catch(err => {
     hide('#active');
     console.log(err.toString());
-    addErrorMsg(`An error occurred during Assertion request [${err.toString()}]`);
+    showErrorMsg(`An error occurred during Assertion request [${err.toString()}]`);
   });
 }
 
@@ -374,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (navigator.credentials && navigator.credentials.create) {
     fetchCredentials();
   } else {
-    addErrorMsg('Your browser doesn\'t support WebAuthn');
+    showErrorMsg('Your browser doesn\'t support WebAuthn');
     fetchCredentials();
   }
 });
@@ -382,12 +360,27 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('load', () => {
   onClick('#credential-button', addCredential);
   onClick('#authenticate-button', getAssertion);
-  onClick('#isuvpaa-button', isUVPAA);
-  onClick('#switch-advanced', () => {
-    if (isChecked('#switch-advanced')) {
-      show('#advanced');
-    } else {
-      hide('#advanced');
-    }
-  });
+
+  try {
+    eval(window.PublicKeyCredential);
+  } catch(err) {
+    showErrorMsg(`User verifying platform authenticator failed: [${err.toString()}]`);
+    return;
+  }
+  if (PublicKeyCredential &&
+      PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
+    PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(response => {
+      if (response === true) {
+        show('#isuvpaa-button');
+        showSuccessMsg(`User verifying platform authenticator is available.`);
+      } else {
+        hide('#isuvpaa-button');
+        showErrorMsg(`User verifying platform authenticator is NOT available.`);
+      }
+    }).catch(err => {
+      showErrorMsg(`User verifying platform authenticator failed: [${err.toString()}]`);
+    });
+  } else {
+    showErrorMsg(`User verifying platform authenticator is not available on this browser.`);
+  }
 });
