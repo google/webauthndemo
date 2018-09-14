@@ -19,7 +19,8 @@ package com.google.webauthn.gaedemo.objects;
  */
 public enum Algorithm {
   ES256("ES256"), ES384("ES384"), ES512("ES512"), RS256("RS256"), RS384("RS384"), RS512(
-      "RS512"), PS256("PS256"), PS384("PS384"), PS512("PS512"), UNDEFINED("undefined");
+      "RS512"), PS256("PS256"), PS384("PS384"), PS512("PS512"),
+	  UNDEFINED("undefined");
 
   private String name;
 
@@ -84,11 +85,11 @@ public enum Algorithm {
         return PS384;
       case -39:
         return PS512;
-      case -40:
+      case -257:
         return RS256;
-      case -41:
+      case -258:
         return RS384;
-      case -42:
+      case -259:
         return RS512;
       case -260:
         return ES256;
@@ -113,11 +114,11 @@ public enum Algorithm {
       case PS512:
         return -39;
       case RS256:
-        return -40;
+        return -257;
       case RS384:
-        return -41;
+        return -258;
       case RS512:
-        return -42;
+        return -259;
       default:
     }
     return -1;
