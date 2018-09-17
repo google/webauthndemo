@@ -16,6 +16,8 @@ package com.google.webauthn.gaedemo.storage;
 
 import static com.googlecode.objectify.ObjectifyService.ofy;
 
+import java.util.Objects;
+
 import com.google.common.io.BaseEncoding;
 import com.google.gson.JsonObject;
 import com.googlecode.objectify.Key;
@@ -37,11 +39,24 @@ public class AttestationSessionData {
     this.challenge = BaseEncoding.base64().encode(challenge);
     this.origin = origin;
   }
+  
+  @Override
+  public int hashCode() {
+    return Objects.hash(challenge, origin, id, user);
+  }
 
-  boolean equals(AttestationSessionData other) {
+  boolean equalsThis(AttestationSessionData other) {
     return (this.challenge != null && other.challenge != null
         && this.challenge.equals(other.challenge))
         && (this.origin != null && other.origin != null && this.origin.equals(other.origin));
+  }
+  
+  @Override
+  public boolean equals(Object other) {
+    if (!(other instanceof AttestationSessionData)) {
+      return false;
+    }
+    return this.equalsThis((AttestationSessionData)other);
   }
 
   public void save(String currentUser) {

@@ -20,6 +20,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.nio.charset.StandardCharsets;
+
 import co.nstant.in.cbor.CborException;
 import org.junit.Test;
 
@@ -52,8 +54,8 @@ public class RsaKeyTest {
   public void testEncode() {
     RsaKey rsaKey = new RsaKey();
     rsaKey.alg = Algorithm.PS256;
-    rsaKey.e = "e".getBytes();
-    rsaKey.n = "n".getBytes();
+    rsaKey.e = "e".getBytes(StandardCharsets.UTF_8);
+    rsaKey.n = "n".getBytes(StandardCharsets.UTF_8);
 
     try {
       CredentialPublicKey decodedCpk = CredentialPublicKey.decode(rsaKey.encode());

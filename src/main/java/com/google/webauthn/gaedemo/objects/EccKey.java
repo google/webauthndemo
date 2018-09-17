@@ -17,8 +17,11 @@ package com.google.webauthn.gaedemo.objects;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+
 import javax.xml.bind.DatatypeConverter;
 
+import com.google.appengine.repackaged.com.google.common.primitives.Bytes;
 import com.googlecode.objectify.annotation.Subclass;
 import co.nstant.in.cbor.CborBuilder;
 import co.nstant.in.cbor.CborEncoder;
@@ -53,6 +56,11 @@ public class EccKey extends CredentialPublicKey {
     super();
     this.x = x;
     this.y = y;
+  }
+
+  @Override
+  public int hashCode() {
+    return Arrays.hashCode(Bytes.concat(x, y));
   }
 
   @Override
@@ -98,7 +106,7 @@ public class EccKey extends CredentialPublicKey {
 
   @Override
   public String toString() {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
     b.append("alg:");
     b.append(alg.toReadableString());
     b.append(" x:");

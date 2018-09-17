@@ -33,31 +33,30 @@ public class AuthenticatorDataTest {
 
   /**
    * Test method for {@link com.google.webauthn.gaedemo.objects.AuthenticatorData#decode(byte[])}.
+   * 
+   * @throws ResponseException
    */
   @Test
-  public void testDecodeWithoutAttestation() {
+  public void testDecodeWithoutAttestation() throws ResponseException {
     byte[] randomRpIdHash = new byte[32];
     random.nextBytes(randomRpIdHash);
     byte[] flags = {0};
     int countUnsignedInt = Integer.parseUnsignedInt("" + (random.nextLong() & 0xffffffffL));
     byte[] count = ByteBuffer.allocate(4).putInt(countUnsignedInt).array();
     byte[] data = Bytes.concat(randomRpIdHash, flags, count);
-
-    try {
-      AuthenticatorData result = AuthenticatorData.decode(data);
-
-      assertArrayEquals(randomRpIdHash, result.getRpIdHash());
-      assertTrue(Integer.compareUnsigned(countUnsignedInt, result.getSignCount()) == 0);
-    } catch (ResponseException e) {
-      fail("Exception occurred");
-    }
+    AuthenticatorData result = AuthenticatorData.decode(data);
+    assertArrayEquals(randomRpIdHash, result.getRpIdHash());
+    assertTrue(Integer.compareUnsigned(countUnsignedInt, result.getSignCount()) == 0);
   }
 
   /**
    * Test method for {@link com.google.webauthn.gaedemo.objects.AuthenticatorData#decode(byte[])}.
+   * 
+   * @throws CborException
+   * @throws ResponseException 
    */
   @Test
-  public void testDecodeWithAttestation() {
+  public void testDecodeWithAttestation() throws CborException, ResponseException {
     byte[] randomRpIdHash = new byte[32];
     random.nextBytes(randomRpIdHash);
     byte[] flags = {1 << 6};
@@ -70,20 +69,11 @@ public class AuthenticatorDataTest {
     int countUnsignedInt = Integer.parseUnsignedInt("" + (random.nextLong() & 0xffffffffL));
     byte[] count = ByteBuffer.allocate(4).putInt(countUnsignedInt).array();
     byte[] data = null;
-    try {
-      data = Bytes.concat(randomRpIdHash, flags, count, attData.encode());
-    } catch (CborException e1) {
-      fail("Failed during Cbor encoding");
-    }
-
-    try {
-      AuthenticatorData result = AuthenticatorData.decode(data);
-      assertTrue(result.getAttData().getPublicKey().equals(eccKey));
-      assertArrayEquals(randomRpIdHash, result.getRpIdHash());
-      assertTrue(Integer.compareUnsigned(countUnsignedInt, result.getSignCount()) == 0);
-    } catch (ResponseException e) {
-      fail("Exception occurred");
-    }
+    data = Bytes.concat(randomRpIdHash, flags, count, attData.encode());
+    AuthenticatorData result = AuthenticatorData.decode(data);
+    assertTrue(result.getAttData().getPublicKey().equals(eccKey));
+    assertArrayEquals(randomRpIdHash, result.getRpIdHash());
+    assertTrue(Integer.compareUnsigned(countUnsignedInt, result.getSignCount()) == 0);
   }
 
 }

@@ -16,6 +16,8 @@ package com.google.webauthn.gaedemo.servlets;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import com.google.common.io.BaseEncoding;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -93,7 +95,7 @@ public class FinishMakeCredential extends HttpServlet {
         BaseEncoding.base64Url().decode(credentialId), attestation);
 
     String domain = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
-    String rpId = request.getHeader("Host").split(":")[0];
+    String rpId = Iterables.get(Splitter.on(':').split(request.getHeader("Host")), 0);
     switch (cred.getAttestationType()) {
       case FIDOU2F:
         U2fServer.registerCredential(cred, currentUser, session, domain, rpId);

@@ -16,6 +16,7 @@ package com.google.webauthn.gaedemo.objects;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Objects;
 
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Ints;
@@ -37,8 +38,8 @@ public class AuthenticatorData {
    * @param signCount
    * @param attData
    */
-  public AuthenticatorData(byte[] rpIdHash, byte flags, int signCount,
-		  AttestationData attData, byte[] extensions) {
+  public AuthenticatorData(byte[] rpIdHash, byte flags, int signCount, AttestationData attData,
+      byte[] extensions) {
     this.rpIdHash = rpIdHash;
     this.flags = flags;
     this.signCount = signCount;
@@ -189,22 +190,32 @@ public class AuthenticatorData {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(Arrays.hashCode(rpIdHash), flags, signCount, attData,
+        Arrays.hashCode(extensions));
+  }
+
+  @Override
   public boolean equals(Object obj) {
     try {
-      if (obj instanceof AuthenticatorData) {
-        AuthenticatorData other = (AuthenticatorData) obj;
-        if (flags == other.flags) {
-          if (Arrays.equals(other.rpIdHash, rpIdHash)) {
-            if (Integer.compareUnsigned(signCount, other.signCount) == 0) {
-              if (attData == null && other.attData == null) {
-                return true;
-              }
-              if (attData.equals(other.attData)) {
-                return true;
-              }
-            }
-          }
-        }
+      if (!(obj instanceof AuthenticatorData)) {
+        return false;
+      }
+      AuthenticatorData other = (AuthenticatorData) obj;
+      if (flags != other.flags) {
+        return false;
+      }
+      if (!Arrays.equals(other.rpIdHash, rpIdHash)) {
+        return false;
+      }
+      if (Integer.compareUnsigned(signCount, other.signCount) != 0) {
+        return false;
+      }
+      if (attData == null && other.attData == null) {
+        return true;
+      }
+      if (attData.equals(other.attData)) {
+        return true;
       }
     } catch (NullPointerException e) {
       return false;

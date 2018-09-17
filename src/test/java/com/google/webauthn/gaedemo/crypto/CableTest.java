@@ -30,6 +30,8 @@ public class CableTest {
   @Test
   public void testGenerateSessionData_vectors() {
     Cable cable = new Cable(new Random() {
+      private static final long serialVersionUID = -7092153420386472236L;
+
       @Override
       public void nextBytes(byte[] bytes) {
         for (int i = 0; i < bytes.length; ++i) {
@@ -50,6 +52,6 @@ public class CableTest {
         Hex.decode("AAAAAAAAAAAAAAAAC50F4E92238F1BE7"),
         Hex.decode("75B83487AE3DB1C1159C00EB992C984D"),
         Hex.decode("073B97D8D142EA3A04B16BD3DC81553334577A20F398DBBC02FBD18B9354BAD2"));
-    Assert.assertEquals(actual, expected);
+    Assert.assertEquals(expected, actual);
   }
 }

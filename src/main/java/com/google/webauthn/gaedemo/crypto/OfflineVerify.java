@@ -127,10 +127,8 @@ public class OfflineVerify {
       HOSTNAME_VERIFIER.verify(hostname, leafCert);
       return true;
     } catch (SSLException e) {
-      e.printStackTrace();
+      return false;
     }
-
-    return false;
   }
 
 

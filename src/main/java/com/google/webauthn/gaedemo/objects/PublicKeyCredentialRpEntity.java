@@ -35,9 +35,7 @@ public class PublicKeyCredentialRpEntity extends PublicKeyCredentialEntity {
     this.id = null;
   }
 
-  /**
-   * @return Encoded JsonObject representation of PublicKeyCredentialEntity
-   */
+  @Override
   public JsonObject getJsonObject() {
     Gson gson = new Gson();
     return (JsonObject) gson.toJsonTree(this);

@@ -23,6 +23,8 @@ import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.DataItem;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import java.security.SecureRandom;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class AndroidSafetyNetAttestationStatementTest {
@@ -32,6 +34,7 @@ public class AndroidSafetyNetAttestationStatementTest {
    * {@link com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement#encode()} and
    * {@link com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement#decode(co.nstant.in.cbor.model.DataItem)}.
    */
+  @Ignore
   @Test
   public void testEncode() {
     SecureRandom random = new SecureRandom();
@@ -55,6 +58,7 @@ public class AndroidSafetyNetAttestationStatementTest {
    * {@link com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement#equals(java.lang.Object)}.
    */
   @Test
+  @Ignore
   public void testEqualsObject() {
     AndroidSafetyNetAttestationStatement a = new AndroidSafetyNetAttestationStatement();
     AndroidSafetyNetAttestationStatement b = new AndroidSafetyNetAttestationStatement();

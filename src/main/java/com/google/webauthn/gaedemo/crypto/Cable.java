@@ -28,11 +28,11 @@ import java.util.Random;
 public class Cable {
 
   private static final byte[] HMAC_TAG_CLIENT_EID =
-      "client".getBytes(StandardCharsets.US_ASCII);
+      "client".getBytes(StandardCharsets.UTF_8);
   private static final byte[] HMAC_TAG_AUTHENTICATOR_EID =
-      "authenticator".getBytes(StandardCharsets.US_ASCII);
+      "authenticator".getBytes(StandardCharsets.UTF_8);
   private static final byte[] HKDF_INFO_SESSION_PRE_KEY =
-      "FIDO caBLE v1 sessionPreKey".getBytes(StandardCharsets.US_ASCII);
+      "FIDO caBLE v1 sessionPreKey".getBytes(StandardCharsets.UTF_8);
 
   private final Random random;
 

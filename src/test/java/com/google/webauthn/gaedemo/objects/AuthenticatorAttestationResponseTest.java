@@ -25,8 +25,12 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
+
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Arrays;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class AuthenticatorAttestationResponseTest {
@@ -35,9 +39,11 @@ public class AuthenticatorAttestationResponseTest {
   /**
    * Test method for
    * {@link com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse#AuthenticatorAttestationResponse}.
+   * @throws ResponseException 
    */
-  //@Test
-  public void testAuthenticatorAttestationResponse() {
+  @Test
+  @Ignore
+  public void testAuthenticatorAttestationResponse() throws ResponseException {
 
     Gson gson = new Gson();
     CollectedClientData clientData = new CollectedClientData();
@@ -45,7 +51,8 @@ public class AuthenticatorAttestationResponseTest {
     clientData.hashAlgorithm = "SHA-256";
     clientData.origin = "https://localhost";
     String clientJson = gson.toJson(clientData);
-    String clientBase64 = BaseEncoding.base64Url().encode(clientJson.getBytes());
+    String clientBase64 =
+        BaseEncoding.base64Url().encode(clientJson.getBytes(StandardCharsets.UTF_8));
 
     AttestationData attData = new AttestationData();
     random.nextBytes(attData.aaguid);
@@ -81,15 +88,11 @@ public class AuthenticatorAttestationResponseTest {
     json.addProperty("authenticatorData", authenticatorBase64);
     json.addProperty("signature", signatureBase64);
 
-    try {
       AuthenticatorAssertionResponse decoded =
           new AuthenticatorAssertionResponse((JsonElement) json);
       assertTrue(Arrays.equals(decoded.signature, signature));
       assertEquals(decoded.getClientData(), clientData);
       assertEquals(decoded.getAuthenticatorData(), authData);
-    } catch (ResponseException e) {
-      fail("Decode failed");
-    }
   }
 
 }

@@ -26,6 +26,7 @@ import com.google.webauthn.gaedemo.objects.FidoU2fAttestationStatement;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.google.webauthn.gaedemo.storage.Credential;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -74,37 +75,39 @@ public class SaveCredential extends HttpServlet {
     byte[] aaguid = new byte[16];
     rand.nextBytes(aaguid);
     byte[] x = new byte[5], y = new byte[5];
+    ECGenParameterSpec ecGenSpec = new ECGenParameterSpec("secp256r1");
+    KeyPairGenerator keyGen;
     try {
-      ECGenParameterSpec ecGenSpec = new ECGenParameterSpec("secp256r1");
-      KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ECDSA", "BC");
-      keyGen.initialize(ecGenSpec, new SecureRandom());
-      KeyPair keyPair = keyGen.generateKeyPair();
-      PublicKey pub = keyPair.getPublic();
-      ECPublicKey publicKey = (ECPublicKey) pub;
-      x = publicKey.getW().getAffineX().toByteArray();
-      y = publicKey.getW().getAffineY().toByteArray();
-
+      keyGen = KeyPairGenerator.getInstance("ECDSA", "BC");
     } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();
+      throw new ServletException(e);
     } catch (NoSuchProviderException e) {
-      // TODO(piperc): Auto-generated catch block
-      e.printStackTrace();
-    } catch (InvalidAlgorithmParameterException e) {
-      // TODO(piperc): Auto-generated catch block
-      e.printStackTrace();
+      throw new ServletException(e);
     }
+    try {
+      keyGen.initialize(ecGenSpec, new SecureRandom());
+    } catch (InvalidAlgorithmParameterException e) {
+      throw new ServletException(e);
+    }
+    KeyPair keyPair = keyGen.generateKeyPair();
+    PublicKey pub = keyPair.getPublic();
+    ECPublicKey publicKey = (ECPublicKey) pub;
+    x = publicKey.getW().getAffineX().toByteArray();
+    y = publicKey.getW().getAffineY().toByteArray();
 
     EccKey ecc = new EccKey(x, y);
     AttestationData attData = new AttestationData(aaguid, aaguid, ecc);
-    byte[] rpIdHash = Crypto.sha256Digest(
-        ((request.isSecure() ? "https://" : "http://") + request.getHeader("Host")).getBytes());
+    byte[] rpIdHash = Crypto
+        .sha256Digest(((request.isSecure() ? "https://" : "http://") + request.getHeader("Host"))
+            .getBytes(StandardCharsets.UTF_8));
     AuthenticatorData authData = new AuthenticatorData(rpIdHash, (byte) (1 << 6), 0, attData, null);
     FidoU2fAttestationStatement attStmt = new FidoU2fAttestationStatement();
     AttestationObject attObj = new AttestationObject(authData, "fido-u2f", attStmt);
     AuthenticatorAttestationResponse attRsp = new AuthenticatorAttestationResponse();
     attRsp.decodedObject = attObj;
 
-    PublicKeyCredential pkc = new PublicKeyCredential(id, "", id.getBytes(), attRsp);
+    PublicKeyCredential pkc =
+        new PublicKeyCredential(id, "", id.getBytes(StandardCharsets.UTF_8), attRsp);
     Credential credential = new Credential(pkc);
     credential.save(currentUser);
 

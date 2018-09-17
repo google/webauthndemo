@@ -19,8 +19,7 @@ package com.google.webauthn.gaedemo.objects;
  */
 public enum AuthenticatorAttachment {
   PLATFORM("platform"), CROSS_PLATFORM("cross-platform");
-
-  private String name;
+  private final String name;
 
   /**
    * @param name

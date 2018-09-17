@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import com.googlecode.objectify.annotation.Subclass;
 
@@ -110,7 +111,8 @@ public class PackedAttestationStatement extends AttestationStatement {
         } else if (((UnicodeString) data).getString().equals("sig")) {
           result.sig = ((ByteString) (given.get(data))).getBytes();
         } else if (((UnicodeString) data).getString().equals("alg")) {
-          int algInt = new BigDecimal(((NegativeInteger) (given.get(data))).getValue()).intValueExact();
+          int algInt =
+              new BigDecimal(((NegativeInteger) (given.get(data))).getValue()).intValueExact();
           result.alg = Algorithm.decode(algInt);
         } else if (((UnicodeString) data).getString().equals("ecdaaKeyId")) {
           result.ecdaaKeyId = ((ByteString) (given.get(data))).getBytes();
@@ -141,28 +143,39 @@ public class PackedAttestationStatement extends AttestationStatement {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(Arrays.hashCode(sig), Arrays.hashCode(attestnCert), caCert, alg,
+        Arrays.hashCode(ecdaaKeyId));
+  }
+
+  @Override
   public boolean equals(Object obj) {
-    if (obj instanceof PackedAttestationStatement) {
-      PackedAttestationStatement other = (PackedAttestationStatement) obj;
-      if (attestnCert == other.attestnCert || Arrays.equals(attestnCert, other.attestnCert)) {
-        if (Arrays.equals(sig, other.sig)) {
-          if (caCert == other.caCert || caCert.size() == other.caCert.size()) {
-            if (caCert != null) {
-              for (int i = 0; i < caCert.size(); i++) {
-                if (!Arrays.equals(caCert.get(i), other.caCert.get(i))) {
-                  return false;
-                }
-              }
-            }
-            if (other.alg != alg) {
-              return false;
-            }
-            return true;
-          }
+    if (!(obj instanceof PackedAttestationStatement)) {
+      return false;
+    }
+    PackedAttestationStatement other = (PackedAttestationStatement) obj;
+    if (!Arrays.equals(attestnCert, other.attestnCert)) {
+      return false;
+    }
+    if (!Arrays.equals(sig, other.sig)) {
+      return false;
+    }
+    if (caCert.size() != other.caCert.size()) {
+      return false;
+    }
+    if (caCert != null) {
+      for (int i = 0; i < caCert.size(); i++) {
+        if (!Arrays.equals(caCert.get(i), other.caCert.get(i))) {
+          return false;
         }
       }
+    } else {
+      return other.caCert == null;
     }
-    return false;
+    if (other.alg != alg) {
+      return false;
+    }
+    return true;
   }
 
   @Override

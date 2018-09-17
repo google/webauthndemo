@@ -28,6 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -60,7 +62,7 @@ public class BeginMakeCredential extends HttpServlet {
       throws ServletException, IOException {
     User user = userService.getCurrentUser();
     // String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
-    String rpId = request.getHeader("Host").split(":")[0];
+    String rpId = Iterables.get(Splitter.on(':').split(request.getHeader("Host")), 0);
     String rpName = getServletContext().getInitParameter("name");
     rpName = (rpName == null ? "" : rpName);
 
