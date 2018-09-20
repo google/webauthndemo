@@ -21,17 +21,20 @@
       <div class="mdl-layout__header-row">
         <span class="mdl-layout__title">WebAuthn Demo</span>
       </div>
-      <div class="mdl-layout__header-row">
+      <div id="header-buttons" class="mdl-layout__header-row">
         <div class="mdl-layout-spacer"></div>
-        <nav class="mdl-navigation">
-          <button id="credential-button"
-            class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect make-button">
-            Register</button>
-          <button id="authenticate-button"
-            class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect auth-button">
-            Authenticate</button>
-          <div id="isuvpaa-button" class="fingerprint"></div>
-        </nav>
+        <button id="isuvpaa-button"
+          class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect make-button">
+          isUVPAA</button>
+        <button id="platform-button"
+          class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect make-button">
+          Register platform authenticator</button>
+        <button id="credential-button"
+          class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect make-button">
+          Register new credential</button>
+        <button id="authenticate-button"
+          class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect auth-button">
+          Authenticate</button>
       </div>
     </header>
     <div class="mdl-layout__drawer">

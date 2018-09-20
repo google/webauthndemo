@@ -49,11 +49,6 @@ function showSuccessMsg(msg) {
   });
 };
 
-// function removeMsgs() {
-//   hide('#error');
-//   hide('#success');
-// };
-
 function _fetch(url, obj) {
   let headers = new Headers({
     'Content-Type': 'application/x-www-form-urlencoded'
@@ -147,11 +142,7 @@ function credentialListConversion(list) {
   });
 }
 
-function addCredential() {
-  // removeMsgs();
-  show('#active');
-
-  let _options;
+function registerNewCredential() {
   const advancedOptions = {};
   if (isChecked('#switch-rk')) {
     advancedOptions.requireResidentKey = isChecked('#switch-rk');
@@ -168,6 +159,29 @@ function addCredential() {
   if ($('#conveyance').value != "NA") {
     advancedOptions.attestationConveyancePreference = $('#conveyance').value;
   }
+  makeCredential(advancedOptions);
+}
+
+function registerPlatformAuthenticator() {
+  const advancedOptions = {};
+  if (isChecked('#switch-rk')) {
+    advancedOptions.requireResidentKey = isChecked('#switch-rk');
+  }
+  if (isChecked('#switch-rr')) {
+    advancedOptions.excludeCredentials = isChecked('#switch-rr');
+  }
+  advancedOptions.userVerification = 'required';
+  advancedOptions.authenticatorAttachment = 'platform';
+  if ($('#conveyance').value != "NA") {
+    advancedOptions.attestationConveyancePreference = $('#conveyance').value;
+  }
+  makeCredential(advancedOptions);
+}
+
+function makeCredential(advancedOptions) {
+  show('#active');
+
+  let _options;
 
   return _fetch('/BeginMakeCredential', {
     advanced: true,
@@ -251,8 +265,30 @@ function addCredential() {
   });
 }
 
+function isUVPAA() {
+  try {
+    eval(PublicKeyCredential);
+  } catch(err) {
+    showErrorMsg(`UVPAA failed: [${err.toString()}]`);
+    return;
+  }
+  if (PublicKeyCredential &&
+      PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
+    PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(response => {
+      if (response === true) {
+        showSuccessMsg(`User verifying platform authenticator is available.`);
+      } else {
+        showErrorMsg(`User verifying platform authenticator is NOT available.`);
+      }
+    }).catch(err => {
+      showErrorMsg(`UVPAA failed: [${err.toString()}]`);
+    });
+  } else {
+    showErrorMsg(`User verifying platform authenticator is not available on this browser.`);
+  }
+}
+
 function getAssertion() {
-  // removeMsgs();
   show('#active');
 
   let _parameters;
@@ -358,29 +394,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('load', () => {
-  onClick('#credential-button', addCredential);
+  onClick('#credential-button', registerNewCredential);
+  onClick('#platform-button', registerPlatformAuthenticator);
   onClick('#authenticate-button', getAssertion);
-
-  try {
-    eval(window.PublicKeyCredential);
-  } catch(err) {
-    showErrorMsg(`User verifying platform authenticator failed: [${err.toString()}]`);
-    return;
-  }
-  if (PublicKeyCredential &&
-      PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
-    PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(response => {
-      if (response === true) {
-        show('#isuvpaa-button');
-        showSuccessMsg(`User verifying platform authenticator is available.`);
-      } else {
-        hide('#isuvpaa-button');
-        showErrorMsg(`User verifying platform authenticator is NOT available.`);
-      }
-    }).catch(err => {
-      showErrorMsg(`User verifying platform authenticator failed: [${err.toString()}]`);
-    });
-  } else {
-    showErrorMsg(`User verifying platform authenticator is not available on this browser.`);
-  }
+  onClick('#isuvpaa-button', isUVPAA);
 });
