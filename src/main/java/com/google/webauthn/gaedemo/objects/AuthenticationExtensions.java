@@ -32,7 +32,7 @@ public class AuthenticationExtensions {
 
   public void addCableSessionData(CableSessionData cableSessionData) {
     if (cableAuthentication == null) {
-      cableAuthentication = new ArrayList();
+      cableAuthentication = new ArrayList<>();
     }
     cableAuthentication.add(cableSessionData);
   }

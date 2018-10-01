@@ -16,7 +16,7 @@ package com.google.webauthn.gaedemo.objects;
 
 public enum PublicKeyCredentialType {
   PUBLIC_KEY("public-key");
-  String name;
+  final String name;
 
   /**
    * @param name

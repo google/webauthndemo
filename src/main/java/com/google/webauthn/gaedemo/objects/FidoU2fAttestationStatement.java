@@ -22,9 +22,11 @@ import co.nstant.in.cbor.model.DataItem;
 import co.nstant.in.cbor.model.Map;
 import co.nstant.in.cbor.model.UnicodeString;
 import com.googlecode.objectify.annotation.Subclass;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Subclass
 public class FidoU2fAttestationStatement extends AttestationStatement {
@@ -104,22 +106,30 @@ public class FidoU2fAttestationStatement extends AttestationStatement {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof FidoU2fAttestationStatement) {
-      FidoU2fAttestationStatement other = (FidoU2fAttestationStatement) obj;
-      if (Arrays.equals(attestnCert, other.attestnCert)) {
-        if (Arrays.equals(sig, other.sig)) {
-          if (caCert.size() == other.caCert.size()) {
-            for (int i = 0; i < caCert.size(); i++) {
-              if (!Arrays.equals(caCert.get(i), other.caCert.get(i))) {
-                return false;
-              }
-            }
-            return true;
-          }
-        }
+    if (!(obj instanceof FidoU2fAttestationStatement)) {
+      return false;
+    }
+    FidoU2fAttestationStatement other = (FidoU2fAttestationStatement) obj;
+    if (!Arrays.equals(attestnCert, other.attestnCert)) {
+      return false;
+    }
+    if (!Arrays.equals(sig, other.sig)) {
+      return false;
+    }
+    if (caCert.size() == other.caCert.size()) {
+      return false;
+    }
+    for (int i = 0; i < caCert.size(); i++) {
+      if (!Arrays.equals(caCert.get(i), other.caCert.get(i))) {
+        return false;
       }
     }
-    return false;
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(Arrays.hashCode(sig), Arrays.hashCode(attestnCert), caCert);
   }
 
   @Override

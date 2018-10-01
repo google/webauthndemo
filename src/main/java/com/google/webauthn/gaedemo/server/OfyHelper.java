@@ -36,6 +36,7 @@ public class OfyHelper implements ServletContextListener {
   @Override
   public void contextInitialized(ServletContextEvent event) {
     ObjectifyService.run(new VoidWork() {
+      @Override
       public void vrun() {
         ObjectifyService.register(User.class);
         ObjectifyService.register(Credential.class);

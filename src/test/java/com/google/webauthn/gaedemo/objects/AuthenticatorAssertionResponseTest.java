@@ -25,6 +25,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
+
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import org.junit.Test;
@@ -35,16 +37,18 @@ public class AuthenticatorAssertionResponseTest {
   /**
    * Test method for
    * {@link com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse#AuthenticatorAssertionResponse(java.lang.String)}.
-   * @throws ResponseException 
+   * 
+   * @throws ResponseException
    */
-  //@Test
+  // @Test
   public void testAuthenticatorAssertionResponse() throws ResponseException {
     Gson gson = new Gson();
     CollectedClientData clientData = new CollectedClientData();
     clientData.challenge = "challengeString";
     clientData.hashAlgorithm = "SHA-256";
     clientData.origin = "https://localhost";
-    String clientJson = BaseEncoding.base64().encode(gson.toJson(clientData).getBytes());
+    String clientJson =
+        BaseEncoding.base64().encode(gson.toJson(clientData).getBytes(StandardCharsets.UTF_8));
     AuthenticatorData authData = null;
 
     {

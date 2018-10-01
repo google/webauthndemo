@@ -17,7 +17,10 @@ package com.google.webauthn.gaedemo.objects;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.webauthn.gaedemo.crypto.Crypto;
+
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 public class CollectedClientData {
   String type;
@@ -55,9 +58,9 @@ public class CollectedClientData {
   public byte[] getHash() {
     String json = encode();
     try {
-      return Crypto.digest(json.getBytes(), hashAlgorithm);
+      return Crypto.digest(json.getBytes(StandardCharsets.UTF_8), hashAlgorithm);
     } catch (NoSuchAlgorithmException e) {
-      return Crypto.sha256Digest(json.getBytes());
+      return Crypto.sha256Digest(json.getBytes(StandardCharsets.UTF_8));
     }
   }
 
@@ -102,33 +105,42 @@ public class CollectedClientData {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    try {
-      if (obj instanceof CollectedClientData) {
-        CollectedClientData other = (CollectedClientData) obj;
-        if ((getChallenge() == other.challenge) || getChallenge().equals(other.challenge)) {
-          if ((getOrigin() == other.origin) || getOrigin().equals(other.origin)) {
-            if ((getHashAlg() == other.hashAlgorithm) || getHashAlg().equals(other.hashAlgorithm)) {
-              if ((getTokenBinding() == other.tokenBindingId)
-                  || (getTokenBinding().equals(other.tokenBindingId))) {
-                if ((getType() == other.type) || (getType().equals(other.type))) {
-                  if ((getClientExtensions() == other.clientExtensions)
-                      || (getClientExtensions().equals(other.clientExtensions))) {
-                    if ((getAuthenticatorExtensions() == other.authenticatorExtensions)
-                        || (getAuthenticatorExtensions().equals(other.authenticatorExtensions))) {
-                      return true;
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    } catch (NullPointerException e) {
-      // Fall out
-    }
-    return false;
+  public int hashCode() {
+    return Objects.hash(type, challenge, origin, hashAlgorithm, tokenBindingId, clientExtensions,
+        authenticatorExtensions);
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    try {
+      if (!(obj instanceof CollectedClientData)) {
+        return false;
+      }
+      CollectedClientData other = (CollectedClientData) obj;
+      if (!getChallenge().equals(other.challenge)) {
+        return false;
+      }
+      if (!getOrigin().equals(other.origin)) {
+        return false;
+      }
+      if (!getHashAlg().equals(other.hashAlgorithm)) {
+        return false;
+      }
+      if (!getTokenBinding().equals(other.tokenBindingId)) {
+        return false;
+      }
+      if (!getType().equals(other.type)) {
+        return false;
+      }
+      if (!getClientExtensions().equals(other.clientExtensions)) {
+        return false;
+      }
+      if (getAuthenticatorExtensions().equals(other.authenticatorExtensions)) {
+        return false;
+      }
+      return true;
+    } catch (NullPointerException e) {
+      return false;
+    }
+  }
 }

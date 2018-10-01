@@ -25,6 +25,8 @@ import com.googlecode.objectify.annotation.Subclass;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+
 import javax.xml.bind.DatatypeConverter;
 
 @Subclass
@@ -41,6 +43,11 @@ public class RsaKey extends CredentialPublicKey {
     this.alg = alg;
     this.n = n;
     this.e = e;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(Arrays.hashCode(n), Arrays.hashCode(e));
   }
 
   @Override
@@ -71,7 +78,7 @@ public class RsaKey extends CredentialPublicKey {
 
   @Override
   public String toString() {
-    StringBuffer b = new StringBuffer();
+    StringBuilder b = new StringBuilder();
     b.append("alg:");
     b.append(alg.toReadableString());
     b.append(" n:");

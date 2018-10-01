@@ -14,6 +14,7 @@
 
 package com.google.webauthn.gaedemo.server;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -71,7 +72,8 @@ public class AndroidSafetyNetServer extends Server {
     AndroidSafetyNetAttestationStatement attStmt =
         (AndroidSafetyNetAttestationStatement) attResponse.decodedObject.getAttestationStatement();
 
-    AttestationStatement stmt = OfflineVerify.parseAndVerify(new String(attStmt.getResponse()));
+    AttestationStatement stmt =
+        OfflineVerify.parseAndVerify(new String(attStmt.getResponse(), StandardCharsets.UTF_8));
     if (stmt == null) {
       Log.info("Failure: Failed to parse and verify the attestation statement.");
       throw new ServletException("Failed to verify attestation statement");
@@ -80,13 +82,13 @@ public class AndroidSafetyNetServer extends Server {
     byte[] clientDataHash = Crypto.sha256Digest(attResponse.getClientDataBytes());
 
     try {
-//		Nonce was changed from [authenticatorData, clientDataHash] to
-//    	sha256 [authenticatorData, clientDataHash]
-//		https://github.com/w3c/webauthn/pull/869
+      // Nonce was changed from [authenticatorData, clientDataHash] to
+      // sha256 [authenticatorData, clientDataHash]
+      // https://github.com/w3c/webauthn/pull/869
       byte[] expectedNonce = Crypto.sha256Digest(Bytes.concat(
           attResponse.getAttestationObject().getAuthenticatorData().encode(), clientDataHash));
       if (!Arrays.equals(expectedNonce, stmt.getNonce())) {
-        //TODO(cpiper) Remove this hack.
+        // TODO(cpiper) Remove this hack.
         expectedNonce = Bytes.concat(
             attResponse.getAttestationObject().getAuthenticatorData().encode(), clientDataHash);
         if (!Arrays.equals(expectedNonce, stmt.getNonce())) {
@@ -147,8 +149,7 @@ public class AndroidSafetyNetServer extends Server {
     }
 
     if (Integer.compareUnsigned(assertionResponse.getAuthenticatorData().getSignCount(),
-        savedCredential.getSignCount()) <= 0
-        && savedCredential.getSignCount() != 0) {
+        savedCredential.getSignCount()) <= 0 && savedCredential.getSignCount() != 0) {
       throw new ServletException("Sign count invalid");
     }
 

@@ -149,6 +149,7 @@ public class Fido2RequestHandler {
     return resultList;
   }
 
+  @SuppressWarnings("deprecation")
   @ApiMethod(name = "processSignResponse")
   public List<String> processSignResponse(
       @Named("responseData") String responseData, User user)
@@ -212,8 +213,6 @@ public class Fido2RequestHandler {
     for (Credential c : savedCreds) {
       JsonObject cJson = new JsonObject();
       cJson.addProperty("handle", BaseEncoding.base64Url().encode(c.getCredential().rawId));
-      EccKey ecc = (EccKey) ((AuthenticatorAttestationResponse) c.getCredential().getResponse())
-          .getAttestationObject().getAuthenticatorData().getAttData().getPublicKey();
       // TODO
 /*
       try {

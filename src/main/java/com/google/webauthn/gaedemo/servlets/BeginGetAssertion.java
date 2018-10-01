@@ -16,6 +16,8 @@ package com.google.webauthn.gaedemo.servlets;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import com.google.gson.JsonObject;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredentialRequestOptions;
 import com.google.webauthn.gaedemo.storage.SessionData;
@@ -45,7 +47,7 @@ public class BeginGetAssertion extends HttpServlet {
   protected void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     String currentUser = userService.getCurrentUser().getEmail();
-    String rpId = request.getHeader("Host").split(":")[0];
+    String rpId = Iterables.get(Splitter.on(':').split(request.getHeader("Host")), 0);
     // String rpId = (request.isSecure() ? "https://" : "http://") + request.getHeader("Host");
     PublicKeyCredentialRequestOptions assertion = new PublicKeyCredentialRequestOptions(rpId);
     SessionData session = new SessionData(assertion.challenge, rpId);

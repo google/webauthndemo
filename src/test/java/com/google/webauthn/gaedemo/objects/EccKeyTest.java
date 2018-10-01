@@ -20,6 +20,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.nio.charset.StandardCharsets;
+
 import co.nstant.in.cbor.CborException;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -58,8 +60,8 @@ public class EccKeyTest {
   public void testEncode() {
     EccKey testKey = new EccKey();
     testKey.alg = Algorithm.ES256;
-    testKey.x = "testX".getBytes();
-    testKey.y = "testY".getBytes();
+    testKey.x = "testX".getBytes(StandardCharsets.UTF_8);
+    testKey.y = "testY".getBytes(StandardCharsets.UTF_8);
     try {
       CredentialPublicKey decodedCpk = CredentialPublicKey.decode(testKey.encode());
       assertTrue(decodedCpk instanceof EccKey);

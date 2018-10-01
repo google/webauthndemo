@@ -14,6 +14,8 @@
 
 package com.google.webauthn.gaedemo.objects;
 
+import java.nio.charset.StandardCharsets;
+
 import com.google.common.io.BaseEncoding;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -40,7 +42,7 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
   public AuthenticatorAssertionResponse(String clientDataJSON, String authenticatorData,
       String signatureString) throws ResponseException {
     clientData = CollectedClientData.decode(clientDataJSON);
-    clientDataBytes = clientDataJSON.getBytes();
+    clientDataBytes = clientDataJSON.getBytes(StandardCharsets.UTF_8);
     authData = AuthenticatorData.decode(BaseEncoding.base64().decode(authenticatorData));
     signature = BaseEncoding.base64().decode(signatureString);
   }
@@ -54,11 +56,11 @@ public class AuthenticatorAssertionResponse extends AuthenticatorResponse {
     try {
       AssertionResponseJson parsedObject = gson.fromJson(data, AssertionResponseJson.class);
       clientDataBytes = BaseEncoding.base64().decode(parsedObject.clientDataJSON);
-      clientData = gson.fromJson(new String(clientDataBytes), CollectedClientData.class);
+      clientData = gson.fromJson(new String(clientDataBytes, StandardCharsets.UTF_8),
+          CollectedClientData.class);
 
       authDataBytes = BaseEncoding.base64().decode(parsedObject.authenticatorData);
-      authData =
-          AuthenticatorData.decode(authDataBytes);
+      authData = AuthenticatorData.decode(authDataBytes);
       signature = BaseEncoding.base64().decode(parsedObject.signature);
       userHandle = BaseEncoding.base64().decode(parsedObject.userHandle);
     } catch (JsonSyntaxException e) {

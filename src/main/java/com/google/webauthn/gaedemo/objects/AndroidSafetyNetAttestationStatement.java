@@ -14,14 +14,17 @@
 
 package com.google.webauthn.gaedemo.objects;
 
+import java.util.Arrays;
+import java.util.Objects;
+
+import com.google.webauthn.gaedemo.exceptions.ResponseException;
+import com.googlecode.objectify.annotation.Subclass;
+
 import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.ByteString;
 import co.nstant.in.cbor.model.DataItem;
 import co.nstant.in.cbor.model.Map;
 import co.nstant.in.cbor.model.UnicodeString;
-import com.google.webauthn.gaedemo.exceptions.ResponseException;
-import com.googlecode.objectify.annotation.Subclass;
-import java.util.Arrays;
 
 /**
  * Object representation of the Android SafetyNet attestation statement
@@ -73,14 +76,22 @@ public class AndroidSafetyNetAttestationStatement extends AttestationStatement {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(ver, Arrays.hashCode(response));
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (obj instanceof AndroidSafetyNetAttestationStatement) {
       AndroidSafetyNetAttestationStatement other = (AndroidSafetyNetAttestationStatement) obj;
-      if (ver == other.ver || ((ver != null && other.ver != null) && ver.equals(other.ver))) {
-        if (Arrays.equals(response, other.response)) {
-          return true;
+      try {
+        if (!ver.equals(other.ver)) {
+          return false;
         }
+      } catch (NullPointerException e) {
+        return false;
       }
+      return Arrays.equals(response, other.response);
     }
     return false;
   }

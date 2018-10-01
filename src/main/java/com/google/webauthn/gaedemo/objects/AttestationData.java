@@ -19,6 +19,7 @@ import com.google.common.primitives.Bytes;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Object representation of the attestation data
@@ -91,18 +92,30 @@ public class AttestationData {
   @Override
   public boolean equals(Object obj) {
     try {
-      if (obj instanceof AttestationData) {
-        AttestationData other = (AttestationData) obj;
-        if (Arrays.equals(other.aaguid, aaguid) && Arrays.equals(credentialId, other.credentialId)
-            && ((publicKey == null && other.publicKey == null)
-                || (publicKey.equals(other.publicKey)))) {
-          return true;
-        }
+      if (!(obj instanceof AttestationData)) {
+        return false;
+      }
+      AttestationData other = (AttestationData) obj;
+      if (!Arrays.equals(other.aaguid, aaguid)) {
+        return false;
+      }
+      if (!Arrays.equals(credentialId, other.credentialId)) {
+        return false;
+      }
+      if ((publicKey == null && other.publicKey == null)) {
+        return true;
+      } else if (publicKey.equals(other.publicKey)) {
+        return true;
       }
     } catch (NullPointerException e) {
       return false;
     }
     return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(Arrays.hashCode(aaguid), Arrays.hashCode(credentialId), publicKey);
   }
 
   /**

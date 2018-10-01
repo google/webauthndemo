@@ -17,6 +17,8 @@ package com.google.webauthn.gaedemo.server;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -115,7 +117,7 @@ public class PackedServer extends Server {
 
     byte[] clientDataHash = Crypto.sha256Digest(attResponse.getClientDataBytes());
 
-    byte[] rpIdHash = Crypto.sha256Digest(origin.getBytes());
+    byte[] rpIdHash = Crypto.sha256Digest(origin.getBytes(StandardCharsets.UTF_8));
 
     if (!Arrays.equals(attResponse.getAttestationObject().getAuthenticatorData().getRpIdHash(),
         rpIdHash)) {
@@ -123,7 +125,8 @@ public class PackedServer extends Server {
     }
 
     if (!(attResponse.decodedObject.getAuthenticatorData().getAttData()
-        .getPublicKey() instanceof EccKey) && !(attResponse.decodedObject.getAuthenticatorData().getAttData()
+        .getPublicKey() instanceof EccKey)
+        && !(attResponse.decodedObject.getAuthenticatorData().getAttData()
             .getPublicKey() instanceof RsaKey)) {
       throw new ServletException("Supported key not provided");
     }
@@ -138,19 +141,12 @@ public class PackedServer extends Server {
       byte[] signedBytes =
           Bytes.concat(attResponse.decodedObject.getAuthenticatorData().encode(), clientDataHash);
 
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       for (byte b : signedBytes) {
         buf.append(String.format("%02X ", b));
       }
 
       Log.info("Signed bytes: " + buf.toString());
-
-      // TODO Make attStmt.attestnCert an X509Certificate right off the
-      // bat.
-      DataInputStream inputStream =
-          new DataInputStream(new ByteArrayInputStream(attStmt.attestnCert));
-      X509Certificate attestationCertificate = (X509Certificate) CertificateFactory
-          .getInstance("X.509").generateCertificate(inputStream);
 
       String signatureAlgorithm;
       try {
@@ -162,9 +158,36 @@ public class PackedServer extends Server {
         signatureAlgorithm = "SHA256withECDSA";
       }
 
-      if (!Crypto.verifySignature(attestationCertificate, signedBytes, attStmt.sig,
-          signatureAlgorithm)) {
-        throw new ServletException("Signature invalid");
+      // TODO Make attStmt.attestnCert an X509Certificate right off the
+      // bat.
+      if (attStmt.attestnCert instanceof byte[]) {
+        DataInputStream inputStream =
+            new DataInputStream(new ByteArrayInputStream(attStmt.attestnCert));
+        X509Certificate attestationCertificate = (X509Certificate) CertificateFactory
+            .getInstance("X.509").generateCertificate(inputStream);
+
+        if (!Crypto.verifySignature(attestationCertificate, signedBytes, attStmt.sig,
+            signatureAlgorithm)) {
+          throw new ServletException("Signature invalid");
+        }
+      } else {
+        // Self-attestation.
+        if (!signatureAlgorithm
+            .equals(AlgorithmIdentifierMapper.get(attStmt.alg).getJavaAlgorithm())) {
+          throw new ServletException("Algorithm mismatch");
+        }
+
+        PublicKey publicKey;
+        if (attResponse.decodedObject.getAuthenticatorData().getAttData()
+            .getPublicKey() instanceof EccKey) {
+          publicKey = Crypto.getECPublicKey((EccKey) attResponse.decodedObject
+              .getAuthenticatorData().getAttData().getPublicKey());
+        } else {
+          throw new ServletException("Public Key not supported");
+        }
+        if (!Crypto.verifySignature(publicKey, signedBytes, attStmt.sig, signatureAlgorithm)) {
+          throw new ServletException("Signature invalid");
+        }
       }
     } catch (CertificateException e) {
       throw new ServletException("Error when parsing attestationCertificate");
@@ -175,7 +198,6 @@ public class PackedServer extends Server {
     }
 
     // TODO Check trust anchors
-    // TODO Check if self-attestation(/is allowed)
     // TODO Check X.509 certs
 
   }

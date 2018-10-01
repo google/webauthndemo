@@ -17,6 +17,7 @@ package com.google.webauthn.gaedemo.server;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -146,7 +147,7 @@ public class U2fServer extends Server {
 
     byte[] clientDataHash = Crypto.sha256Digest(attResponse.getClientDataBytes());
 
-    byte[] rpIdHash = Crypto.sha256Digest(rpId.getBytes());
+    byte[] rpIdHash = Crypto.sha256Digest(rpId.getBytes(StandardCharsets.UTF_8));
 
     if (!Arrays.equals(attResponse.getAttestationObject().getAuthenticatorData().getRpIdHash(),
         rpIdHash)) {

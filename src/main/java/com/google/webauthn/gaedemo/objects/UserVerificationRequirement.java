@@ -19,8 +19,7 @@ package com.google.webauthn.gaedemo.objects;
  */
 public enum UserVerificationRequirement {
   REQUIRED("required"), PREFERRED("preferred"), DISCOURAGED("discouraged");
-
-  private String name;
+  private final String name;
 
   /**
    * @param name

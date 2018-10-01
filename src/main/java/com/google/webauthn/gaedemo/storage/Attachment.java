@@ -16,8 +16,7 @@ package com.google.webauthn.gaedemo.storage;
 
 public enum Attachment {
   PLATFORM("platform"), CROSS_PLATFORM("cross-platform");
-
-  String name;
+  final String name;
 
   private Attachment(String name) {
     this.name = name;

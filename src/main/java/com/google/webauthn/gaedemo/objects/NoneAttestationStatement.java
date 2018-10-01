@@ -14,14 +14,14 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import co.nstant.in.cbor.CborDecoder;
+import com.googlecode.objectify.annotation.Subclass;
+
 import co.nstant.in.cbor.CborException;
 import co.nstant.in.cbor.model.DataItem;
 import co.nstant.in.cbor.model.Map;
-import com.googlecode.objectify.annotation.Subclass;
 
 @Subclass
-public class NoneAttestationStatement extends AttestationStatement {
+public final class NoneAttestationStatement extends AttestationStatement {
 
   public NoneAttestationStatement() {}
 
@@ -29,6 +29,11 @@ public class NoneAttestationStatement extends AttestationStatement {
   DataItem encode() throws CborException {
     Map result = new Map();
     return result;
+  }
+  
+  @Override
+  public int hashCode() {
+    return 0;
   }
 
   @Override

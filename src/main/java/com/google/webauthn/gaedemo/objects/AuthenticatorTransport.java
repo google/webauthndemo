@@ -16,8 +16,7 @@ package com.google.webauthn.gaedemo.objects;
 
 public enum AuthenticatorTransport {
   USB("usb"), NFC("nfc"), BLE("ble");
-
-  private String name;
+  final private String name;
 
   /**
    * @param name

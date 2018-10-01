@@ -25,6 +25,7 @@ import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Parent;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 public class SessionData {
@@ -62,7 +63,17 @@ public class SessionData {
     return origin;
   }
 
-  boolean equals(AttestationSessionData other) {
+  @Override
+  public int hashCode() {
+    return Objects.hash(user, id, challenge, origin, created);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof SessionData)) {
+      return false;
+    }
+    SessionData other = (SessionData) obj;
     return (this.challenge != null && other.challenge != null
         && this.challenge.equals(other.challenge))
         && (this.origin != null && other.origin != null && this.origin.equals(other.origin));
@@ -91,9 +102,9 @@ public class SessionData {
   }
 
   public static void removeAllOldSessions() {
-	Date date = new Date(System.currentTimeMillis() - (1 * 60 * 60 * 1000));
-	List<Key<SessionData>> keys = ofy().load().type(SessionData.class)
-			.filter("created < ", date).keys().list();
+    Date date = new Date(System.currentTimeMillis() - (1 * 60 * 60 * 1000));
+    List<Key<SessionData>> keys =
+        ofy().load().type(SessionData.class).filter("created < ", date).keys().list();
     if (keys.size() > 0) {
       ofy().delete().keys(keys).now();
     }
