@@ -7,4 +7,14 @@
       "83:1E:EC:AB:FA:71:87:18:6B:21:07:4B:C9:F1:B4:A7:12:B0:88:9E:E1:3A:4D:83:25:0E:31:BC:A7:78:DF:C4"
     ]
   }
+},
+{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.fido.example.zeropartyexample",
+    "sha256_cert_fingerprints": [
+      "19:75:B2:F1:71:77:BC:89:A5:DF:F3:1F:9E:64:A6:CA:E2:81:A5:3D:C1:D1:D5:9B:1D:14:7F:E1:C8:2A:FA:00"
+    ]
+  }
 }]
