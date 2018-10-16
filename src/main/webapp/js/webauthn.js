@@ -100,7 +100,9 @@ function fetchCredentials() {
              <div class="mdl-card__supporting-text">${handle}</div>
              <div class="mdl-card__menu">
                <button id="${buttonId}"
-                 class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
+                 class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect"
+                 title="Removes this credential registration from the server"
+                 >
                  <i class="material-icons">delete_forever</i>
                </button>
              </div>

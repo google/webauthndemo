@@ -24,16 +24,24 @@
       <div id="header-buttons" class="mdl-layout__header-row">
         <div class="mdl-layout-spacer"></div>
         <button id="isuvpaa-button"
-          class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect make-button">
+          class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect make-button"
+          title="Calls IsUserVerifyingPlatformAuthenticatorAvailable. Returns &quot;true&quot; if the device supports an internal authenticator, and &quot;false&quot; if the device does not. (E.g., fingerprints on Android or TouchID on MacOS)"
+          >
           isUVPAA</button>
         <button id="platform-button"
-          class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect make-button">
+          class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect make-button"
+          title="A convenience method to register an internal authenticator. This is equivalent to calling MakeCredential with AttachmentType=Platform"
+          >
           Register platform authenticator</button>
         <button id="credential-button"
-          class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect make-button">
+          class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect make-button"
+          title="Calls MakeCredential to register a new credential from a FIDO device"
+          >
           Register new credential</button>
         <button id="authenticate-button"
-          class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect auth-button">
+          class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect auth-button"
+          title="Calls GetAssertion to request an assertion from a previously-registered FIDO device"
+          >
           Authenticate</button>
       </div>
     </header>
