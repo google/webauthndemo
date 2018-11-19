@@ -308,6 +308,9 @@ function getAssertion() {
     if ('allowCredentials' in parameters) {
       requestOptions.allowCredentials = credentialListConversion(parameters.allowCredentials);
     }
+    if ($('#userVerification').value != "none") {
+      requestOptions.userVerification = $('#userVerification').value;
+    }
 
     console.log(requestOptions);
 
