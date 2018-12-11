@@ -182,19 +182,7 @@ public class Fido2RequestHandler {
       throw new ServletException("Unable to validate assertion", e);
     }
 
-    switch (savedCredential.getCredential().getAttestationType()) {
-      case FIDOU2F:
-        U2fServer.verifyAssertion(cred, user.getEmail(), session, savedCredential);
-        break;
-      case ANDROIDSAFETYNET:
-        AndroidSafetyNetServer.verifyAssertion(cred, user.getEmail(), session, savedCredential);
-        break;
-      case PACKED:
-        PackedServer.verifyAssertion(cred, user.getEmail(), session, savedCredential);
-        break;
-      case NONE:
-        break;
-    }
+    Server.verifyAssertion(cred, user.getEmail(), session, savedCredential);
 
     List<String> resultList = new ArrayList<String>();
     resultList.add(savedCredential.toJson());
@@ -246,12 +234,7 @@ public class Fido2RequestHandler {
       throw new OAuthRequestException("User is not authenticated");
     }
 
-    // TODO
-    String id = null;
-    String credentialId = null;
-    Credential.remove(user.getEmail(), id);
-    Credential.remove(user.getEmail(), credentialId);
-
+    Credential.remove(user.getEmail(), publicKey);
     return new String[] {"OK"};
   }
 }
