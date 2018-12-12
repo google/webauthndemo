@@ -36,6 +36,8 @@ import com.google.webauthn.gaedemo.objects.RsaKey;
 import com.google.webauthn.gaedemo.storage.Credential;
 import com.google.webauthn.gaedemo.storage.SessionData;
 
+import co.nstant.in.cbor.CborException;
+
 public abstract class Server {
   private static final Logger Log = Logger.getLogger(U2fServer.class.getName());
 
@@ -143,8 +145,18 @@ public abstract class Server {
 
       byte[] clientDataHash = Crypto.sha256Digest(assertionResponse.getClientDataBytes());
 
+      byte[] signedBytes;
       // concat of aData (authDataBytes) and hash of cData (clientDataHash)
-      byte[] signedBytes = Bytes.concat(assertionResponse.getAuthDataBytes(), clientDataHash);
+      try {
+        signedBytes = Bytes.concat(assertionResponse.getAuthDataBytes(), clientDataHash);
+      } catch (NullPointerException e) {
+        try {
+          signedBytes = Bytes.concat(assertionResponse.getAuthenticatorData().encode(),
+              clientDataHash);
+        } catch (CborException e1) {
+          throw new ServletException("Authenticator data invalid", e);
+        }
+      }
       String signatureAlgorithm = AlgorithmIdentifierMapper.get(
           storedAttData.decodedObject.getAuthenticatorData().getAttData().getPublicKey().getAlg())
           .getJavaAlgorithm();
