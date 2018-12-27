@@ -83,6 +83,7 @@ public class RsaKey extends CredentialPublicKey {
     b.append(alg.toReadableString());
     b.append(" n:");
     b.append(DatatypeConverter.printHexBinary(n));
+    b.append("<br />");
     b.append(" e:");
     b.append(DatatypeConverter.printHexBinary(e));
     return b.toString();

@@ -46,7 +46,7 @@ public class UpdateCredential extends HttpServlet {
 
         // Validate
         if (irkHex == null || lkHex == null) {
-            resp.sendError(resp.SC_BAD_REQUEST, "Missing IRK or LK");
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing IRK or LK");
             return;
         }
         byte[] irk, lk;
@@ -54,11 +54,11 @@ public class UpdateCredential extends HttpServlet {
             irk = decodeHex(irkHex.toCharArray());
             lk = decodeHex(lkHex.toCharArray());
         } catch (DecoderException e) {
-            resp.sendError(resp.SC_BAD_REQUEST, "Cannot decode IRK/LK (use hex)");
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Cannot decode IRK/LK (use hex)");
             return;
         }
         if (irk.length != 32 || lk.length != 32) {
-            resp.sendError(resp.SC_BAD_REQUEST, "IRK and LK must both be 32 bytes long");
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "IRK and LK must both be 32 bytes long");
             return;
         }
 
@@ -73,6 +73,6 @@ public class UpdateCredential extends HttpServlet {
                 return;
             }
         }
-        resp.sendError(resp.SC_NOT_FOUND);
+        resp.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
 }

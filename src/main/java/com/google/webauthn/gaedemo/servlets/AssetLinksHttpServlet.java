@@ -13,11 +13,11 @@
 // limitations under the License.
 package com.google.webauthn.gaedemo.servlets;
 
-import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse.File;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +28,10 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class AssetLinksHttpServlet extends HttpServlet {
 
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 4479027193794261437L;
   private static final String PATH = "/well-known/assetlinks.json";
   public AssetLinksHttpServlet() {}
 

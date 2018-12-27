@@ -28,6 +28,7 @@ import java.security.SecureRandom;
 
 import org.junit.Test;
 
+@SuppressWarnings("unused")
 public class AuthenticatorDataTest {
   private final SecureRandom random = new SecureRandom();
 

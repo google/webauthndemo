@@ -31,6 +31,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import org.junit.Test;
 
+@SuppressWarnings("unused")
 public class AuthenticatorAssertionResponseTest {
   final SecureRandom random = new SecureRandom();
 

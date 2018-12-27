@@ -36,7 +36,6 @@ import com.google.gson.JsonParser;
 import com.google.webauthn.gaedemo.objects.AttestationConveyancePreference;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttachment;
 import com.google.webauthn.gaedemo.objects.AuthenticatorSelectionCriteria;
-import com.google.webauthn.gaedemo.objects.AuthenticatorTransport;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredentialCreationOptions;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredentialDescriptor;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredentialType;

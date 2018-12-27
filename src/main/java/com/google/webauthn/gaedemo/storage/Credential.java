@@ -16,16 +16,17 @@ package com.google.webauthn.gaedemo.storage;
 
 import static com.googlecode.objectify.ObjectifyService.ofy;
 
-import com.google.gson.*;
+import java.util.Date;
+import java.util.List;
+
+import com.google.gson.Gson;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.objects.CablePairingData;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
-import com.googlecode.objectify.*;
-import com.googlecode.objectify.annotation.*;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.List;
+import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Parent;
 
 @Entity
 public class Credential {

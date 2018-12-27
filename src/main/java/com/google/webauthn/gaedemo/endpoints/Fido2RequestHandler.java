@@ -1,28 +1,29 @@
 package com.google.webauthn.gaedemo.endpoints;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Named;
+import javax.servlet.ServletException;
+
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.appengine.api.oauth.OAuthRequestException;
 import com.google.appengine.api.users.User;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.io.BaseEncoding;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.webauthn.gaedemo.crypto.Crypto;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
-import com.google.webauthn.gaedemo.exceptions.WebAuthnException;
 import com.google.webauthn.gaedemo.objects.AndroidSafetyNetAttestationStatement;
 import com.google.webauthn.gaedemo.objects.AttestationObject;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
-import com.google.webauthn.gaedemo.objects.EccKey;
 import com.google.webauthn.gaedemo.objects.FidoU2fAttestationStatement;
-import com.google.webauthn.gaedemo.objects.PublicKeyCredentialCreationOptions;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
+import com.google.webauthn.gaedemo.objects.PublicKeyCredentialCreationOptions;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredentialRequestOptions;
 import com.google.webauthn.gaedemo.server.AndroidSafetyNetServer;
 import com.google.webauthn.gaedemo.server.PackedServer;
@@ -30,15 +31,6 @@ import com.google.webauthn.gaedemo.server.Server;
 import com.google.webauthn.gaedemo.server.U2fServer;
 import com.google.webauthn.gaedemo.storage.Credential;
 import com.google.webauthn.gaedemo.storage.SessionData;
-
-import com.google.webauthn.gaedemo.objects.PublicKeyCredentialRequestOptions;
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.binary.Hex;
-
-import java.util.ArrayList;
-import java.util.List;
-import javax.inject.Named;
-import javax.servlet.ServletException;
 
 
 /**
@@ -149,7 +141,6 @@ public class Fido2RequestHandler {
     return resultList;
   }
 
-  @SuppressWarnings("deprecation")
   @ApiMethod(name = "processSignResponse")
   public List<String> processSignResponse(
       @Named("responseData") String responseData, User user)

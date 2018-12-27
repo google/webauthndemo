@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import org.junit.Ignore;
 import org.junit.Test;
 
+@SuppressWarnings("unused")
 public class FidoU2fAttestationStatementTest {
   final SecureRandom rand = new SecureRandom();
 

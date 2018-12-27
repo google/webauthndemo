@@ -17,6 +17,11 @@ package com.google.webauthn.gaedemo.exceptions;
 public class WebAuthnException extends Exception {
 
   /**
+   * 
+   */
+  private static final long serialVersionUID = 3285394858024616570L;
+
+  /**
    * @param string
    */
   public WebAuthnException(String string) {

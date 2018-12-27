@@ -14,19 +14,15 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import com.google.common.io.BaseEncoding;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.webauthn.gaedemo.crypto.Cable;
-import com.google.webauthn.gaedemo.crypto.Crypto;
-import com.google.webauthn.gaedemo.storage.Credential;
-import org.bouncycastle.util.Arrays;
-
-import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.common.io.BaseEncoding;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.webauthn.gaedemo.crypto.Cable;
+import com.google.webauthn.gaedemo.storage.Credential;
 
 public class PublicKeyCredentialRequestOptions {
   private static final int CHALLENGE_LENGTH = 32;

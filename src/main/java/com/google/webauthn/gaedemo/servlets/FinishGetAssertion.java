@@ -14,6 +14,14 @@
 
 package com.google.webauthn.gaedemo.servlets;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.bind.DatatypeConverter;
+
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.io.BaseEncoding;
@@ -24,19 +32,9 @@ import com.google.gson.JsonParser;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAssertionResponse;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
-import com.google.webauthn.gaedemo.server.AndroidSafetyNetServer;
-import com.google.webauthn.gaedemo.server.PackedServer;
 import com.google.webauthn.gaedemo.server.PublicKeyCredentialResponse;
 import com.google.webauthn.gaedemo.server.Server;
 import com.google.webauthn.gaedemo.storage.Credential;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.bind.DatatypeConverter;
-
-import java.io.IOException;
 
 
 public class FinishGetAssertion extends HttpServlet {

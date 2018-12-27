@@ -17,12 +17,12 @@ package com.google.webauthn.gaedemo.objects;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import javax.xml.bind.DatatypeConverter;
 
 import com.google.appengine.repackaged.com.google.common.primitives.Bytes;
 import com.googlecode.objectify.annotation.Subclass;
+
 import co.nstant.in.cbor.CborBuilder;
 import co.nstant.in.cbor.CborEncoder;
 import co.nstant.in.cbor.CborException;

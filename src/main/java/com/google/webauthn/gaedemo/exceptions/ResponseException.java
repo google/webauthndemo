@@ -17,6 +17,11 @@ package com.google.webauthn.gaedemo.exceptions;
 public class ResponseException extends Exception {
 
   /**
+   * 
+   */
+  private static final long serialVersionUID = 6341176597489797230L;
+
+  /**
    * @param string
    */
   public ResponseException(String string) {
