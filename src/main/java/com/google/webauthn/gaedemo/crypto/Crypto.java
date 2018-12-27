@@ -144,7 +144,7 @@ public class Crypto {
   }
 
   public static PublicKey getRSAPublicKey(RsaKey rsaKey) throws WebAuthnException {
-    BigInteger modulus = new BigInteger(rsaKey.getN());
+    BigInteger modulus = new BigInteger(Bytes.concat(new byte[] {0}, rsaKey.getN()));
     BigInteger publicExponent = new BigInteger(rsaKey.getE());
     try {
       return getRSAPublicKey(modulus, publicExponent);
