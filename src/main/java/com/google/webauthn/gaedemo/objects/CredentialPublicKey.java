@@ -52,6 +52,7 @@ public abstract class CredentialPublicKey {
 
   /**
    * Get algorithm info
+   * 
    * @return algorithm
    */
   public Algorithm getAlg() {
@@ -84,18 +85,34 @@ public abstract class CredentialPublicKey {
 
         switch (tmp) {
           case N_LABEL:
-            rsaKey.n = ((ByteString) map.get(d)).getBytes();
+            if (map.get(d) instanceof ByteString) {
+              rsaKey.n = ((ByteString) map.get(d)).getBytes();
+            } else {
+              throw new InvalidParameterException("Public key 'N' invalid type");
+            }
             break;
           case E_LABEL:
-            rsaKey.e = ((ByteString) map.get(d)).getBytes();
+            if (map.get(d) instanceof ByteString) {
+              rsaKey.e = ((ByteString) map.get(d)).getBytes();
+            } else {
+              throw new InvalidParameterException("Public key 'E' invalid type");
+            }
             break;
           case KTY_LABEL:
-            rsaKey.kty = ((UnsignedInteger) map.get(d)).getValue().intValue();
+            if (map.get(d) instanceof UnsignedInteger) {
+              rsaKey.kty = ((UnsignedInteger) map.get(d)).getValue().intValue();
+            } else {
+              throw new InvalidParameterException("Public key 'KTY' invalid type");
+            }
             break;
           case ALG_LABEL:
-            rsaKey.alg = Algorithm.decode(((NegativeInteger) map.get(d)).getValue().intValue());
-            if (!Algorithm.isRsaAlgorithm(rsaKey.alg))
-              throw new InvalidParameterException("Unsupported RSA algorithm");
+            if (map.get(d) instanceof NegativeInteger) {
+              rsaKey.alg = Algorithm.decode(((NegativeInteger) map.get(d)).getValue().intValue());
+              if (!Algorithm.isRsaAlgorithm(rsaKey.alg))
+                throw new InvalidParameterException("Unsupported RSA algorithm");
+            } else {
+              throw new InvalidParameterException("Public key 'ALG' invalid type");
+            }
             break;
         }
       }
@@ -114,21 +131,41 @@ public abstract class CredentialPublicKey {
 
         switch (tmp) {
           case CRV_LABEL:
-            eccKey.crv = ((UnsignedInteger) map.get(d)).getValue().intValue();
+            if (map.get(d) instanceof UnsignedInteger) {
+              eccKey.crv = ((UnsignedInteger) map.get(d)).getValue().intValue();
+            } else {
+              throw new InvalidParameterException("Public key 'CRV' invalid type");
+            }
             break;
           case X_LABEL:
-            eccKey.x = ((ByteString) map.get(d)).getBytes();
+            if (map.get(d) instanceof ByteString) {
+              eccKey.x = ((ByteString) map.get(d)).getBytes();
+            } else {
+              throw new InvalidParameterException("Public key 'X' invalid type");
+            }
             break;
           case Y_LABEL:
-            eccKey.y = ((ByteString) map.get(d)).getBytes();
+            if (map.get(d) instanceof ByteString) {
+              eccKey.y = ((ByteString) map.get(d)).getBytes();
+            } else {
+              throw new InvalidParameterException("Public key 'Y' invalid type");
+            }
             break;
           case KTY_LABEL:
-            eccKey.kty = ((UnsignedInteger) map.get(d)).getValue().intValue();
+            if (map.get(d) instanceof UnsignedInteger) {
+              eccKey.kty = ((UnsignedInteger) map.get(d)).getValue().intValue();
+            } else {
+              throw new InvalidParameterException("Public key 'KTY' invalid type");
+            }
             break;
           case ALG_LABEL:
-            eccKey.alg = Algorithm.decode(((NegativeInteger) map.get(d)).getValue().intValue());
-            if (!Algorithm.isEccAlgorithm(eccKey.alg))
-              throw new InvalidParameterException("Unsupported ECC algorithm");
+            if (map.get(d) instanceof NegativeInteger) {
+              eccKey.alg = Algorithm.decode(((NegativeInteger) map.get(d)).getValue().intValue());
+              if (!Algorithm.isEccAlgorithm(eccKey.alg))
+                throw new InvalidParameterException("Unsupported ECC algorithm");
+            } else {
+              throw new InvalidParameterException("Public key 'ALG' invalid type");
+            }
             break;
         }
       }
