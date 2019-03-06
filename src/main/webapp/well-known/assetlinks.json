@@ -1,10 +1,18 @@
 [{
   "relation": ["delegate_permission/common.handle_all_urls"],
   "target": {
+    "namespace": "web",
+    "site": "https://webauthndemo.appspot.com"
+  }
+},
+{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
     "namespace": "android_app",
     "package_name": "com.fido.example.fido2apiexample",
     "sha256_cert_fingerprints": [
-      "83:1E:EC:AB:FA:71:87:18:6B:21:07:4B:C9:F1:B4:A7:12:B0:88:9E:E1:3A:4D:83:25:0E:31:BC:A7:78:DF:C4"
+      "83:1E:EC:AB:FA:71:87:18:6B:21:07:4B:C9:F1:B4:A7:12:B0:88:9E:E1:3A:4D:83:25:0E:31:BC:A7:78:DF:C4",
+      "6E:41:E7:95:61:15:FE:34:42:3D:D6:06:25:FC:0E:97:B4:A7:FC:22:C2:FF:64:C4:DE:1E:13:3B:5F:E7:DF:82"
     ]
   }
 },
