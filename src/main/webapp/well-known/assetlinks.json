@@ -1,12 +1,12 @@
 [{
-  "relation": ["delegate_permission/common.handle_all_urls"],
+  "relation": ["delegate_permission/common.handle_all_urls", "delegate_permission/common.get_login_creds"],
   "target": {
     "namespace": "web",
     "site": "https://webauthndemo.appspot.com"
   }
 },
 {
-  "relation": ["delegate_permission/common.handle_all_urls"],
+  "relation": ["delegate_permission/common.handle_all_urls", "delegate_permission/common.get_login_creds"],
   "target": {
     "namespace": "android_app",
     "package_name": "com.fido.example.fido2apiexample",
@@ -17,7 +17,7 @@
   }
 },
 {
-  "relation": ["delegate_permission/common.handle_all_urls"],
+  "relation": ["delegate_permission/common.handle_all_urls", "delegate_permission/common.get_login_creds"],
   "target": {
     "namespace": "android_app",
     "package_name": "com.fido.example.zeropartyexample",
