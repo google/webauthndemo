@@ -64,7 +64,7 @@ public class RemoveCredential extends HttpServlet {
     String currentUser = userService.getCurrentUser().getEmail();
     Credential.remove(currentUser, request.getParameter("credentialId"));
 
-    response.setContentType("text/json");
+    response.setContentType("application/json");
     response.getWriter().println("{}");
   }
 

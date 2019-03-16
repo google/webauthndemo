@@ -68,7 +68,7 @@ public class UpdateCredential extends HttpServlet {
             if (id == credential.id) {
                 credential.setCablePairingData(new CablePairingData(1, irk, lk));
                 credential.save(currentUser);
-                resp.setContentType("text/json");
+                resp.setContentType("application/json");
                 resp.getWriter().println("{}");
                 return;
             }
