@@ -54,7 +54,7 @@ public class RegisteredKeys extends HttpServlet {
     List<Credential> savedCreds = Credential.load(currentUser);
 
     JsonArray result = new JsonArray();
-    response.setContentType("text/json");
+    response.setContentType("application/json");
     for (Credential c : savedCreds) {
       JsonObject cJson = new JsonObject();
       cJson.addProperty("handle", DatatypeConverter.printHexBinary(c.getCredential().rawId));
