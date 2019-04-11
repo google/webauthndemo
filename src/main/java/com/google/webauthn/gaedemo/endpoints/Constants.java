@@ -15,7 +15,7 @@ public class Constants {
   public static final String WEB_CLIENT_ID =
       "762961289381-hbbpkaqgi1kelev5mquj4dg4n8glr59p.apps.googleusercontent.com";
   public static final String ANDROID_CLIENT_ID =
-      "762961289381-d27cfmh1st5m681lo2r7837hg0a6b0pm.apps.googleusercontent.com";
+      "762961289381-87bpacb39s1pi3tsi2ahlsqvsmuh3odr.apps.googleusercontent.com";
   public static final String ANDROID_AUDIENCE = WEB_CLIENT_ID;
 
   public static final String APP_ID = "webauthndemo.appspot.com";
