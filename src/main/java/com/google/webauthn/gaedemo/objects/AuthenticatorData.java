@@ -85,21 +85,21 @@ public class AuthenticatorData {
   }
 
   /**
-   * @return the UP bit of the flags
+   * @return the UV bit of the flags
    */
   public boolean isUV() {
     return (flags & 1 << 2) != 0;
   }
 
   /**
-   * @return the UP bit of the flags
+   * @return the AT bit of the flags
    */
   public boolean hasAttestationData() {
     return (flags & 1 << 6) != 0;
   }
 
   /**
-   * @return the UP bit of the flags
+   * @return the ED bit of the flags
    */
   public boolean hasExtensionData() {
     return (flags & 1 << 7) != 0;
