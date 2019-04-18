@@ -44,7 +44,8 @@ import com.google.webauthn.gaedemo.storage.SessionData;
   name = "fido2RequestHandler",
   version = "v1",
   scopes = {Constants.EMAIL_SCOPE, Constants.OPENID_SCOPE},
-  clientIds = {Constants.WEB_CLIENT_ID, Constants.ANDROID_CLIENT_ID},
+  clientIds = {Constants.WEB_CLIENT_ID, Constants.ANDROID_CLIENT_ID,
+      Constants.ANDROID_CLIENT_ID2},
   audiences = {Constants.ANDROID_AUDIENCE},
   namespace = @ApiNamespace(
       ownerName = "gaedemo.webauthn.google.com", ownerDomain = "gaedemo.webauthn.google.com")
