@@ -87,7 +87,7 @@ function fetchCredentials() {
   _fetch('/RegisteredKeys').then(response => {
     let credentials = '';
     for (let i in response) {
-      let { handle, publicKey, name, date, id } = response[i];
+      let { handle, publicKey, name, date, id, transports } = response[i];
       let buttonId = `delete${i}`;
       credentials +=
         `<div class="mdl-cell mdl-cell--1-offset-desktop mdl-cell-4-col">
@@ -98,6 +98,8 @@ function fetchCredentials() {
              <div class="mdl-card__supporting-text">${publicKey}</div>
              <div class="mdl-card__subtitle-text">Key Handle</div>
              <div class="mdl-card__supporting-text">${handle}</div>
+             <div class="mdl-card__subtitle-text">Transports</div>
+             <div class="mdl-card__supporting-text">${transports}</div>
              <div class="mdl-card__menu">
                <button id="${buttonId}"
                  class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect"
@@ -243,6 +245,12 @@ function makeCredential(advancedOptions) {
     const response = {};
     response.clientDataJSON = binToStr(attestation.response.clientDataJSON);
     response.attestationObject = binToStr(attestation.response.attestationObject);
+
+    // Check if transports are included in the registration response.
+    if (attestation.response.getTransports) {
+      response.transports = attestation.response.getTransports();
+    }
+
     publicKeyCredential.response = response;
 
     return _fetch('/FinishMakeCredential', {

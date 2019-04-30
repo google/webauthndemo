@@ -71,6 +71,8 @@
   font-style: italic;
   overflow-wrap: break-word;
   word-wrap: break-word;
+  padding-bottom: 8px;
+  padding-top: 8px;
 }
 
 .login-card.mdl-card {

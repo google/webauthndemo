@@ -30,9 +30,11 @@ public class AuthenticatorAttestationResponse extends AuthenticatorResponse {
   private static class AttestationResponseJson {
     String clientDataJSON;
     String attestationObject;
+    String[] transports;
   }
 
   public AttestationObject decodedObject;
+  public String[] transports;
 
   /**
    *
@@ -69,6 +71,7 @@ public class AuthenticatorAttestationResponse extends AuthenticatorResponse {
 
     clientData = gson.fromJson(new String(clientDataBytes, StandardCharsets.UTF_8),
         CollectedClientData.class);
+    transports = parsedObject.transports;
   }
 
   /**
@@ -91,4 +94,12 @@ public class AuthenticatorAttestationResponse extends AuthenticatorResponse {
   public AttestationObject getAttestationObject() {
     return decodedObject;
   }
+
+  /**
+   * @return the list of transports supported by the credential
+   */
+  public String[] getTransports() {
+    return transports;
+  }
+  
 }
