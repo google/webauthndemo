@@ -97,10 +97,14 @@ function fetchCredentials() {
              <div class="mdl-card__subtitle-text">Public Key</div>
              <div class="mdl-card__supporting-text">${publicKey}</div>
              <div class="mdl-card__subtitle-text">Key Handle</div>
-             <div class="mdl-card__supporting-text">${handle}</div>
-             <div class="mdl-card__subtitle-text">Transports</div>
-             <div class="mdl-card__supporting-text">${transports}</div>
-             <div class="mdl-card__menu">
+             <div class="mdl-card__supporting-text">${handle}</div>`;
+      if (transports) {
+        credentials +=
+            `<div class="mdl-card__subtitle-text">Transports</div>
+             <div class="mdl-card__supporting-text">${transports}</div>`;
+      }
+      credentials +=
+            `<div class="mdl-card__menu">
                <button id="${buttonId}"
                  class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect"
                  title="Removes this credential registration from the server"
