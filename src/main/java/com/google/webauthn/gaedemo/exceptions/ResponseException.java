@@ -28,4 +28,11 @@ public class ResponseException extends Exception {
     super(string);
   }
 
+  /**
+   * @param string
+   */
+  public ResponseException(String string, Throwable cause) {
+    super(string, cause);
+  }
+
 }

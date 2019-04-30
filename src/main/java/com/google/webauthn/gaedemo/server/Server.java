@@ -94,7 +94,7 @@ public abstract class Server {
     try {
       verifySessionAndChallenge(assertionResponse, currentUser, sessionId);
     } catch (ResponseException e1) {
-      throw new ResponseException("Unable to verify session and challenge data");
+      throw new ResponseException("Unable to verify session and challenge data", e1);
     }
 
     Credential credential = null;

@@ -19,6 +19,7 @@ import com.googlecode.objectify.annotation.Id;
 
 @Entity
 public class User {
+  public static final String KIND = "User";
   @Id
   public String id;
 }

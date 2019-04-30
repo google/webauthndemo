@@ -24,7 +24,6 @@ import com.google.webauthn.gaedemo.objects.PackedAttestationStatement;
 import com.google.webauthn.gaedemo.objects.RsaKey;
 import com.google.webauthn.gaedemo.storage.AttestationSessionData;
 import com.google.webauthn.gaedemo.storage.Credential;
-import com.google.webauthn.gaedemo.storage.SessionData;
 import com.google.webauthn.gaedemo.storage.User;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.VoidWork;
@@ -41,7 +40,6 @@ public class OfyHelper implements ServletContextListener {
         ObjectifyService.register(User.class);
         ObjectifyService.register(Credential.class);
         ObjectifyService.register(AttestationSessionData.class);
-        ObjectifyService.register(SessionData.class);
         ObjectifyService.register(AuthenticatorAttestationResponse.class);
         ObjectifyService.register(AuthenticatorAssertionResponse.class);
         ObjectifyService.register(RsaKey.class);
@@ -51,7 +49,7 @@ public class OfyHelper implements ServletContextListener {
         ObjectifyService.register(AndroidSafetyNetAttestationStatement.class);
         ObjectifyService.register(NoneAttestationStatement.class);
       }
-  });
+    });
 
   }
 
