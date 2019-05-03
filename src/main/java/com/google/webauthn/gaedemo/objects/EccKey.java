@@ -20,7 +20,7 @@ import java.util.List;
 
 import javax.xml.bind.DatatypeConverter;
 
-import com.google.appengine.repackaged.com.google.common.primitives.Bytes;
+import com.google.common.primitives.Bytes;
 import com.googlecode.objectify.annotation.Subclass;
 
 import co.nstant.in.cbor.CborBuilder;

@@ -25,6 +25,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.io.BaseEncoding;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.webauthn.gaedemo.objects.AttestationObject;
@@ -58,6 +59,7 @@ public class RegisteredKeys extends HttpServlet {
     for (Credential c : savedCreds) {
       JsonObject cJson = new JsonObject();
       cJson.addProperty("handle", DatatypeConverter.printHexBinary(c.getCredential().rawId));
+      cJson.addProperty("base64handle", BaseEncoding.base64Url().encode(c.getCredential().rawId));
       CredentialPublicKey publicKey =
           ((AuthenticatorAttestationResponse) c.getCredential().getResponse())
               .getAttestationObject().getAuthenticatorData().getAttData().getPublicKey();

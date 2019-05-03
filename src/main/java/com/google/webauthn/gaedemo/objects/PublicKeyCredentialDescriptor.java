@@ -68,4 +68,11 @@ public class PublicKeyCredentialDescriptor {
 
     return result;
   }
+
+  /**
+   * @param transports the transports to set
+   */
+  public void setTransports(ArrayList<AuthenticatorTransport> transports) {
+    this.transports = transports;
+  }
 }

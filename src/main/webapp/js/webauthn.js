@@ -87,7 +87,7 @@ function fetchCredentials() {
   _fetch('/RegisteredKeys').then(response => {
     let credentials = '';
     for (let i in response) {
-      let { handle, publicKey, name, date, id, transports } = response[i];
+      let { handle, base64handle, publicKey, name, date, id, transports } = response[i];
       let buttonId = `delete${i}`;
       credentials +=
         `<div class="mdl-cell mdl-cell--1-offset-desktop mdl-cell-4-col">
@@ -100,8 +100,13 @@ function fetchCredentials() {
              <div class="mdl-card__supporting-text">${handle}</div>`;
       if (transports) {
         credentials +=
-            `<div class="mdl-card__subtitle-text">Transports</div>
-             <div class="mdl-card__supporting-text">${transports}</div>`;
+          `<div class="mdl-card__subtitle-text">Transports</div>
+          <div class="mdl-card__supporting-text">`;
+        for (const transport of transports) {
+          const trimmedHandle = base64handle.replace(/=/g, '');
+          credentials += `<input type="checkbox" id="${transport}${trimmedHandle}" value="${transport}${trimmedHandle}" checked>${transport} &nbsp;`;
+        }
+        credentials += `</div>`;
       }
       credentials +=
             `<div class="mdl-card__menu">
@@ -144,7 +149,22 @@ function credentialListConversion(list) {
       id: strToBin(item.id)
     };
     if (item.transports) {
-      cred.transports = list.transports;
+      const newTransportList = [];
+      // Filter out unchecked transports
+      for (transport of item.transports) {
+        try {
+          // The transport id is the transport name concatenated with the
+          // corresponding key handle
+          const base64Id = '#'.concat(transport, item.id.replace(/\+/g, '-')
+              .replace(/\//g,'_').replace(/=/g,''));
+          if (isChecked(base64Id)) {
+            newTransportList.push(transport);
+          }
+        } catch(e) {};
+      }
+      if (newTransportList.length) {
+        cred.transports = newTransportList;
+      }
     }
     return cred;
   });

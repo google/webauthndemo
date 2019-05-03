@@ -16,6 +16,7 @@ package com.google.webauthn.gaedemo.objects;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.io.BaseEncoding;
@@ -72,6 +73,10 @@ public class PublicKeyCredentialRequestOptions {
     return result;
   }
 
+  public List<PublicKeyCredentialDescriptor> getAllowCredentials() {
+    return allowCredentials;
+  }
+
   /**
    * @param currentUser
    */
@@ -81,8 +86,18 @@ public class PublicKeyCredentialRequestOptions {
       PublicKeyCredential storedCred = c.getCredential();
       if (storedCred == null)
         continue;
+
       PublicKeyCredentialDescriptor pkcd =
           new PublicKeyCredentialDescriptor(PublicKeyCredentialType.PUBLIC_KEY, storedCred.rawId);
+
+      if (((AuthenticatorAttestationResponse) storedCred.getResponse()).getTransports() != null) {
+        ArrayList<AuthenticatorTransport> transportList = new ArrayList<>();
+        for (String transport : ((AuthenticatorAttestationResponse) storedCred.getResponse()).getTransports()) {
+          transportList.add(AuthenticatorTransport.decode(transport));
+        }
+        pkcd.setTransports(transportList);
+      }
+
       allowCredentials.add(pkcd);
 
       Cable cableCrypto = new Cable();
