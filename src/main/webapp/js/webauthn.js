@@ -35,6 +35,16 @@ const onClick = (q, func) => {
   $(q).addEventListener('click', func);
 };
 
+const onCheck = (q, on, off) => {
+  $(q).addEventListener('change', () => {
+    if($(q).checked) {
+      on();
+    } else {
+      off();
+    }
+  });
+}
+
 function showErrorMsg(msg) {
   $('#snack-bar').MaterialSnackbar.showSnackbar({
     message: msg,
@@ -88,11 +98,17 @@ function fetchCredentials() {
     let credentials = '';
     for (let i in response) {
       let { handle, base64handle, publicKey, name, date, id, transports } = response[i];
+      const trimmedHandle = base64handle.replace(/=/g, '');
       let buttonId = `delete${i}`;
       credentials +=
         `<div class="mdl-cell mdl-cell--1-offset-desktop mdl-cell-4-col">
            <div class="mdl-card mdl-shadow--4dp" id="${handle}">
-             <div class="mdl-card__title mdl-card--border">${name}</div>
+             <div class="mdl-card__title mdl-card--border">
+                <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-${trimmedHandle}">
+                  <input type="checkbox" id="switch-${trimmedHandle}" class="mdl-switch__input" checked>
+                  <span class="mdl-switch__label">${name}</span>
+                </label>
+             </div>
              <div class="mdl-card__supporting-text">Enrolled ${date}</div>
              <div class="mdl-card__subtitle-text">Public Key</div>
              <div class="mdl-card__supporting-text">${publicKey}</div>
@@ -103,7 +119,6 @@ function fetchCredentials() {
           `<div class="mdl-card__subtitle-text">Transports</div>
           <div class="mdl-card__supporting-text">`;
         for (const transport of transports) {
-          const trimmedHandle = base64handle.replace(/=/g, '');
           credentials += `<input type="checkbox" id="${transport}${trimmedHandle}" value="${transport}${trimmedHandle}" checked>${transport} &nbsp;`;
         }
         credentials += `</div>`;
@@ -123,11 +138,46 @@ function fetchCredentials() {
     }
     $('#credentials').innerHTML = credentials;
 
+    componentHandler.upgradeAllRegistered();
+
     for (let i in response) {
-      let { handle, publicKey, name, date, id } = response[i];
+      let { handle, base64handle, publicKey, name, date, id } = response[i];
+      const trimmedHandle = base64handle.replace(/=/g, '');
+      console.log(trimmedHandle);
       onClick(`#delete${i}`, removeCredential(id));
+      onCheck(`#switch-${trimmedHandle}`, brightenCard(handle), dimCard(handle));
     }
   });
+}
+
+function brightenCard(id) {
+  return () => {
+    let card = document.getElementById(id);
+    card.animate([{
+      backgroundColor: '#ADADAD'
+    },{
+      backgroundColor: 'white'
+    }], {
+      duration: 200,
+      easing: 'ease-out',
+      fill: 'forwards'
+    });
+  }
+}
+
+function dimCard(id) {
+  return () => {
+    let card = document.getElementById(id);
+    card.animate([{
+      backgroundColor: 'white'
+    },{
+      backgroundColor: '#ADADAD'
+    }], {
+      duration: 200,
+      easing: 'ease-out',
+      fill: 'forwards'
+    });
+  }
 }
 
 function removeCredential(id) {
@@ -143,7 +193,22 @@ function removeCredential(id) {
 }
 
 function credentialListConversion(list) {
-  return list.map(item => {
+  // Filter unchecked credentials
+  const filteredList = list.filter((element) => {
+    try {
+      const base64Id = '#switch-'.concat(element.id.replace(/\+/g, '-')
+          .replace(/\//g,'_').replace(/=/g,'')).replace(/=/g, '');
+      if (isChecked(base64Id)) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch(e) {
+      return true;
+    }
+  });
+
+  return filteredList.map(item => {
     const cred = {
       type: item.type,
       id: strToBin(item.id)
@@ -389,10 +454,12 @@ function getAssertion() {
       showSuccessMsg(result.message);
       if ('handle' in result) {
         let card = document.getElementById(result.handle);
+        let prevColor =
+          getComputedStyle(card).backgroundColor;
         card.animate([{
           backgroundColor: '#009688'
         },{
-          backgroundColor: 'white'
+          backgroundColor: prevColor
         }], {
           duration: 2000,
           easing: 'ease-out'

@@ -75,6 +75,10 @@
   padding-top: 8px;
 }
 
+.mdl-switch {
+	 width: auto;
+}
+
 .login-card.mdl-card {
   width: 350px;
   height: 350px;
