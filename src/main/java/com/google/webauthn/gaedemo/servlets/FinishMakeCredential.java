@@ -14,6 +14,15 @@
 
 package com.google.webauthn.gaedemo.servlets;
 
+import java.io.IOException;
+import java.security.KeyPair;
+import java.util.Map;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.base.Splitter;
@@ -24,18 +33,17 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
+import com.google.webauthn.gaedemo.objects.AttestationExtension;
 import com.google.webauthn.gaedemo.objects.AuthenticatorAttestationResponse;
+import com.google.webauthn.gaedemo.objects.CablePairingData;
+import com.google.webauthn.gaedemo.objects.CableRegistrationData;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredential;
 import com.google.webauthn.gaedemo.server.AndroidSafetyNetServer;
 import com.google.webauthn.gaedemo.server.PackedServer;
 import com.google.webauthn.gaedemo.server.PublicKeyCredentialResponse;
 import com.google.webauthn.gaedemo.server.U2fServer;
+import com.google.webauthn.gaedemo.storage.CableKeyPair;
 import com.google.webauthn.gaedemo.storage.Credential;
-import java.io.IOException;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 public class FinishMakeCredential extends HttpServlet {
 
@@ -51,7 +59,8 @@ public class FinishMakeCredential extends HttpServlet {
   }
 
   @Override
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+  protected void doPost(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
     String currentUser = userService.getCurrentUser().getEmail();
     String data = request.getParameter("data");
     String session = request.getParameter("session");
@@ -59,6 +68,7 @@ public class FinishMakeCredential extends HttpServlet {
     String credentialId = null;
     String type = null;
     JsonElement makeCredentialResponse = null;
+    CablePairingData cablePairingData = null;
 
     try {
       JsonObject json = new JsonParser().parse(data).getAsJsonObject();
@@ -83,13 +93,27 @@ public class FinishMakeCredential extends HttpServlet {
     try {
       attestation = new AuthenticatorAttestationResponse(makeCredentialResponse);
     } catch (ResponseException e) {
-      throw new ServletException(e.toString());
+      throw new ServletException(e);
+    }
+
+    if (attestation.getAttestationObject().getAuthenticatorData().hasExtensionData()) {
+      Map<String, AttestationExtension> extensionMap =
+          attestation.getAttestationObject().getAuthenticatorData().getExtensionData();
+      if (extensionMap.containsKey(CableRegistrationData.KEY)) {
+        CableRegistrationData cableData =
+            (CableRegistrationData) extensionMap.get(CableRegistrationData.KEY);
+
+        // Get key pair generated during the StartMakeCredential operation
+        KeyPair sessionKeyPair = CableKeyPair.get(Long.valueOf(session));
+
+        cablePairingData = CablePairingData.generatePairingData(cableData, sessionKeyPair);
+      }
     }
 
     // Recoding of credential ID is needed, because the ID from HTTP servlet request doesn't support
     // padding.
-    String credentialIdRecoded = BaseEncoding.base64Url().encode(
-        BaseEncoding.base64Url().decode(credentialId));
+    String credentialIdRecoded =
+        BaseEncoding.base64Url().encode(BaseEncoding.base64Url().decode(credentialId));
 
     PublicKeyCredential cred = new PublicKeyCredential(credentialIdRecoded, type,
         BaseEncoding.base64Url().decode(credentialId), attestation);
@@ -111,6 +135,9 @@ public class FinishMakeCredential extends HttpServlet {
     }
 
     Credential credential = new Credential(cred);
+    if (cablePairingData != null) {
+      credential.setCablePairingData(cablePairingData);
+    }
     credential.save(currentUser);
 
     PublicKeyCredentialResponse rsp =

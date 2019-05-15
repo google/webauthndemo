@@ -143,7 +143,6 @@ function fetchCredentials() {
     for (let i in response) {
       let { handle, base64handle, publicKey, name, date, id } = response[i];
       const trimmedHandle = base64handle.replace(/=/g, '');
-      console.log(trimmedHandle);
       onClick(`#delete${i}`, removeCredential(id));
       onCheck(`#switch-${trimmedHandle}`, brightenCard(handle), dimCard(handle));
     }
@@ -305,8 +304,13 @@ function makeCredential(advancedOptions) {
     }
     if ('extensions' in options) {
       makeCredentialOptions.extensions = options.extensions;
+      if (makeCredentialOptions.extensions.cableRegistration) {
+        makeCredentialOptions.extensions.cableRegistration.rpPublicKey =
+          strToBin(makeCredentialOptions.extensions.cableRegistration.rpPublicKey);
+      }
     }
 
+    console.log('sending attestation request:');
     console.log(makeCredentialOptions);
 
     return navigator.credentials.create({
@@ -315,6 +319,8 @@ function makeCredential(advancedOptions) {
 
   }).then(attestation => {
     hide('#active');
+    console.log('received attestation response:');
+    console.log(attestation);
 
     const publicKeyCredential = {};
 
@@ -334,6 +340,11 @@ function makeCredential(advancedOptions) {
     const response = {};
     response.clientDataJSON = binToStr(attestation.response.clientDataJSON);
     response.attestationObject = binToStr(attestation.response.attestationObject);
+
+    // Check for included extensions
+    if (attestation.getClientExtensionResults) {
+      publicKeyCredential.extensions = attestation.getClientExtensionResults();
+    }
 
     // Check if transports are included in the registration response.
     if (attestation.response.getTransports) {
@@ -408,15 +419,33 @@ function getAssertion() {
     if ($('#userVerification').value != "none") {
       requestOptions.userVerification = $('#userVerification').value;
     }
+    if ('extensions' in parameters) {
+      requestOptions.extensions = {};
+      let cableData = [];
+      if ('cableAuthentication' in parameters.extensions) {
+        for (cableElement of parameters.extensions.cableAuthentication){
+          let cableExtension = {
+              'version': cableElement.version,
+              'clientEid': strToBin(cableElement.clientEid),
+              'authenticatorEid': strToBin(cableElement.authenticatorEid),
+              'sessionPreKey': strToBin(cableElement.sessionPreKey),
+          };
+          cableData.push(cableExtension);
+        }
+        requestOptions.extensions['cableAuthentication'] = cableData;
+      }
+    }
 
+    console.log('sending assertion request:');
     console.log(requestOptions);
-
     return navigator.credentials.get({
       "publicKey": requestOptions
     });
 
   }).then(assertion => {
     hide('#active');
+    console.log('received assertion response:');
+    console.log(assertion);
 
     const publicKeyCredential = {};
 

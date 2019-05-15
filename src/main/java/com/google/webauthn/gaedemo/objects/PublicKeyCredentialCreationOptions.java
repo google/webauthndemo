@@ -36,7 +36,7 @@ public class PublicKeyCredentialCreationOptions {
   ArrayList<PublicKeyCredentialDescriptor> excludeCredentials;
   protected AuthenticatorSelectionCriteria authenticatorSelection;
   protected AttestationConveyancePreference attestation;
-  protected AuthenticationExtensions extensions;
+  protected AuthenticationExtensionsClientInputs extensions;
 
   /**
    * 
@@ -83,7 +83,7 @@ public class PublicKeyCredentialCreationOptions {
     extensions = null;
   }
 
-  public void setExtensions(AuthenticationExtensions extensions) {
+  public void setExtensions(AuthenticationExtensionsClientInputs extensions) {
     this.extensions = extensions;
   }
 

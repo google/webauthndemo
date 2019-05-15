@@ -16,13 +16,19 @@ package com.google.webauthn.gaedemo.objects;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Ints;
 import com.google.webauthn.gaedemo.exceptions.ResponseException;
 
+import co.nstant.in.cbor.CborDecoder;
 import co.nstant.in.cbor.CborException;
+import co.nstant.in.cbor.model.DataItem;
+import co.nstant.in.cbor.model.Map;
+import co.nstant.in.cbor.model.UnicodeString;
 
 public class AuthenticatorData {
   private byte[] rpIdHash;
@@ -106,6 +112,13 @@ public class AuthenticatorData {
   }
 
   /**
+   * @return the Attestation extensions
+   */
+  public HashMap<String, AttestationExtension> getExtensionData() {
+    return parseExtensions(this.extensions);
+  }
+
+  /**
    * @return the signCount
    */
   public int getSignCount() {
@@ -167,6 +180,36 @@ public class AuthenticatorData {
     }
 
     return new AuthenticatorData(rpIdHash, flags, signCount, attData, extensions);
+  }
+
+  /**
+   * Parse Attestation extensions
+   * @return extension map
+   */
+  private HashMap<String, AttestationExtension> parseExtensions(byte[] extensions) {
+    HashMap<String, AttestationExtension> extensionMap = new HashMap<>();
+
+    try {
+      List<DataItem> dataItems = CborDecoder.decode(extensions);
+
+      if (dataItems.size() < 1 || !(dataItems.get(0) instanceof Map)) {
+        return extensionMap;
+      }
+      Map map = (Map) dataItems.get(0);
+
+      for (DataItem data : map.getKeys()) {
+        if (data instanceof UnicodeString) {
+          if (((UnicodeString) data).getString().equals(CableRegistrationData.KEY)) {
+            CableRegistrationData decodedCableData =
+                CableRegistrationData.parseFromCbor(map.get(data));
+            extensionMap.put(CableRegistrationData.KEY, decodedCableData);
+          }
+        }
+      }
+    } catch (CborException e) {
+      e.printStackTrace();
+    }
+    return extensionMap;
   }
 
   /**

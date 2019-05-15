@@ -4,4 +4,8 @@
     source="manual">
     <property name="created" direction="asc" />
   </datastore-index>
+  <datastore-index kind="CableKeyPair" ancestor="true"
+    source="manual">
+    <property name="created" direction="asc" />
+  </datastore-index>
 </datastore-indexes>
