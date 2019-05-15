@@ -16,7 +16,6 @@ package com.google.webauthn.gaedemo.objects;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.io.BaseEncoding;
@@ -37,7 +36,7 @@ public class PublicKeyCredentialRequestOptions {
   public String rpId;
   protected ArrayList<PublicKeyCredentialDescriptor> allowCredentials;
   protected UserVerificationRequirement userVerification;
-  AuthenticationExtensions extensions;
+  AuthenticationExtensionsClientInputs extensions;
   
 
   /**
@@ -104,7 +103,7 @@ public class PublicKeyCredentialRequestOptions {
       CablePairingData cablePairingData = c.getCablePairingData();
       if (cablePairingData != null) {
         if (extensions == null) {
-          extensions = new AuthenticationExtensions();
+          extensions = new AuthenticationExtensionsClientInputs();
         }
         extensions.addCableSessionData(cableCrypto.generateSessionData(cablePairingData));
       }

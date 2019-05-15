@@ -28,8 +28,8 @@ public class CollectedClientData {
   String origin;
   String hashAlgorithm;
   String tokenBindingId;
-  AuthenticationExtensions clientExtensions;
-  AuthenticationExtensions authenticatorExtensions;
+  AuthenticationExtensionsClientInputs clientExtensions;
+  AuthenticationExtensionsClientInputs authenticatorExtensions;
 
 
   CollectedClientData() {}
@@ -96,11 +96,11 @@ public class CollectedClientData {
     return type;
   }
 
-  public AuthenticationExtensions getClientExtensions() {
+  public AuthenticationExtensionsClientInputs getClientExtensions() {
     return clientExtensions;
   }
 
-  public AuthenticationExtensions getAuthenticatorExtensions() {
+  public AuthenticationExtensionsClientInputs getAuthenticatorExtensions() {
     return authenticatorExtensions;
   }
 

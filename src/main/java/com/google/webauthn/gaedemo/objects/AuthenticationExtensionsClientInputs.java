@@ -14,20 +14,25 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import com.google.gson.Gson;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import java.security.KeyPair;
+import java.security.interfaces.ECPublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AuthenticationExtensions {
+import com.google.common.io.BaseEncoding;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.webauthn.gaedemo.crypto.Crypto;
 
+public class AuthenticationExtensionsClientInputs {
   public List<CableSessionData> cableAuthentication;
-
-  public static AuthenticationExtensions parse(String parameter) {
+  public KeyPair rpPublicKey;
+  JsonObject registrationExtensions;
+  
+  public static AuthenticationExtensionsClientInputs parse(String parameter) {
     Gson gson = new Gson();
-    return gson.fromJson(parameter, AuthenticationExtensions.class);
+    return gson.fromJson(parameter, AuthenticationExtensionsClientInputs.class);
   }
 
   public void addCableSessionData(CableSessionData cableSessionData) {
@@ -47,6 +52,27 @@ public class AuthenticationExtensions {
       result.add("cableAuthentication", cableSessionDatas);
     }
     return result;
+  }
+
+  public KeyPair addCableRegistrationData() {
+    if (registrationExtensions == null) {
+      registrationExtensions = new JsonObject();
+    }
+    KeyPair keyPair = Crypto.generateKeyPair();
+    JsonObject cableRegistration = new JsonObject();
+    JsonArray versionArray = new JsonArray();
+    versionArray.add(1L);
+    cableRegistration.add("versions", versionArray);
+
+    cableRegistration.addProperty("rpPublicKey", BaseEncoding.base64()
+        .encode(Crypto.compressECPublicKey((ECPublicKey) keyPair.getPublic())));
+    registrationExtensions.add("cableRegistration", cableRegistration);
+
+    return keyPair;
+  }
+
+  public JsonObject getRegistrationExtensions() {
+    return registrationExtensions;
   }
 
 }

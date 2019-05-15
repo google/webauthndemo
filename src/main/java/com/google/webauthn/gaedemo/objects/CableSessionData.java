@@ -42,9 +42,9 @@ public class CableSessionData {
   public JsonObject getJsonObject() {
     JsonObject result = new JsonObject();
     result.addProperty("version", version);
-    result.addProperty("clientEid", HEX.encode(clientEid));
-    result.addProperty("authenticatorEid", HEX.encode(authenticatorEid));
-    result.addProperty("sessionPreKey", HEX.encode(sessionPreKey));
+    result.addProperty("clientEid", BaseEncoding.base64().encode(clientEid));
+    result.addProperty("authenticatorEid", BaseEncoding.base64().encode(authenticatorEid));
+    result.addProperty("sessionPreKey", BaseEncoding.base64().encode(sessionPreKey));
     return result;
   }
 

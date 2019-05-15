@@ -92,6 +92,13 @@ public class SessionData {
     this.id = stored.getId();
   }
 
+  /**
+   * @return the id
+   */
+  public long getId() {
+    return id;
+  }
+
   private static List<Entity> loadEntities(String currentUser) {
     Key userKey = KeyFactory.createKey(User.KIND, currentUser);
 
