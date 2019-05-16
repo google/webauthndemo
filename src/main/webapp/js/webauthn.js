@@ -312,7 +312,16 @@ function makeCredential(advancedOptions) {
 
     console.log('sending attestation request:');
     console.log(makeCredentialOptions);
-
+  
+    if ($('#abortTimeout').value != '') {
+      authAbortController = new AbortController();
+      authAbortSignal = authAbortController.signal;
+      setTimeout(function(){ authAbortController.abort(); }, $('#abortTimeout').value);
+      return navigator.credentials.create({
+        "publicKey": makeCredentialOptions,
+        "signal": authAbortSignal
+      });
+    }
     return navigator.credentials.create({
       "publicKey": makeCredentialOptions
     });
@@ -321,6 +330,10 @@ function makeCredential(advancedOptions) {
     hide('#active');
     console.log('received attestation response:');
     console.log(attestation);
+
+    if ($('#abortTimeout').value != '') {
+      clearTimeout();
+    }
 
     const publicKeyCredential = {};
 
@@ -438,12 +451,28 @@ function getAssertion() {
 
     console.log('sending assertion request:');
     console.log(requestOptions);
+
+    if ($('#abortTimeout').value != '') {
+      authAbortController = new AbortController();
+      authAbortSignal = authAbortController.signal;
+      setTimeout(function(){ authAbortController.abort(); }, $('#abortTimeout').value);
+      return navigator.credentials.get({
+        "publicKey": requestOptions,
+        "signal": authAbortSignal
+      });
+    }
+
     return navigator.credentials.get({
       "publicKey": requestOptions
     });
 
   }).then(assertion => {
     hide('#active');
+
+    if ($('#abortTimeout').value != '') {
+      clearTimeout();
+    }
+
     console.log('received assertion response:');
     console.log(assertion);
 
