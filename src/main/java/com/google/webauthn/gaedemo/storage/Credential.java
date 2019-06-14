@@ -40,6 +40,7 @@ public class Credential {
   private PublicKeyCredential credential;
 
   private CablePairingData cablePairingData;
+  private String userVerificationMethod;
 
   public Credential() {
     signCount = 0;
@@ -126,5 +127,17 @@ public class Credential {
 
   public boolean hasCablePairingData() {
     return cablePairingData != null;
+  }
+
+  public void setUserVerificationMethod(String userVerificationMethod) {
+    this.userVerificationMethod = userVerificationMethod;
+  }
+
+  public boolean hasUserVerificationMethod() {
+    return userVerificationMethod != null;
+  }
+
+  public String getUserVerificationMethod() {
+    return userVerificationMethod;
   }
 }

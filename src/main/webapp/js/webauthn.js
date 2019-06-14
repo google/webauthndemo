@@ -97,7 +97,7 @@ function fetchCredentials() {
   _fetch('/RegisteredKeys').then(response => {
     let credentials = '';
     for (let i in response) {
-      let { handle, base64handle, publicKey, name, date, id, transports } = response[i];
+      let { handle, base64handle, publicKey, name, date, id, transports, userVerificationMethod } = response[i];
       const trimmedHandle = base64handle.replace(/=/g, '');
       let buttonId = `delete${i}`;
       credentials +=
@@ -114,6 +114,11 @@ function fetchCredentials() {
              <div class="mdl-card__supporting-text">${publicKey}</div>
              <div class="mdl-card__subtitle-text">Key Handle</div>
              <div class="mdl-card__supporting-text">${handle}</div>`;
+      if (userVerificationMethod) {
+        credentials +=
+            `<div class="mdl-card__subtitle-text">User Verification Method</div>
+             <div class="mdl-card__supporting-text">${userVerificationMethod}</div>`;
+      }
       if (transports) {
         credentials +=
           `<div class="mdl-card__subtitle-text">Transports</div>
@@ -234,6 +239,18 @@ function credentialListConversion(list) {
   });
 }
 
+function serializeUvm(uvm) {
+  var uvmJson = new Array();
+  for (var i = 0; i < uvm.length; i ++) {
+    const uvmEntry = {};
+    uvmEntry.userVerificationMethod = uvm[i][0];
+    uvmEntry.keyProtectionType = uvm[i][1];
+    uvmEntry.atchuvmJsonerProtectionType = uvm[i][2];
+    uvmJson.push(uvmEntry);
+  }
+  return uvmJson;
+}
+
 function registerNewCredential() {
   const advancedOptions = {};
   if (isChecked('#switch-rk')) {
@@ -309,10 +326,13 @@ function makeCredential(advancedOptions) {
           strToBin(makeCredentialOptions.extensions.cableRegistration.rpPublicKey);
       }
     }
+    if (isChecked('#switch-uvm')) {
+      makeCredentialOptions.extensions.uvm = true;
+    }
 
     console.log('sending attestation request:');
     console.log(makeCredentialOptions);
-  
+
     if ($('#abortTimeout').value != '') {
       authAbortController = new AbortController();
       authAbortSignal = authAbortController.signal;
@@ -357,6 +377,9 @@ function makeCredential(advancedOptions) {
     // Check for included extensions
     if (attestation.getClientExtensionResults) {
       publicKeyCredential.extensions = attestation.getClientExtensionResults();
+      if (attestation.getClientExtensionResults().uvm != null) {
+        publicKeyCredential.uvm = serializeUvm(attestation.getClientExtensionResults().uvm);
+      }
     }
 
     // Check if transports are included in the registration response.
@@ -449,6 +472,13 @@ function getAssertion() {
       }
     }
 
+    if (isChecked('#switch-uvm')) {
+      if (requestOptions.extensions == null) {
+        requestOptions.extensions = {};
+      }
+      requestOptions.extensions.uvm = true;
+    }
+
     console.log('sending assertion request:');
     console.log(requestOptions);
 
@@ -490,6 +520,11 @@ function getAssertion() {
     if (!assertion.response) {
       throw "Get assertion response lacking 'response' attribute";
     }
+    if (assertion.getClientExtensionResults) {
+      if (assertion.getClientExtensionResults().uvm != null) {
+        publicKeyCredential.uvm = serializeUvm(assertion.getClientExtensionResults().uvm);
+      }
+    }
 
     const _response = assertion.response;
 
@@ -511,6 +546,7 @@ function getAssertion() {
     if (result && result.success) {
       showSuccessMsg(result.message);
       if ('handle' in result) {
+        setTimeout(function(){ fetchCredentials(); }, 2000);
         let card = document.getElementById(result.handle);
         let prevColor =
           getComputedStyle(card).backgroundColor;
