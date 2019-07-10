@@ -87,6 +87,12 @@
           </select>
         </div>
         <div class="mdl-list__item">
+          <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="switch-uvm">
+            <input type="checkbox" id="switch-uvm" class="mdl-checkbox__input">
+            <span class="mdl-checkbox__label">User Verification Method</span>
+          </label>
+        </div>
+        <div class="mdl-list__item">
           <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
             <input class="mdl-textfield__input" type="text" pattern="-?[0-9]*(\.[0-9]+)?" id="customTimeout">
             <label class="mdl-textfield__label" for="customTimeout">Timeout (milliseconds)</label>

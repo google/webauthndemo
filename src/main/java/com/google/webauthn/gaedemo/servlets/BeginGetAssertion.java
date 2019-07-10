@@ -19,6 +19,7 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.gson.JsonObject;
+import com.google.webauthn.gaedemo.objects.AuthenticationExtensionsClientInputs;
 import com.google.webauthn.gaedemo.objects.PublicKeyCredentialRequestOptions;
 import com.google.webauthn.gaedemo.storage.SessionData;
 import java.io.IOException;
