@@ -58,7 +58,9 @@ public class PublicKeyCredentialCreationOptions {
     pubKeyCredParams = new ArrayList<PublicKeyCredentialParameters>();
     excludeCredentials = new ArrayList<PublicKeyCredentialDescriptor>();
     rp = new PublicKeyCredentialRpEntity(rpId, rpName, null);
-    user = new PublicKeyCredentialUserEntity(userName, userId.getBytes(StandardCharsets.UTF_8));
+    byte[] userIdBytes = new byte[32];
+    random.nextBytes(userIdBytes);
+    user = new PublicKeyCredentialUserEntity(userName, userIdBytes);
 
     challenge = new byte[CHALLENGE_LENGTH];
     random.nextBytes(challenge);
