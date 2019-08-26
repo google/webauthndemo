@@ -72,6 +72,9 @@ public class RegisteredKeys extends HttpServlet {
       cJson.addProperty("date", c.getDate().toString());
       cJson.addProperty("id", c.id);
       cJson.addProperty("hasCable", c.hasCablePairingData());
+      if (c.hasUserVerificationMethod()) {
+        cJson.addProperty("userVerificationMethod", c.getUserVerificationMethod());
+      }
       if (((AuthenticatorAttestationResponse) c.getCredential().getResponse()).getTransports() != null) {
          JsonArray transportList = new JsonArray();
          for (String transport : ((AuthenticatorAttestationResponse) c.getCredential().getResponse()).getTransports()) {

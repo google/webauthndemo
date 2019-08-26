@@ -79,6 +79,17 @@
 	 width: auto;
 }
 
+.mdl-checkbox{
+  word-wrap:break-word;
+  word-break: keep-all;
+  height: auto;
+}
+
+.mdl-textfield__input{
+  padding: 5px;
+
+}
+
 .login-card.mdl-card {
   width: 350px;
   height: 350px;
