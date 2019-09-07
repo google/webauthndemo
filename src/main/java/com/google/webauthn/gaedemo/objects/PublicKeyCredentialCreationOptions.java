@@ -14,7 +14,6 @@
 
 package com.google.webauthn.gaedemo.objects;
 
-import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collection;

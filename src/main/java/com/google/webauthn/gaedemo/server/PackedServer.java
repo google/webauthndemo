@@ -73,13 +73,6 @@ public class PackedServer extends Server {
       throw new ServletException("U2f-capable key not provided");
     }
 
-
-
-    // if (Integer.compareUnsigned(assertionResponse.getAuthenticatorData().getSignCount(),
-    // savedCredential.getSignCount()) <= 0) {
-    // throw new ServletException("Sign count invalid");
-    // }
-
     savedCredential.updateSignCount(assertionResponse.getAuthenticatorData().getSignCount());
 
     Log.info("Signature verified");

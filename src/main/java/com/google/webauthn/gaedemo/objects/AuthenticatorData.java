@@ -44,8 +44,7 @@ public class AuthenticatorData {
    * @param signCount
    * @param attData
    */
-  public AuthenticatorData(byte[] rpIdHash, byte flags, int signCount, AttestationData attData,
-      byte[] extensions) {
+  public AuthenticatorData(byte[] rpIdHash, byte flags, int signCount, AttestationData attData, byte[] extensions) {
     this.rpIdHash = rpIdHash;
     this.flags = flags;
     this.signCount = signCount;
@@ -59,7 +58,6 @@ public class AuthenticatorData {
     this.extensions = null;
   }
 
-
   AuthenticatorData(byte[] rpIdHash, byte flags, int signCount) {
     this.rpIdHash = rpIdHash;
     this.flags = flags;
@@ -67,7 +65,6 @@ public class AuthenticatorData {
     this.attData = null;
     this.extensions = null;
   }
-
 
   /**
    * @return the rpIdHash
@@ -147,8 +144,7 @@ public class AuthenticatorData {
     System.arraycopy(authData, 0, rpIdHash, 0, 32);
     index += 32;
     byte flags = authData[index++];
-    int signCount =
-        Ints.fromBytes(authData[index++], authData[index++], authData[index++], authData[index++]);
+    int signCount = Ints.fromBytes(authData[index++], authData[index++], authData[index++], authData[index++]);
 
     int definedIndex = index;
 
@@ -184,6 +180,7 @@ public class AuthenticatorData {
 
   /**
    * Parse Attestation extensions
+   * 
    * @return extension map
    */
   private HashMap<String, AttestationExtension> parseExtensions(byte[] extensions) {
@@ -200,8 +197,7 @@ public class AuthenticatorData {
       for (DataItem data : map.getKeys()) {
         if (data instanceof UnicodeString) {
           if (((UnicodeString) data).getString().equals(CableRegistrationData.KEY)) {
-            CableRegistrationData decodedCableData =
-                CableRegistrationData.parseFromCbor(map.get(data));
+            CableRegistrationData decodedCableData = CableRegistrationData.parseFromCbor(map.get(data));
             extensionMap.put(CableRegistrationData.KEY, decodedCableData);
           }
         }
@@ -217,7 +213,7 @@ public class AuthenticatorData {
    * @throws CborException
    */
   public byte[] encode() throws CborException {
-    byte[] flags = {this.flags};
+    byte[] flags = { this.flags };
     byte[] signCount = ByteBuffer.allocate(4).putInt(this.signCount).array();
     byte[] result;
     if (this.attData != null) {
@@ -234,36 +230,16 @@ public class AuthenticatorData {
 
   @Override
   public int hashCode() {
-    return Objects.hash(Arrays.hashCode(rpIdHash), flags, signCount, attData,
-        Arrays.hashCode(extensions));
+    return Objects.hash(Arrays.hashCode(rpIdHash), flags, signCount, attData, Arrays.hashCode(extensions));
   }
 
   @Override
   public boolean equals(Object obj) {
     try {
-      if (!(obj instanceof AuthenticatorData)) {
-        return false;
-      }
-      AuthenticatorData other = (AuthenticatorData) obj;
-      if (flags != other.flags) {
-        return false;
-      }
-      if (!Arrays.equals(other.rpIdHash, rpIdHash)) {
-        return false;
-      }
-      if (Integer.compareUnsigned(signCount, other.signCount) != 0) {
-        return false;
-      }
-      if (attData == null && other.attData == null) {
-        return true;
-      }
-      if (attData.equals(other.attData)) {
-        return true;
-      }
-    } catch (NullPointerException e) {
+      return Arrays.equals(encode(), ((AuthenticatorData) obj).encode());
+    } catch (CborException | ClassCastException e) {
       return false;
     }
-    return false;
   }
 
 }

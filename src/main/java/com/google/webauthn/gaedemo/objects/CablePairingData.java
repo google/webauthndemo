@@ -40,6 +40,11 @@ public class CablePairingData {
 
   public CablePairingData() {}
 
+  /**
+   * @param cableData
+   * @param sessionKeyPair
+   * @return
+   */
   public static CablePairingData generatePairingData(CableRegistrationData cableData,
       KeyPair sessionKeyPair) {
     byte[] sharedSecret = Crypto.getS(sessionKeyPair.getPrivate(), cableData.publicKey);

@@ -60,7 +60,13 @@ public class FinishGetAssertion extends HttpServlet {
       throws ServletException, IOException {
     String currentUser = userService.getCurrentUser().getEmail();
     String data = request.getParameter("data");
+    if (data == null) {
+      data = "";
+    }
     String session = request.getParameter("session");
+    if (session == null) {
+      session = "";
+    }
 
     String credentialId = null;
     String type = null;
@@ -129,18 +135,6 @@ public class FinishGetAssertion extends HttpServlet {
     } catch (ResponseException e) {
       throw new ServletException("Unable to validate assertion", e);
     }
-
-    // switch (savedCredential.getCredential().getAttestationType()) {
-    // case FIDOU2F:
-    // U2fServer.verifyAssertion(cred, currentUser, session, savedCredential);
-    // break;
-    // case ANDROIDSAFETYNET:
-    // AndroidSafetyNetServer.verifyAssertion(cred, currentUser, session, savedCredential);
-    // break;
-    // case PACKED:
-    // PackedServer.verifyAssertion(cred, currentUser, session, savedCredential);
-    // break;
-    // }
 
     Server.verifyAssertion(cred, currentUser, session, savedCredential);
     savedCredential.setUserVerificationMethod(uvm);

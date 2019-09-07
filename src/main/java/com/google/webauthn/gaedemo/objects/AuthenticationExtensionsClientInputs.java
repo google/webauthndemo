@@ -30,11 +30,19 @@ public class AuthenticationExtensionsClientInputs {
   public KeyPair rpPublicKey;
   JsonObject registrationExtensions;
   
+  /**
+   * @param parameter
+   * @return
+   */
   public static AuthenticationExtensionsClientInputs parse(String parameter) {
     Gson gson = new Gson();
     return gson.fromJson(parameter, AuthenticationExtensionsClientInputs.class);
   }
 
+  /**
+   * Add Cable Session Data extension.
+   * @param cableSessionData
+   */
   public void addCableSessionData(CableSessionData cableSessionData) {
     if (cableAuthentication == null) {
       cableAuthentication = new ArrayList<>();
@@ -42,6 +50,9 @@ public class AuthenticationExtensionsClientInputs {
     cableAuthentication.add(cableSessionData);
   }
 
+  /**
+   * @return JSONObject formatted extension object.
+   */
   public JsonObject getJsonObject() {
     JsonObject result = new JsonObject();
     if (cableAuthentication != null) {
@@ -54,6 +65,10 @@ public class AuthenticationExtensionsClientInputs {
     return result;
   }
 
+  /**
+   * Add cable registration data extension.
+   * @return
+   */
   public KeyPair addCableRegistrationData() {
     if (registrationExtensions == null) {
       registrationExtensions = new JsonObject();
@@ -71,6 +86,9 @@ public class AuthenticationExtensionsClientInputs {
     return keyPair;
   }
 
+  /**
+   * @return registration extensions.
+   */
   public JsonObject getRegistrationExtensions() {
     return registrationExtensions;
   }

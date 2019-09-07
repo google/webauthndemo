@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.google.webauthn.gaedemo.storage;
+package com.google.webauthn.gaedemo.objects;
 
 public enum Attachment {
   PLATFORM("platform"), CROSS_PLATFORM("cross-platform");

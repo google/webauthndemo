@@ -66,7 +66,13 @@ public class FinishMakeCredential extends HttpServlet {
       throws ServletException, IOException {
     String currentUser = userService.getCurrentUser().getEmail();
     String data = request.getParameter("data");
+    if (data == null) {
+      data = "";
+    }
     String session = request.getParameter("session");
+    if (session == null) {
+      session = "";
+    }
 
     String credentialId = null;
     String type = null;

@@ -41,6 +41,12 @@ public class AuthenticatorAttestationResponse extends AuthenticatorResponse {
    */
   public AuthenticatorAttestationResponse() {}
 
+  /**
+   * Create AuthenticatorAttestationResponse from member objects.
+   * @param clientDataJSON
+   * @param attestationObject
+   * @throws ResponseException
+   */
   public AuthenticatorAttestationResponse(String clientDataJSON, String attestationObject)
       throws ResponseException {
     clientData = CollectedClientData.decode(clientDataJSON);

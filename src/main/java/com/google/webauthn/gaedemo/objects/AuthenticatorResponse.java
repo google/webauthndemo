@@ -16,8 +16,6 @@ package com.google.webauthn.gaedemo.objects;
 
 public class AuthenticatorResponse {
   protected CollectedClientData clientData;
-
-  // Temporary until fix clientData ordering issue.
   protected byte[] clientDataBytes;
 
   /**

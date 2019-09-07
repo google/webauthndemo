@@ -112,35 +112,9 @@ public class CollectedClientData {
 
   @Override
   public boolean equals(Object obj) {
-    try {
-      if (!(obj instanceof CollectedClientData)) {
-        return false;
-      }
-      CollectedClientData other = (CollectedClientData) obj;
-      if (!getChallenge().equals(other.challenge)) {
-        return false;
-      }
-      if (!getOrigin().equals(other.origin)) {
-        return false;
-      }
-      if (!getHashAlg().equals(other.hashAlgorithm)) {
-        return false;
-      }
-      if (!getTokenBinding().equals(other.tokenBindingId)) {
-        return false;
-      }
-      if (!getType().equals(other.type)) {
-        return false;
-      }
-      if (!getClientExtensions().equals(other.clientExtensions)) {
-        return false;
-      }
-      if (getAuthenticatorExtensions().equals(other.authenticatorExtensions)) {
-        return false;
-      }
-      return true;
-    } catch (NullPointerException e) {
+    if (!(obj instanceof CollectedClientData)) {
       return false;
     }
+    return encode().equals(((CollectedClientData)obj).encode());
   }
 }

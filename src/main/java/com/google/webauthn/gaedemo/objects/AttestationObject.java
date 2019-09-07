@@ -62,16 +62,19 @@ public class AttestationObject {
       Map attObjMap = (Map) dataItems.get(0);
       for (DataItem key : attObjMap.getKeys()) {
         if (key instanceof UnicodeString) {
-          if (((UnicodeString) key).getString().equals("fmt")) {
-            UnicodeString value = (UnicodeString) attObjMap.get(key);
-            result.fmt = value.getString();
-          }
-          if (((UnicodeString) key).getString().equals("authData")) {
-            byte[] authData = ((ByteString) attObjMap.get(key)).getBytes();
-            result.authData = AuthenticatorData.decode(authData);
-          }
-          if (((UnicodeString) key).getString().equals("attStmt")) {
-            attStmt = attObjMap.get(key);
+          switch(((UnicodeString) key).getString()) {
+            case "fmt":
+              UnicodeString value = (UnicodeString) attObjMap.get(key);
+              result.fmt = value.getString();
+              break;
+            case "authData":
+              byte[] authData = ((ByteString) attObjMap.get(key)).getBytes();
+              result.authData = AuthenticatorData.decode(authData);
+              break;
+            case "attStmt":
+              attStmt = attObjMap.get(key);
+              break;
+              
           }
         }
       }

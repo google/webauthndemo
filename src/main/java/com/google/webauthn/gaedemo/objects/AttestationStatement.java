@@ -26,21 +26,19 @@ public abstract class AttestationStatement {
    * @return Attestation statement of provided format
    */
   public static AttestationStatement decode(String fmt, DataItem attStmt) {
-    if (fmt.equals("fido-u2f")) {
-      FidoU2fAttestationStatement stmt = FidoU2fAttestationStatement.decode(attStmt);
-      return stmt;
-    } else if (fmt.equals("android-safetynet")) {
-      AndroidSafetyNetAttestationStatement stmt;
-      try {
-        stmt = AndroidSafetyNetAttestationStatement.decode(attStmt);
-      } catch (ResponseException e) {
-        return null;
-      }
-      return stmt;
-    } else if (fmt.equals("packed")) {
-      return PackedAttestationStatement.decode(attStmt);
-    } else if (fmt.equals("none")) {
-      return new NoneAttestationStatement();
+    switch (fmt) {
+      case "fido-u2f":
+        return FidoU2fAttestationStatement.decode(attStmt);
+      case "packed":
+        return PackedAttestationStatement.decode(attStmt);
+      case "android-safetynet":
+        try {
+          return AndroidSafetyNetAttestationStatement.decode(attStmt);
+        } catch (ResponseException e) {
+          break;
+        }
+      case "none":
+        return new NoneAttestationStatement();
     }
 
     return null;
@@ -53,6 +51,5 @@ public abstract class AttestationStatement {
   abstract DataItem encode() throws CborException;
 
   public abstract String getName();
-
 
 }

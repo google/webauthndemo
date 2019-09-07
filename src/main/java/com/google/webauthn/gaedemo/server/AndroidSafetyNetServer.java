@@ -88,7 +88,6 @@ public class AndroidSafetyNetServer extends Server {
       byte[] expectedNonce = Crypto.sha256Digest(Bytes.concat(
           attResponse.getAttestationObject().getAuthenticatorData().encode(), clientDataHash));
       if (!Arrays.equals(expectedNonce, stmt.getNonce())) {
-        // TODO(cpiper) Remove this hack.
         expectedNonce = Bytes.concat(
             attResponse.getAttestationObject().getAuthenticatorData().encode(), clientDataHash);
         if (!Arrays.equals(expectedNonce, stmt.getNonce())) {

@@ -99,7 +99,6 @@ public class U2fServer extends Server {
             signedBytes, assertionResponse.getSignature())) {
           throw new ServletException("Signature invalid");
         }
-        //
       }
     } catch (WebAuthnException e) {
       throw new ServletException("Failure while verifying signature");

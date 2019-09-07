@@ -22,8 +22,6 @@ import java.util.Objects;
 
 public class CableSessionData {
 
-  private static final BaseEncoding HEX = BaseEncoding.base16();
-
   public int version;
   public byte[] clientEid;
   public byte[] authenticatorEid;

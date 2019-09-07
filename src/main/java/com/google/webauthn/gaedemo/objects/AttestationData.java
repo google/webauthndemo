@@ -36,9 +36,9 @@ public class AttestationData {
   }
 
   /**
-   * @param aaguid Authenticator Attestation GUID
+   * @param aaguid       Authenticator Attestation GUID
    * @param credentialId Credential ID
-   * @param publicKey CredentialPublicKey
+   * @param publicKey    CredentialPublicKey
    */
   public AttestationData(byte[] aaguid, byte[] credentialId, CredentialPublicKey publicKey) {
     this.aaguid = aaguid;
@@ -47,7 +47,7 @@ public class AttestationData {
   }
 
   /**
-   * Decodes the input byte array into the AttestationData object
+   * Decodes the input byte array into the AttestationData object.
    * 
    * @param data
    * @return AttestationData object created from the byte sequence
@@ -56,13 +56,19 @@ public class AttestationData {
    */
   public static AttestationData decode(byte[] data) throws ResponseException, CborException {
     AttestationData result = new AttestationData();
+    // The attested credential data is formatted as follows:
+    // [16 bytes] AAGUID
+    // [2 bytes] Credential ID length (L)
+    // [L bytes] Credential ID
+    // [Remaining bytes] Credential (COSE) Public Key
     int index = 0;
-    if (data.length < 18)
+    if (data.length < 18) {
       throw new ResponseException("Invalid input");
+    }
     System.arraycopy(data, 0, result.aaguid, 0, 16);
     index += 16;
 
-    int length = (data[index++] << 8) & 0xFF;
+    int length = (data[index++] & 0xFF) << 8;
     length += data[index++] & 0xFF;
 
     result.credentialId = new byte[length];
@@ -81,8 +87,7 @@ public class AttestationData {
    * @throws CborException
    */
   public byte[] encode() throws CborException {
-    return Bytes.concat(aaguid,
-        ByteBuffer.allocate(2).putShort((short) credentialId.length).array(), credentialId,
+    return Bytes.concat(aaguid, ByteBuffer.allocate(2).putShort((short) credentialId.length).array(), credentialId,
         publicKey.encode());
   }
 
@@ -92,25 +97,11 @@ public class AttestationData {
   @Override
   public boolean equals(Object obj) {
     try {
-      if (!(obj instanceof AttestationData)) {
-        return false;
-      }
       AttestationData other = (AttestationData) obj;
-      if (!Arrays.equals(other.aaguid, aaguid)) {
-        return false;
-      }
-      if (!Arrays.equals(credentialId, other.credentialId)) {
-        return false;
-      }
-      if ((publicKey == null && other.publicKey == null)) {
-        return true;
-      } else if (publicKey.equals(other.publicKey)) {
-        return true;
-      }
-    } catch (NullPointerException e) {
+      return Arrays.equals(encode(), other.encode());
+    } catch (NullPointerException | CborException | ClassCastException e) {
       return false;
     }
-    return false;
   }
 
   @Override
