@@ -175,6 +175,10 @@ public class PackedServer extends Server {
             .getPublicKey() instanceof EccKey) {
           publicKey = Crypto.getECPublicKey((EccKey) attResponse.decodedObject
               .getAuthenticatorData().getAttData().getPublicKey());
+        } else if (attResponse.decodedObject.getAuthenticatorData().getAttData()
+                .getPublicKey() instanceof RsaKey){
+          publicKey = Crypto.getRSAPublicKey((RsaKey) attResponse.decodedObject
+                  .getAuthenticatorData().getAttData().getPublicKey());
         } else {
           throw new ServletException("Public Key not supported");
         }
