@@ -12,7 +12,7 @@
   <!-- [START set_versions] -->
   <properties>
     <appengine.app.version>1</appengine.app.version>
-    <appengine.sdk.version>1.9.73</appengine.sdk.version>
+    <appengine.sdk.version>1.9.79</appengine.sdk.version>
 
     <objectify.version>5.1.22</objectify.version>
     <guava.version>27.1-jre</guava.version>
