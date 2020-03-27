@@ -1,6 +1,6 @@
 language: java
 jdk:
-  - openjdk11
+  - openjdk8
   - openjdk10
 before_script:
 - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then openssl aes-256-cbc -K $encrypted_abed99774422_key
@@ -9,4 +9,4 @@ before_script:
 # Don't deploy if a pull request or non oracljdk8 build
 script:
 - mvn test -B
-- 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ "${TRAVIS_JDK_VERSION}" = "openjdk11" ]; then mvn appengine:update -Dappengine.additionalParams="--service_account_json_key_file=client-secret.json"; else printf "Not deploying\nPull request: $TRAVIS_PULL_REQUEST\nJDK version: $TRAVIS_JDK_VERSION"; fi'
+- 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ "${TRAVIS_JDK_VERSION}" = "openjdk8" ]; then mvn appengine:update -Dappengine.additionalParams="--service_account_json_key_file=client-secret.json"; else printf "Not deploying\nPull request: $TRAVIS_PULL_REQUEST\nJDK version: $TRAVIS_JDK_VERSION"; fi'
