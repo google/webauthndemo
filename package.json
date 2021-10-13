@@ -1,0 +1,64 @@
+{
+  "name": "webauthndemo",
+  "version": "2.0.0",
+  "description": "An example JavaScript Relying Party implementation of the WebAuthn specification.",
+  "main": "src/server.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "rimraf ./dist",
+    "build": "npm run clean && rollup -c && tsc --project ./src/tsconfig.json",
+    "start": "node dist/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/google/webauthndemo.git"
+  },
+  "keywords": [
+    "WebAuthn",
+    "FIDO2"
+  ],
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/google/webauthndemo/issues"
+  },
+  "homepage": "https://github.com/google/webauthndemo#readme",
+  "dependencies": {
+    "@material/mwc-button": "^0.25.2",
+    "@material/mwc-checkbox": "^0.25.2",
+    "@material/mwc-dialog": "^0.25.2",
+    "@material/mwc-drawer": "^0.25.2",
+    "@material/mwc-formfield": "^0.25.2",
+    "@material/mwc-icon-button": "^0.25.2",
+    "@material/mwc-linear-progress": "^0.25.2",
+    "@material/mwc-list": "^0.25.2",
+    "@material/mwc-select": "^0.25.2",
+    "@material/mwc-snackbar": "^0.25.2",
+    "@material/mwc-textfield": "^0.25.2",
+    "@material/mwc-top-app-bar-fixed": "^0.25.2",
+    "@simplewebauthn/server": "^4.2.0",
+    "express": "^4.17.1",
+    "express-handlebars": "^5.3.4",
+    "express-validator": "^6.13.0",
+    "lit": "^2.0.2"
+  },
+  "devDependencies": {
+    "@material/card": "^13.0.0",
+    "@material/mwc-switch": "^0.25.2",
+    "@rollup/plugin-commonjs": "^21.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.5",
+    "@rollup/plugin-typescript": "^8.2.5",
+    "@simplewebauthn/typescript-types": "^4.0.0",
+    "@types/express": "^4.17.13",
+    "@types/express-handlebars": "^5.3.1",
+    "@types/node": "^16.10.3",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.58.0",
+    "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "^1.4.0",
+    "rollup-plugin-scss": "^3.0.0",
+    "sass": "^1.42.1",
+    "typescript": "^4.4.3"
+  }
+}

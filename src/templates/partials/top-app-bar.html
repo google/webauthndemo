@@ -1,0 +1,43 @@
+<mwc-top-app-bar-fixed>
+  <mwc-icon-button id="menu" slot="navigationIcon" icon="menu"></mwc-icon-button>
+  <span slot="title">WebAuthn Demo</span>
+  <div id="header-buttons" class="flex-horizontal">
+    <ul class="list-right">
+      <li>
+        <mwc-button
+          id="isuvpaa-button"
+          slot="actionItems"
+          raised
+          title="Calls IsUserVerifyingPlatformAuthenticatorAvailable. Returns &quot;true&quot; if the device supports an internal authenticator, and &quot;false&quot; if the device does not. (E.g., fingerprints on Android or TouchID on MacOS)">
+          isUVPAA</mwc-button>
+      </li>
+      <li>
+        <mwc-button
+          id="platform-button"
+          slot="actionItems"
+          icon="fingerprint"
+          raised
+          title="A convenience method to register an internal authenticator. This is equivalent to calling MakeCredential with AttachmentType=Platform">
+          Register platform authenticator</mwc-button>
+      </li>
+      <li>
+        <mwc-button
+          id="credential-button"
+          slot="actionItems"
+          icon="key"
+          raised
+          title="Calls MakeCredential to register a new credential from a FIDO device">
+          Register new credential</mwc-button>
+      </li>
+      <li>
+        <mwc-button
+          id="authenticate-button"
+          slot="actionItems"
+          icon="login"
+          raised
+          title="Calls GetAssertion to request an assertion from a previously-registered FIDO device">
+          Authenticate</mwc-button>
+      </li>
+    </ul>
+  </div>
+</mwc-top-app-bar-fixed>

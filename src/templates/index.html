@@ -1,0 +1,47 @@
+<mwc-drawer id="drawer" hasHeader type="dismissible">
+  {{> sidebar this}}
+  <div slot="appContent" class="app-content">
+    {{> top-app-bar this}}
+    <mwc-linear-progress id="progress"></mwc-linear-progress>
+    <main class="flex-layout">
+      <div class="flex-content">
+        <div id="credentials">
+          <div class="mdc-card mdc-card--outlined">
+            <div class="mdc-card__primary-action">
+              <div class="">
+                <div class="">${handle}</div>
+              </div>
+              <mwc-formfield label="${name}">
+                <mwc-switch id="switch-${trimmedHandle}" checked></mwc-switch>  
+              </mwc-formfield>
+              <dt>Enrolled ${date}</dt>
+              <dt>Public Key</dt>
+              <dd>${publicKey}</dd>
+              <dt>Key Handle</dt>
+              <dd>${handle}</dd>
+              <dt>User Verification Method</dt>
+              <dd>${userVerificationMethod}</dd>
+              <dt>Transports</dt>
+              <dd>
+                <mwc-formfield label="${transport}">
+                  <mwc-checkbox id="${transport}${trimmedHandle}" value="${transport}${trimmedHandle}" checked></mwc-checkbox>
+                </mwc-formfield>
+              </dd>
+              <div class="mdc-card__ripple"></div>
+            </div>
+            <div class="mdc-card__actions">
+              <div class="mdc-card__action-buttons">
+                <mwc-button id="${buttonId}"
+                  icon="delete_forever"
+                  title="Removes this credential registration from the server">
+                  Remove
+                </mwc-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {{> footer this}}
+    </main>
+  </div>
+</mwc-drawer>

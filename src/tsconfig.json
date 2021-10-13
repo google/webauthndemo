@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "commonjs",
+    "lib": [ "ESNext", "DOM" ],
+    "outDir": "../dist",
+    "sourceMap": true,
+    "strict": true,
+    "allowJs": true,
+    "checkJs": true,
+    "noUnusedLocals": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": false,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
+  },
+  "typeRoots": [
+    "../node_modules/@types"
+  ],
+  "exclude": [
+    "./public"
+  ]
+}

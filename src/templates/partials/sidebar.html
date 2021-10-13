@@ -1,0 +1,62 @@
+<span slot="title">WebAuthn Demo</span>
+<span slot="subtitle">Advanced Options</span>
+<div class="advanced-option">
+  <mwc-formfield label="Prevent Preregistration">
+    <mwc-checkbox id="switch-rr"></mwc-checkbox>
+  </mwc-formfield>
+</div>
+<div class="advanced-option">
+  <mwc-select id="attachment" label="Attachment Type" outlined>
+    <mwc-list-item value="none" selected>N/A</mwc-list-item>
+    <mwc-list-item value="platform">Platform</mwc-list-item>
+    <mwc-list-item value="cross-platform">Cross-Platform</mwc-list-item>
+  </mwc-select>
+</div>
+<div class="advanced-option">
+  <mwc-select id="conveyance" label="Conveyance Preference" outlined>
+    <mwc-list-item value="NA" selected>N/A</mwc-list-item>
+    <mwc-list-item value="none">None</mwc-list-item>
+    <mwc-list-item value="indirect">Indirect</mwc-list-item>
+    <mwc-list-item value="direct">Direct</mwc-list-item>
+  </mwc-select>
+</div>
+<div class="advanced-option">
+  <mwc-select id="residentKey" label="Resident key" outlined>
+    <mwc-list-item vlaue="none" selected>None</mwc-list-item>
+    <mwc-list-item vlaue="required">Required</mwc-list-item>
+    <mwc-list-item value="preferred">Preferred</mwc-list-item>
+    <mwc-list-item value="discouraged">Discouraged</mwc-list-item>
+  </mwc-select>
+</div>
+<div class="advanced-option">
+  <mwc-select id="userVerification" label="User Verification" outlined>
+    <mwc-list-item value="none" selected>None</mwc-list-item>
+    <mwc-list-item value="required">Required</mwc-list-item>
+    <mwc-list-item value="preferred">Preferred</mwc-list-item>
+    <mwc-list-item value="discouraged">Discouraged</mwc-list-item>
+  </mwc-select>
+</div>
+<div class="advanced-option">
+  <mwc-formfield label="User Verification Method">
+    <mwc-checkbox id="switch-uvm"></mwc-checkbox>
+  </mwc-formfield>
+</div>
+<div class="advanced-option">
+  <mwc-textfield
+    id="customTimeout"
+    label="Timeout (miliseconds)"
+    validationMessage="Input is not a number!"
+    pattern="-?[0-9]*(\.[0-9]+)?"
+    outlined></mwc-textfield>
+</div>
+<div class="advanced-option">
+  <mwc-textfield
+    id="abortTimeout"
+    label="AbortTimeout (miliseconds)"
+    validationMessage="Input is not a number!"
+    pattern="-?[0-9]*(\.[0-9]+)?"
+    outlined></mwc-textfield>
+</div>
+<mwc-list-item>
+  <a href="${logoutUrl}">Logout</a>
+</mwc-list-item>
