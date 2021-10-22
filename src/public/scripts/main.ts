@@ -55,8 +55,8 @@ const collectOptions = (): WebAuthnRequestObject => {
   const residentKey = $('#resident-key').value;
   const userVerification = $('#user-verification').value;
   const uvm = $('#switch-uvm').checked;
-  const customTimeout = $('#custom-timeout').value;
-  const abortTimeout = $('#abort-timeout').value;
+  const customTimeout = parseInt($('#custom-timeout').value);
+  // const abortTimeout = parseInt($('#abort-timeout').value);
 
   const options = {
     attestation,
@@ -69,12 +69,16 @@ const collectOptions = (): WebAuthnRequestObject => {
     excludeCredentials,
     emptyAllowCredentials,
     customTimeout,
-    abortTimeout,
+    // abortTimeout,
   } as WebAuthnRequestObject;
 
-  console.log(options);
-
   return options;
+}
+
+const rippleCard = (credID: string) => {
+  const ripple = new MDCRipple($(`#ID-${credID}`));
+  ripple.activate();
+  ripple.deactivate();
 }
 
 function serializeUvm(uvms: any) {
@@ -163,6 +167,8 @@ const registerCredential = async (opts: WebAuthnRequestObject): Promise<any> => 
     excludeCredentials,
   } as PublicKeyCredentialCreationOptions;
 
+  console.log('[CreationOptions]', decodedOptions);
+
   const credential = await navigator.credentials.create({
     publicKey: decodedOptions
   }) as RegistrationCredential;
@@ -198,6 +204,8 @@ const registerCredential = async (opts: WebAuthnRequestObject): Promise<any> => 
     clientExtensionResults, 
   } as RegistrationCredentialJSON;
 
+  console.log('[AttestationCredential]', encodedCredential);
+
   await _fetch('/webauthn/registerResponse', encodedCredential);
 };
 
@@ -219,6 +227,8 @@ const authenticate = async (opts: WebAuthnRequestObject): Promise<any> => {
     allowCredentials,
     challenge,
   } as PublicKeyCredentialRequestOptions;
+
+  console.log('[RequestOptions]', decodedOptions);
 
   const credential = await navigator.credentials.get({
     publicKey: decodedOptions
@@ -243,6 +253,8 @@ const authenticate = async (opts: WebAuthnRequestObject): Promise<any> => {
     type: credential.type,
     clientExtensionResults: [],
   } as AuthenticationCredentialJSON;
+
+  console.log('[AssertionCredential]', encodedCredential);
 
   return _fetch('/webauthn/authResponse', encodedCredential);
 };
@@ -307,6 +319,9 @@ const signout = async () => {
   displaySignin();
 };
 
+/**
+ * Invoked when Firebase Auth status is changed.
+ */
 onAuthStateChanged(auth, user => {
   if (user) {
     // Signed in
@@ -317,8 +332,33 @@ onAuthStateChanged(auth, user => {
   }
 });
 
-$('#signout').addEventListener('click', signout);
-$('#credential-button').addEventListener('click', async (): Promise<void> => {
+/**
+ * Determine whether
+ * `PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()`
+ * function is available.
+ */
+const onISUVPAA = async (): Promise<void> => {
+  if (window.PublicKeyCredential) {
+    if (PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
+      const result = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      if (result) {
+        showSnackbar('User Verifying Platform Authenticator is *available*.');
+      } else {
+        showSnackbar('User Verifying Platform Authenticator is not available.');
+      }
+    } else {
+      showSnackbar('IUVPAA function is not available.');
+    }
+  } else {
+    showSnackbar('PublicKeyCredential is not availlable.');
+  }
+}
+
+/**
+ * On "Register New Credential" button click, invoke `registerCredential()`
+ * function to register a new credential with advanced options.
+ */
+const onRegisterNewCredential = async (): Promise<void> => {
   loading.start();
   const opts = collectOptions();
   try {
@@ -331,20 +371,52 @@ $('#credential-button').addEventListener('click', async (): Promise<void> => {
   } finally {
     loading.stop();
   }
-});
+};
 
-$('#authenticate-button').addEventListener('click', async (): Promise<void> => {
+/**
+ * On "Register Platform Authenticator" button click, invoke
+ * `registerCredential()` function to register a new credential with advanced
+ * options overridden by `authenticatorAttachment == 'platform'` and
+ * `userVerification = 'required'`.
+ */
+const onRegisterPlatformAuthenticator = async (): Promise<void> => {
+  loading.start();
+  const opts = collectOptions();
+  opts.authenticatorSelection.authenticatorAttachment = 'platform';
+  opts.authenticatorSelection.userVerification = 'required';
+  try {
+    await registerCredential(opts);
+    showSnackbar('A credential successfully registered!');
+    listCredentials();
+  } catch (e: any) {
+    console.error(e);
+    showSnackbar('Registering a credential failed');
+  } finally {
+    loading.stop();
+  }
+};
+
+/**
+ * On "Authenticate" button click, invoke `authenticate()` function to
+ * authenticate the user.
+ */
+const onAuthenticate = async (): Promise<void> => {
   loading.start();
   const opts = collectOptions();
   try {
     const credential = await authenticate(opts);
+    rippleCard(credential.credentialID);
     showSnackbar('Authentication succeeded!');
-    const ripple = new MDCRipple($(`#ID-${credential.credentialID} .mdc-card__ripple`));
-    ripple.activate();
   } catch (e: any) {
     console.error(e);
     showSnackbar('Authentication failed');
   } finally {
     loading.stop();
   }
-});
+};
+
+$('#signout').addEventListener('click', signout);
+$('#isuvpaa-button').addEventListener('click', onISUVPAA);
+$('#credential-button').addEventListener('click', onRegisterNewCredential);
+$('#platform-button').addEventListener('click', onRegisterPlatformAuthenticator);
+$('#authenticate-button').addEventListener('click', onAuthenticate);

@@ -12,12 +12,14 @@
 </div>
 <div class="advanced-option">
   <mwc-select id="attachment" label="Attachment Type" outlined>
+    <mwc-list-item selected></mwc-list-item>
     <mwc-list-item value="platform">Platform</mwc-list-item>
     <mwc-list-item value="cross-platform">Cross-Platform</mwc-list-item>
   </mwc-select>
 </div>
 <div class="advanced-option">
   <mwc-select id="conveyance" label="Conveyance Preference" outlined>
+    <mwc-list-item selected></mwc-list-item>
     <mwc-list-item value="none">None</mwc-list-item>
     <mwc-list-item value="indirect">Indirect</mwc-list-item>
     <mwc-list-item value="direct">Direct</mwc-list-item>
@@ -26,6 +28,7 @@
 </div>
 <div class="advanced-option">
   <mwc-select id="resident-key" label="Discoverable Credential" outlined>
+    <mwc-list-item selected></mwc-list-item>
     <mwc-list-item value="required">Required</mwc-list-item>
     <mwc-list-item value="preferred">Preferred</mwc-list-item>
     <mwc-list-item value="discouraged">Discouraged</mwc-list-item>
@@ -33,6 +36,7 @@
 </div>
 <div class="advanced-option">
   <mwc-select id="user-verification" label="User Verification" outlined>
+    <mwc-list-item selected></mwc-list-item>
     <mwc-list-item value="required">Required</mwc-list-item>
     <mwc-list-item value="preferred">Preferred</mwc-list-item>
     <mwc-list-item value="discouraged">Discouraged</mwc-list-item>
@@ -51,13 +55,13 @@
     pattern="-?[0-9]*(\.[0-9]+)?"
     outlined></mwc-textfield>
 </div>
-<div class="advanced-option">
+<!-- <div class="advanced-option">
   <mwc-textfield
     id="abort-timeout"
     label="AbortTimeout (miliseconds)"
     validationMessage="Input is not a number!"
     pattern="-?[0-9]*(\.[0-9]+)?"
-    outlined></mwc-textfield>
+    outlined></mwc-textfield> -->
 </div>
 <mwc-list-item>
   <span id="signout">Logout</span>

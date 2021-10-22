@@ -17,6 +17,25 @@ import {
   AuthenticationCredentialJSON,
 } from '@simplewebauthn/typescript-types';
 
+interface WebAuthnRequestObject {
+  attestation: AttestationConveyancePreference
+  authenticatorSelection: {
+    authenticatorAttachment: AuthenticatorAttachment
+    userVerification: UserVerificationRequirement
+    residentKey: ResidentKeyRequirement
+  },
+  extensions: {
+    uvm?: boolean
+    appId?: boolean
+    appidExclude?: string
+    credProps?: boolean
+  }
+  excludeCredentials: boolean
+  emptyAllowCredentials: boolean
+  customTimeout?: number
+  abortTimeout?: number
+}
+
 const router = express.Router();
 
 router.use(csrfCheck);
@@ -149,7 +168,7 @@ router.post('/registerRequest', authzAPI, async (
     // Unlikely exception
     if (!process.env.HOSTNAME) throw 'HOSTNAME not configured as an environment variable.';
 
-    const creationOptions = <PublicKeyCredentialCreationOptions>req.body || {};
+    const creationOptions = <WebAuthnRequestObject>req.body || {};
 
     const excludeCredentials: PublicKeyCredentialDescriptor[] = [];
     if (creationOptions.excludeCredentials) {
@@ -201,13 +220,14 @@ router.post('/registerRequest', authzAPI, async (
 
     // TODO: Validate
     const extensions = creationOptions.extensions;
+    const timeout = creationOptions.customTimeout || WEBAUTHN_TIMEOUT;
 
     const options = generateRegistrationOptions({
       rpName: RP_NAME,
       rpID: process.env.HOSTNAME,
       userID: user.user_id,
       userName: user.name || 'Unnamed User',
-      timeout: WEBAUTHN_TIMEOUT,
+      timeout,
       // Prompt users for additional information about the authenticator.
       attestationType: attestation,
       // Prevent users from re-registering existing authenticators
@@ -350,10 +370,10 @@ router.post('/authRequest', authzAPI, async (
     const user = res.locals.user;
 
     const credId = req.query.credId;
-    // TODO: Define expected type
-    const requestOptions = req.body;
+    const requestOptions = <WebAuthnRequestObject>req.body;
 
-    const userVerification = requestOptions.userVerification || 'preferred';
+    const userVerification = requestOptions.authenticatorSelection.userVerification || 'preferred';
+    const timeout = requestOptions.customTimeout || WEBAUTHN_TIMEOUT;
     const allowCredentials: PublicKeyCredentialDescriptor[] = [];
 
     if (!requestOptions.emptyAllowCredentials) {
@@ -371,7 +391,7 @@ router.post('/authRequest', authzAPI, async (
     }
 
     const options = generateAuthenticationOptions({
-      timeout: WEBAUTHN_TIMEOUT,
+      timeout,
       allowCredentials,
       userVerification,
     });
