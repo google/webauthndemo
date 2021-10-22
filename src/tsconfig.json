@@ -12,6 +12,7 @@
     "noImplicitReturns": true,
     "noImplicitThis": false,
     "moduleResolution": "node",
+    "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
   },

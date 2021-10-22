@@ -1,21 +1,20 @@
 import express, { Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
 import base64url from 'base64url';
-import { User, UserManager, StoredCredential } from '../libs/user';
-import { getNow, csrfCheck, authzAPI, SESSION_REQUIREMENT } from '../libs/helper';
+import { getNow, csrfCheck, authzAPI } from '../libs/helper';
+import { getCredentials, removeCredential, storeCredential } from './credential';
 import {
-  generateAttestationOptions,
-  verifyAttestationResponse,
-  generateAssertionOptions,
-  verifyAssertionResponse,
+  generateRegistrationOptions,
+  verifyRegistrationResponse,
+  generateAuthenticationOptions,
+  verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
 import {
   AttestationConveyancePreference,
   PublicKeyCredentialDescriptor,
   PublicKeyCredentialParameters,
   AuthenticatorDevice,
-  AttestationCredentialJSON,
-  AssertionCredentialJSON,
+  RegistrationCredentialJSON,
+  AuthenticationCredentialJSON,
 } from '@simplewebauthn/typescript-types';
 
 const router = express.Router();
@@ -28,67 +27,75 @@ const WEBAUTHN_TIMEOUT = 1000 * 60 * 5; // 5 minutes
 /**
  * Returns a list of credentials
  **/
-router.post('/getKeys', authzAPI(SESSION_REQUIREMENT.RECENT), (
+router.post('/getCredentials', authzAPI, async (
   req: Request,
   res: Response
-): void => {
-  if (!res.locals.user) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return;
+): Promise<void> => {
+  if (!res.locals.user) throw 'Unauthorized.';
+
+  const user = res.locals.user;
+
+  try {
+    const credentials = await getCredentials(user.user_id);
+    res.json(credentials);
+  } catch (e) {
+    res.status(401).json({
+      status: false,
+      error: 'Unauthorized'
+    });
   }
-  res.json(res.locals.user.credentials);
 });
 
-router.post('/renameKey',
-  authzAPI(SESSION_REQUIREMENT.RECENT),
-  body('deviceName').isLength({ min: 3, max: 30 }),
-  async (
-    req: Request,
-    res: Response
-  ): Promise<void> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.sendStatus(400).json({ status: false, error: 'Invalid device name.' });
-      return;
-    }
+// router.post('/renameCredential',
+//   authzAPI,
+//   body('deviceName').isLength({ min: 3, max: 30 }),
+//   async (
+//     req: Request,
+//     res: Response
+//   ): Promise<void> => {
+//     const errors = validationResult(req);
+//     if (!errors.isEmpty()) {
+//       res.sendStatus(400).json({ status: false, error: 'Invalid device name.' });
+//       return;
+//     }
 
-    const user = <User>res.locals.user;
-    const { credId, deviceName } = req.body;
+//     const user = <User>res.locals.user;
+//     const { credId, deviceName } = req.body;
 
-    // Find the credential with the same credential ID
-    const cred = user?.credentials.find(cred => cred.credentialID === credId);
+//     // Find the credential with the same credential ID
+//     const cred = user?.credentials.find(cred => cred.credentialID === credId);
 
-    if (user && cred) {
-      // Update the credential's device name.
-      cred.deviceName = deviceName;
-      UserManager.saveUser(user);
-    }
-    res.json({ status: true });
-  }
-);
+//     if (user && cred) {
+//       // Update the credential's device name.
+//       cred.deviceName = deviceName;
+//       UserManager.saveUser(user);
+//     }
+//     res.json({ status: true });
+//   }
+// );
 
 /**
  * Removes a credential id attached to the user
  * Responds with empty JSON `{}`
  **/
-router.post('/removeKey', authzAPI(SESSION_REQUIREMENT.RECENT), async (
+router.post('/removeCredential', authzAPI, async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  // Unlikely exception
   if (!res.locals.user) throw 'Unauthorized.';
 
-  const user = <User>res.locals.user;
+  const { credId } = req.body;
 
-  const newCreds = user.credentials.filter((cred) => {
-    // Leave credential ids that do not match
-    return cred.credentialID !== req.query.credId;
-  });
-
-  user.credentials = newCreds;
-  await UserManager.saveUser(user);
-
-  res.json({ status: true });
+  try {
+    await removeCredential(credId);
+    res.json({
+      status: true
+    });
+  } catch (e) {
+    res.status(400).json({
+      status: false
+    });
+  }
 });
 
 // router.get('/resetDB', (req, res) => {
@@ -129,32 +136,26 @@ router.post('/removeKey', authzAPI(SESSION_REQUIREMENT.RECENT), async (
      attestation: ('none'|'indirect'|'direct')
  * }```
  **/
-router.post('/registerRequest',
-  authzAPI(SESSION_REQUIREMENT.RECENT),
-  body('deviceName').isLength({ min: 3, max: 30 }),
-  async (
-    req: Request,
-    res: Response
-  ): Promise<void> => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        throw 'Invalid device name.';
-      }
+router.post('/registerRequest', authzAPI, async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    // Unlikely exception
+    if (!res.locals.user) throw 'Unauthorized.';
 
-      // Unlikely exception
-      if (!res.locals.user) throw 'Unauthorized.';
+    const user = res.locals.user;
 
-      // Unlikely exception
-      if (!process.env.HOSTNAME) throw 'HOSTNAME not configured as an environment variable.';
+    // Unlikely exception
+    if (!process.env.HOSTNAME) throw 'HOSTNAME not configured as an environment variable.';
 
-      const user = <User>res.locals.user;
-      const creationOptions = <PublicKeyCredentialCreationOptions>req.body || {};
-      const deviceName = req.body.deviceName;
+    const creationOptions = <PublicKeyCredentialCreationOptions>req.body || {};
 
-      const excludeCredentials: PublicKeyCredentialDescriptor[] = [];
-      if (user.credentials.length > 0) {
-        for (let cred of user.credentials) {
+    const excludeCredentials: PublicKeyCredentialDescriptor[] = [];
+    if (creationOptions.excludeCredentials) {
+      const credentials = await getCredentials(user.user_id);
+      if (credentials.length > 0) {
+        for (let cred of credentials) {
           excludeCredentials.push({
             id: base64url.toBuffer(cred.credentialID),
             type: 'public-key',
@@ -162,72 +163,68 @@ router.post('/registerRequest',
           });
         }
       }
-      const pubKeyCredParams: PublicKeyCredentialParameters[] = [];
-      // const params = [-7, -35, -36, -257, -258, -259, -37, -38, -39, -8];
-      const params = [-7, -257];
-      for (let param of params) {
-        pubKeyCredParams.push({ type: 'public-key', alg: param });
-      }
-      const as: AuthenticatorSelectionCriteria = {}; // authenticatorSelection
-      const aa = creationOptions.authenticatorSelection?.authenticatorAttachment;
-      const rk = creationOptions.authenticatorSelection?.residentKey;
-      const rr = creationOptions.authenticatorSelection?.requireResidentKey;
-      const uv = creationOptions.authenticatorSelection?.userVerification;
-      const cp = creationOptions.attestation; // attestationConveyancePreference
-      let asFlag = false;
-      let authenticatorSelection;
-      let attestation: AttestationConveyancePreference = 'none';
-
-      if (aa && (aa == 'platform' || aa == 'cross-platform')) {
-        asFlag = true;
-        as.authenticatorAttachment = aa;
-      }
-      if (rk && (rk == 'required' || rk == 'preferred' || rk == 'discouraged')) {
-        asFlag = true;
-        as.residentKey = rk;
-      }
-      if (rr && typeof rr == 'boolean') {
-        asFlag = true;
-        as.requireResidentKey = rr;
-      }
-      if (uv && (uv == 'required' || uv == 'preferred' || uv == 'discouraged')) {
-        asFlag = true;
-        as.userVerification = uv;
-      }
-      if (asFlag) {
-        authenticatorSelection = as;
-      }
-      if (cp && (cp == 'none' || cp == 'indirect' || cp == 'direct')) {
-        attestation = cp;
-      }
-
-      const options = generateAttestationOptions({
-        rpName: RP_NAME,
-        rpID: process.env.HOSTNAME,
-        userID: user.id,
-        userName: user.username || 'Unnamed User',
-        timeout: WEBAUTHN_TIMEOUT,
-        // Prompt users for additional information about the authenticator.
-        attestationType: attestation,
-        // Prevent users from re-registering existing authenticators
-        excludeCredentials,
-        authenticatorSelection,
-      });
-
-      // TODO: Are you sure using AuthenticationSession is a good idea?
-      req.session.enrollment = {
-        username: user.username,
-        expires_on: getNow() + WEBAUTHN_TIMEOUT,
-        challenge: options.challenge,
-        device: deviceName,
-      };
-
-      res.json(options);
-    } catch (e) {
-      res.status(400).send({ status: false, error: e });
     }
+    const pubKeyCredParams: PublicKeyCredentialParameters[] = [];
+    // const params = [-7, -35, -36, -257, -258, -259, -37, -38, -39, -8];
+    const params = [-7, -257];
+    for (let param of params) {
+      pubKeyCredParams.push({ type: 'public-key', alg: param });
+    }
+    const as: AuthenticatorSelectionCriteria = {}; // authenticatorSelection
+    const aa = creationOptions.authenticatorSelection?.authenticatorAttachment;
+    const rk = creationOptions.authenticatorSelection?.residentKey;
+    const uv = creationOptions.authenticatorSelection?.userVerification;
+    const cp = creationOptions.attestation; // attestationConveyancePreference
+    let asFlag = false;
+    let authenticatorSelection;
+    let attestation: AttestationConveyancePreference = 'none';
+
+    if (aa && (aa == 'platform' || aa == 'cross-platform')) {
+      asFlag = true;
+      as.authenticatorAttachment = aa;
+    }
+    if (rk && (rk == 'required' || rk == 'preferred' || rk == 'discouraged')) {
+      asFlag = true;
+      as.residentKey = rk;
+      as.requireResidentKey = (rk == 'required');
+    }
+    if (uv && (uv == 'required' || uv == 'preferred' || uv == 'discouraged')) {
+      asFlag = true;
+      as.userVerification = uv;
+    }
+    if (asFlag) {
+      authenticatorSelection = as;
+    }
+    if (cp && (cp == 'none' || cp == 'indirect' || cp == 'direct')) {
+      attestation = cp;
+    }
+
+    // TODO: Validate
+    const extensions = creationOptions.extensions;
+
+    const options = generateRegistrationOptions({
+      rpName: RP_NAME,
+      rpID: process.env.HOSTNAME,
+      userID: user.user_id,
+      userName: user.name || 'Unnamed User',
+      timeout: WEBAUTHN_TIMEOUT,
+      // Prompt users for additional information about the authenticator.
+      attestationType: attestation,
+      // Prevent users from re-registering existing authenticators
+      excludeCredentials,
+      authenticatorSelection,
+      extensions,
+    });
+
+    // TODO: Are you sure using AuthenticationSession is a good idea?
+    req.session.challenge = options.challenge;
+    req.session.timeout = getNow() + WEBAUTHN_TIMEOUT;
+
+    res.json(options);
+  } catch (e) {
+    res.status(400).send({ status: false, error: e });
   }
-);
+});
 
 /**
  * Register user credential.
@@ -244,7 +241,7 @@ router.post('/registerRequest',
      }
  * }```
  **/
-router.post('/registerResponse', authzAPI(SESSION_REQUIREMENT.RECENT), async (
+router.post('/registerResponse', authzAPI, async (
   req: Request,
   res: Response
 ) => {
@@ -252,17 +249,16 @@ router.post('/registerResponse', authzAPI(SESSION_REQUIREMENT.RECENT), async (
     // Unlikely exception
     if (!res.locals.user) throw 'Unauthorized.';
 
-    if (!req.session.enrollment) throw 'No enrollment session.';
+    if (!req.session.challenge) throw 'No challenge found.';
 
     // Unlikely exception
     if (!process.env.HOSTNAME) throw 'HOSTNAME not configured as an environment variable.';
     if (!process.env.ORIGIN) throw 'ORIGIN not configured as an environment variable.';
 
-    const user = <User>res.locals.user;
-    const credential = <AttestationCredentialJSON>req.body;
+    const user = res.locals.user;
+    const credential = <RegistrationCredentialJSON>req.body;
 
-    const expectedChallenge = req.session.enrollment.challenge;
-    const deviceName = req.session.enrollment.device;
+    const expectedChallenge = req.session.challenge;
     const expectedRPID = process.env.HOSTNAME;
 
     let expectedOrigin = '';
@@ -282,50 +278,48 @@ router.post('/registerResponse', authzAPI(SESSION_REQUIREMENT.RECENT), async (
       expectedOrigin = process.env.ORIGIN;
     }
 
-    const verification = await verifyAttestationResponse({
+    const verification = await verifyRegistrationResponse({
       credential,
       expectedChallenge,
       expectedOrigin,
       expectedRPID,
     });
 
-    const { verified, attestationInfo } = verification;
+    const { verified, registrationInfo } = verification;
 
-    if (!verified || !attestationInfo) {
+    if (!verified || !registrationInfo) {
       throw 'User verification failed.';
     }
 
-    const { credentialPublicKey, credentialID, counter } = attestationInfo;
+    const { credentialPublicKey, credentialID, counter } = registrationInfo;
     const base64PublicKey = base64url.encode(credentialPublicKey);
     const base64CredentialID = base64url.encode(credentialID);
     const { transports } = credential;
 
-    const existingCred = user.credentials.find(
-      cred => cred.credentialID === base64CredentialID,
-    );
+    const existingCred = await getCredentials(base64CredentialID)
 
-    if (!existingCred) {
-      /**
+    if (existingCred.length === 0) {
+      /*
        * Add the returned device to the user's list of devices
        */
-      user.credentials.push({
-        deviceName,
+      await storeCredential({
+        user_id: user.user_id,
         credentialPublicKey: base64PublicKey,
         credentialID: base64CredentialID,
         counter,
         transports,
         registered: getNow(),
-      } as StoredCredential);
+      });
     }
 
-    await UserManager.saveUser(user);
-
-    delete req.session.enrollment;
+    delete req.session.challenge;
+    delete req.session.timeout;
 
     // Respond with user info
-    res.json(user.credentials);
-  } catch (e) {
-    delete req.session.enrollment;
+    res.json(credential);
+  } catch (e: any) {
+    delete req.session.challenge;
+    delete req.session.timeout;
 
     res.status(400).send({ status: false, error: e.message });
   }
@@ -345,7 +339,7 @@ router.post('/registerResponse', authzAPI(SESSION_REQUIREMENT.RECENT), async (
      }, ...]
  * }```
  **/
-router.post('/reauthRequest', authzAPI(SESSION_REQUIREMENT.AUTH), async (
+router.post('/authRequest', authzAPI, async (
   req: Request,
   res: Response
 ) => {
@@ -353,36 +347,37 @@ router.post('/reauthRequest', authzAPI(SESSION_REQUIREMENT.AUTH), async (
   if (!res.locals.user) throw 'Unauthorized.';
 
   try {
-    const user = <User>res.locals.user;
+    const user = res.locals.user;
 
     const credId = req.query.credId;
-    const requestOptions = <PublicKeyCredentialRequestOptions>req.body;
+    // TODO: Define expected type
+    const requestOptions = req.body;
 
-    const userVerification = requestOptions.userVerification || 'required';
-
+    const userVerification = requestOptions.userVerification || 'preferred';
     const allowCredentials: PublicKeyCredentialDescriptor[] = [];
-    for (let cred of user.credentials) {
-      // When credId is not specified, or matches the one specified
-      if (!credId || cred.credentialID == credId) {
-        allowCredentials.push({
-          id: base64url.toBuffer(cred.credentialID),
-          type: 'public-key',
-          transports: cred.transports
-        });
+
+    if (!requestOptions.emptyAllowCredentials) {
+      const credentials = await getCredentials(user.user_id);
+      for (let cred of credentials) {
+        // When credId is not specified, or matches the one specified
+        if (!credId || cred.credentialID == credId) {
+          allowCredentials.push({
+            id: base64url.toBuffer(cred.credentialID),
+            type: 'public-key',
+            transports: cred.transports
+          });
+        }
       }
     }
 
-    const options = generateAssertionOptions({
+    const options = generateAuthenticationOptions({
       timeout: WEBAUTHN_TIMEOUT,
       allowCredentials,
       userVerification,
     });
 
-    req.session.auth = {
-      username: user.username,
-      expires_on: getNow() + WEBAUTHN_TIMEOUT,
-      challenge: options.challenge
-    };
+    req.session.challenge = options.challenge;
+    req.session.timeout = getNow() + WEBAUTHN_TIMEOUT;
 
     res.json(options);
   } catch (e) {
@@ -405,7 +400,7 @@ router.post('/reauthRequest', authzAPI(SESSION_REQUIREMENT.AUTH), async (
      }
  * }```
  **/
-router.post('/reauthResponse', authzAPI(SESSION_REQUIREMENT.AUTH), async (
+router.post('/authResponse', authzAPI, async (
   req: Request,
   res: Response
 ) => {
@@ -416,15 +411,16 @@ router.post('/reauthResponse', authzAPI(SESSION_REQUIREMENT.AUTH), async (
   if (!process.env.HOSTNAME) throw 'HOSTNAME not configured as an environment variable.';
   if (!process.env.ORIGIN) throw 'ORIGIN not configured as an environment variable.';
 
-  const user = <User>res.locals.user;
-  const expectedChallenge = req.session.auth?.challenge || '';
+  const user = res.locals.user;
+  const expectedChallenge = req.session.challenge || '';
   const expectedRPID = process.env.HOSTNAME;
   const expectedOrigin = process.env.ORIGIN;
 
   try {
-    const claimedCred = <AssertionCredentialJSON>req.body;
+    const claimedCred = <AuthenticationCredentialJSON>req.body;
 
-    let storedCred = user.credentials.find((cred) => cred.credentialID === claimedCred.id);
+    const credentials = await getCredentials(user.user_id);
+    let storedCred = credentials.find((cred) => cred.credentialID === claimedCred.id);
 
     if (!storedCred) {
       throw 'Authenticating credential not found.';
@@ -441,7 +437,7 @@ router.post('/reauthResponse', authzAPI(SESSION_REQUIREMENT.AUTH), async (
       transports
     }
 
-    const verification = verifyAssertionResponse({
+    const verification = verifyAuthenticationResponse({
       credential: claimedCred,
       expectedChallenge,
       expectedOrigin,
@@ -449,123 +445,23 @@ router.post('/reauthResponse', authzAPI(SESSION_REQUIREMENT.AUTH), async (
       authenticator,
     });
 
-    const { verified, assertionInfo } = verification;
+    const { verified, authenticationInfo } = verification;
 
     if (!verified) {
       throw 'User verification failed.';
     }
 
-    storedCred.counter = assertionInfo.newCounter;
+    storedCred.counter = authenticationInfo.newCounter;
     storedCred.last_used = getNow();
 
-    await UserManager.saveUser(user);
-
-    delete req.session.auth;
-    req.session['user_id'] = user.id;
-    req.session['last_signin'] = getNow();
-    res.json(user.credentials);
+    delete req.session.challenge;
+    delete req.session.timeout;
+    res.json(storedCred);
   } catch (e) {
-    delete req.session.auth?.challenge;
+    delete req.session.challenge;
+    delete req.session.timeout;
     res.status(400).json({ status: false, error: e });
   }
 });
-
-router.post('/usernamelessRequest', async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const requestOptions = <PublicKeyCredentialRequestOptions>req.body;
-
-    const userVerification = requestOptions.userVerification || 'required';
-
-    const options = generateAssertionOptions({
-      timeout: WEBAUTHN_TIMEOUT,
-      allowCredentials: [],
-      userVerification,
-    });
-
-    // Maybe we shouldn't use `auth` as the name for this
-    // as it's already used for 2sv purposes. Or rename it to
-    // `2sv` and keep this one as `auth`.
-    req.session.auth = {
-      expires_on: getNow() + WEBAUTHN_TIMEOUT,
-      challenge: options.challenge
-    };
-
-    res.json(options);
-  } catch (e) {
-    res.status(400).json({ status: false, error: e });
-  }
-});
-
-router.post('/usernamelessResponse', async (
-  req: Request,
-  res: Response
-) => {
-  // Unlikely exception
-  if (!process.env.HOSTNAME) throw 'HOSTNAME not configured as an environment variable.';
-  if (!process.env.ORIGIN) throw 'ORIGIN not configured as an environment variable.';
-
-  const expectedChallenge = req.session.auth?.challenge || '';
-  const expectedRPID = process.env.HOSTNAME;
-  const expectedOrigin = process.env.ORIGIN;
-
-  try {
-    const claimedCred = <AssertionCredentialJSON>req.body;
-
-    const user_id = claimedCred.response?.userHandle;
-    if (!user_id) {
-      throw 'User not found.';
-    }
-
-    const user = await UserManager.getUserById(user_id);
-
-    let storedCred = user.credentials.find((cred) => cred.credentialID === claimedCred.id);
-
-    if (!storedCred) {
-      throw 'Authenticating credential not found.';
-    }
-
-    const base64PublicKey = base64url.toBuffer(storedCred.credentialPublicKey);
-    const base64CredentialID = base64url.toBuffer(storedCred.credentialID);
-    const { counter, transports } = storedCred; 
-
-    const authenticator: AuthenticatorDevice = {
-      credentialPublicKey: base64PublicKey,
-      credentialID: base64CredentialID,
-      counter,
-      transports
-    }
-
-    const verification = verifyAssertionResponse({
-      credential: claimedCred,
-      expectedChallenge,
-      expectedOrigin,
-      expectedRPID,
-      authenticator,
-    });
-
-    const { verified, assertionInfo } = verification;
-
-    if (!verified) {
-      throw 'User verification failed.';
-    }
-
-    storedCred.counter = assertionInfo.newCounter;
-    storedCred.last_used = getNow();
-
-    await UserManager.saveUser(user);
-
-    delete req.session.auth;
-    req.session['user_id'] = user.id;
-    req.session['last_signin'] = getNow();
-    res.json(user.credentials);
-  } catch (e) {
-    delete req.session.auth?.challenge;
-    res.status(400).json({ status: false, error: e });
-  }
-});
-
 
 export { router as webauthn };

@@ -4,3 +4,4 @@ node_modules
 .env
 .data
 .log
+service-account.json

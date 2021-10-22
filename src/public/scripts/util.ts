@@ -1,23 +1,9 @@
-import '@material/mwc-top-app-bar-fixed';
-import '@material/mwc-button';
-import '@material/mwc-checkbox';
-import '@material/mwc-dialog';
-import '@material/mwc-drawer';
-import '@material/mwc-linear-progress';
-import '@material/mwc-list';
-import '@material/mwc-radio';
-import '@material/mwc-snackbar';
-import '@material/mwc-select';
-import '@material/mwc-switch';
-import '@material/mwc-formfield';
-import '@material/mwc-icon-button';
-import '@material/mwc-textfield';
 import { Drawer } from '@material/mwc-drawer';
 import { Snackbar } from '@material/mwc-snackbar';
 import { LinearProgress } from '@material/mwc-linear-progress';
 import { html, render } from 'lit';
 
-const $ = document.querySelector.bind(document);
+const $: any = document.querySelector.bind(document);
 
 const menu = $('#menu');
 const drawer = $('#drawer') as Drawer;
@@ -50,8 +36,11 @@ class Loading {
 
 const loading = new Loading();
 
-const _fetch = async (path, payload = '') => {
-  const headers = {
+const _fetch = async (
+  path: string,
+  payload: any = ''
+): Promise<any> => {
+  const headers: any = {
     'X-Requested-With': 'XMLHttpRequest',
   };
   if (payload && !(payload instanceof FormData)) {

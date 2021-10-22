@@ -2,11 +2,14 @@
   "name": "webauthndemo",
   "version": "2.0.0",
   "description": "An example JavaScript Relying Party implementation of the WebAuthn specification.",
-  "main": "src/server.ts",
+  "main": "dist/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rimraf ./dist",
     "build": "npm run clean && rollup -c && tsc --project ./src/tsconfig.json",
+    "build:prod": "npm run clean && rollup -c --environment NODE_ENV:production && tsc --project ./src/tsconfig.json",
+    "dev": "NODE_ENV=localhost node dist/server.js",
+    "emulator": "firebase emulators:start --project webauthndemo-v2",
     "start": "node dist/server.js"
   },
   "repository": {
@@ -24,6 +27,7 @@
   },
   "homepage": "https://github.com/google/webauthndemo#readme",
   "dependencies": {
+    "@google-cloud/connect-firestore": "^2.0.2",
     "@material/mwc-button": "^0.25.2",
     "@material/mwc-checkbox": "^0.25.2",
     "@material/mwc-dialog": "^0.25.2",
@@ -39,25 +43,37 @@
     "@simplewebauthn/server": "^4.2.0",
     "express": "^4.17.1",
     "express-handlebars": "^5.3.4",
+    "express-session": "^1.17.2",
     "express-validator": "^6.13.0",
-    "lit": "^2.0.2"
+    "firebase": "^9.1.3",
+    "firebase-admin": "^10.0.0",
+    "firebaseui": "^0.600.0",
+    "lit": "^2.0.2",
+    "uid-safe": "^2.1.5"
   },
   "devDependencies": {
     "@material/card": "^13.0.0",
     "@material/mwc-switch": "^0.25.2",
     "@rollup/plugin-commonjs": "^21.0.0",
+    "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.5",
     "@rollup/plugin-typescript": "^8.2.5",
     "@simplewebauthn/typescript-types": "^4.0.0",
     "@types/express": "^4.17.13",
     "@types/express-handlebars": "^5.3.1",
+    "@types/express-session": "^1.17.4",
     "@types/node": "^16.10.3",
+    "@types/rollup-plugin-node-builtins": "^2.1.2",
+    "@types/rollup-plugin-node-globals": "^1.4.1",
+    "@types/uid-safe": "^2.1.2",
     "rimraf": "^3.0.2",
     "rollup": "^2.58.0",
     "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-import-css": "^3.0.2",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-scss": "^3.0.0",
+    "rollup-plugin-sourcemaps": "^0.6.3",
     "sass": "^1.42.1",
     "typescript": "^4.4.3"
   }
