@@ -47,6 +47,93 @@ const auth = getAuth();
 
 const ui = new firebaseui.auth.AuthUI(auth);
 
+const icon = $('#user-icon');
+
+/**
+ *  Verify ID Token received via Firebase Auth
+ * @param authResult 
+ * @returns always return `false`
+ */
+const verifyIdToken = (authResult: any): boolean => {
+  authResult.user.getIdToken()
+    .then((id_token: string) => _fetch('/auth/verify', { id_token }))
+    .then((res: any) => {
+      if (!res.status) showSnackbar('Sign-in failed.');
+    });
+  return false;
+}
+
+/**
+ * Display Firebase Auth UI
+ */
+const displaySignin = () => {
+  loading.start();
+  ui.start('#firebaseui-auth-container', {
+    signInOptions: [
+      GoogleAuthProvider.PROVIDER_ID
+    ],
+    signInFlow: 'popup',
+    callbacks: {
+      signInSuccessWithAuthResult: verifyIdToken
+    }
+  });
+  $('#dialog').show();
+};
+
+/**
+ *  Signed in to Firebase Auth 
+ * @param user 
+ */
+const signedIn = (user: User) => {
+  $('#dialog').close();
+  icon.removeAttribute('icon');
+  render(html`<img src="${user.photoURL}">`, icon);
+  showSnackbar('You are signed in!');
+  loading.stop();
+  listCredentials();
+}
+
+/**
+ * Sign out from Firebase Auth
+ */
+const signout = async () => {
+  if (!confirm('Do you want to sign out?')) {
+    return;
+  }
+  await auth.signOut();
+  await _fetch('/auth/signout');
+  icon.innerHTML = '';
+  icon.setAttribute('icon', 'account_circle');
+  $('#drawer').open = false;
+  $('#credentials').innerHTML = '';
+  showSnackbar('You are signed out.');
+  displaySignin();
+};
+
+/**
+ * Invoked when Firebase Auth status is changed.
+ */
+onAuthStateChanged(auth, user => {
+  if (!window.PublicKeyCredential) {
+    render(html`
+      <p>Your browser does not support WebAuthn.</p>
+    `, $('#firebaseui-auth-container'));
+    $('#dialog').show();
+    return;
+  }
+  if (user) {
+    // Signed in
+    signedIn(user);
+  } else {
+    // Signed out
+    displaySignin();
+  }
+});
+
+/**
+ *  Collect advanced options and return a JSON object.
+ * @returns WebAuthnRequestObject
+ */
 const collectOptions = (): WebAuthnRequestObject => {
   const excludeCredentials = $('#switch-rr').checked;
   const emptyAllowCredentials = $('#switch-ec').checked;
@@ -76,12 +163,21 @@ const collectOptions = (): WebAuthnRequestObject => {
   return options;
 }
 
+/**
+ *  Ripple on the specified credential card to indicate it's found.
+ * @param credID 
+ */
 const rippleCard = (credID: string) => {
   const ripple = new MDCRipple($(`#ID-${credID}`));
   ripple.activate();
   ripple.deactivate();
 }
 
+/**
+ *  Serialize the User Verification Method Extension result
+ * @param uvms 
+ * @returns 
+ */
 function serializeUvm(uvms: any) {
   var uvmJson = [];
   for (let uvm of uvms) {
@@ -94,6 +190,9 @@ function serializeUvm(uvms: any) {
   return uvmJson;
 }
 
+/**
+ * Fetch and render the list of credentials.
+ */
 const listCredentials = async (): Promise<void> => {
   loading.start();
   try {
@@ -148,9 +247,16 @@ const listCredentials = async (): Promise<void> => {
   }
 };
 
+/**
+ *  Register a new credential.
+ * @param opts 
+ */
 const registerCredential = async (opts: WebAuthnRequestObject): Promise<any> => {
+  // Fetch credential creation options from the server.
   const options: PublicKeyCredentialCreationOptionsJSON =
     await _fetch('/webauthn/registerRequest', opts);
+
+  // Decode encoded parameters.
   const user = {
     ...options.user,
     id: base64url.decode(options.user.id)
@@ -174,16 +280,18 @@ const registerCredential = async (opts: WebAuthnRequestObject): Promise<any> => 
 
   console.log('[CreationOptions]', decodedOptions);
 
+  // Create a new attestation.
   const credential = await navigator.credentials.create({
     publicKey: decodedOptions
   }) as RegistrationCredential;
 
+  // Encode the attestation.
   const rawId = base64url.encode(credential.rawId);
   const clientDataJSON = base64url.encode(credential.response.clientDataJSON);
   const attestationObject = base64url.encode(credential.response.attestationObject);
   const clientExtensionResults: any = {};
 
-  // if `getClientExtensionResults()` is supported:
+  // if `getClientExtensionResults()` is supported, serialize the result.
   if (credential.getClientExtensionResults) {
     const extensions = credential.getClientExtensionResults();
     if ('uvm' in extensions) {
@@ -195,7 +303,7 @@ const registerCredential = async (opts: WebAuthnRequestObject): Promise<any> => 
   }
   let transports: any[] = [];
 
-  // if `getTransports()` is supported:
+  // if `getTransports()` is supported, serialize the result.
   if (credential.response.getTransports) {
     transports = credential.response.getTransports();
   }
@@ -214,12 +322,21 @@ const registerCredential = async (opts: WebAuthnRequestObject): Promise<any> => 
 
   console.log('[AttestationCredential]', encodedCredential);
 
+  // Verify and store the attestation.
   await _fetch('/webauthn/registerResponse', encodedCredential);
 };
 
+/**
+ *  Authenticate the user with a credential.
+ * @param opts 
+ * @returns 
+ */
 const authenticate = async (opts: WebAuthnRequestObject): Promise<any> => {
+  // Fetch the credential request options.
   const options: PublicKeyCredentialRequestOptionsJSON =
     await _fetch('/webauthn/authRequest', opts);
+
+  // Decode encoded parameters.
   const challenge = base64url.decode(options.challenge);
   const allowCredentials: PublicKeyCredentialDescriptor[] = [];
   if (options.allowCredentials) {
@@ -238,10 +355,12 @@ const authenticate = async (opts: WebAuthnRequestObject): Promise<any> => {
 
   console.log('[RequestOptions]', decodedOptions);
 
+  // Authenticate the user.
   const credential = await navigator.credentials.get({
     publicKey: decodedOptions
   }) as AuthenticationCredential;
 
+  // Encode the credential.
   const rawId = base64url.encode(credential.rawId);
   const authenticatorData = base64url.encode(credential.response.authenticatorData);
   const clientDataJSON = base64url.encode(credential.response.clientDataJSON);
@@ -264,9 +383,15 @@ const authenticate = async (opts: WebAuthnRequestObject): Promise<any> => {
 
   console.log('[AssertionCredential]', encodedCredential);
 
+  // Verify and store the credential.
   return _fetch('/webauthn/authResponse', encodedCredential);
 };
 
+/**
+ *  Remove a credential.
+ * @param credId 
+ * @returns 
+ */
 const removeCredential = (credId: string) => async () => {
   if (!confirm('Are you sure you want to remove this credential?')) {
     return;
@@ -281,74 +406,6 @@ const removeCredential = (credId: string) => async () => {
     showSnackbar('Removing the credential failed.');
   }
 };
-
-const icon = $('#user-icon');
-
-const verifyIdToken = (authResult: any): boolean => {
-  authResult.user.getIdToken()
-    .then((id_token: string) => _fetch('/auth/verify', { id_token }))
-    .then((res: any) => {
-      if (!res.status) showSnackbar('Sign-in failed.');
-    });
-  return false;
-}
-
-const displaySignin = () => {
-  loading.start();
-  ui.start('#firebaseui-auth-container', {
-    signInOptions: [
-      GoogleAuthProvider.PROVIDER_ID
-    ],
-    signInFlow: 'popup',
-    callbacks: {
-      signInSuccessWithAuthResult: verifyIdToken
-    }
-  });
-  $('#dialog').show();
-};
-
-const signedIn = (user: User) => {
-  $('#dialog').close();
-  icon.removeAttribute('icon');
-  render(html`<img src="${user.photoURL}">`, icon);
-  showSnackbar('You are signed in!');
-  loading.stop();
-  listCredentials();
-}
-
-const signout = async () => {
-  if (!confirm('Do you want to sign out?')) {
-    return;
-  }
-  await auth.signOut();
-  await _fetch('/auth/signout');
-  icon.innerHTML = '';
-  icon.setAttribute('icon', 'account_circle');
-  $('#drawer').open = false;
-  $('#credentials').innerHTML = '';
-  showSnackbar('You are signed out.');
-  displaySignin();
-};
-
-/**
- * Invoked when Firebase Auth status is changed.
- */
-onAuthStateChanged(auth, user => {
-  if (!window.PublicKeyCredential) {
-    render(html`
-      <p>Your browser does not support WebAuthn.</p>
-    `, $('#firebaseui-auth-container'));
-    $('#dialog').show();
-    return;
-  }
-  if (user) {
-    // Signed in
-    signedIn(user);
-  } else {
-    // Signed out
-    displaySignin();
-  }
-});
 
 /**
  * Determine whether

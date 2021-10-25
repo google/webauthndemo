@@ -40,7 +40,7 @@ const router = express.Router();
 
 router.use(csrfCheck);
 
-const RP_NAME = process.env.PROJECT_NAME || 'WebAuthn';
+const RP_NAME = process.env.PROJECT_NAME || 'WebAuthn Demo';
 const WEBAUTHN_TIMEOUT = 1000 * 60 * 5; // 5 minutes
 
 /**
@@ -64,34 +64,6 @@ router.post('/getCredentials', authzAPI, async (
     });
   }
 });
-
-// router.post('/renameCredential',
-//   authzAPI,
-//   body('deviceName').isLength({ min: 3, max: 30 }),
-//   async (
-//     req: Request,
-//     res: Response
-//   ): Promise<void> => {
-//     const errors = validationResult(req);
-//     if (!errors.isEmpty()) {
-//       res.sendStatus(400).json({ status: false, error: 'Invalid device name.' });
-//       return;
-//     }
-
-//     const user = <User>res.locals.user;
-//     const { credId, deviceName } = req.body;
-
-//     // Find the credential with the same credential ID
-//     const cred = user?.credentials.find(cred => cred.credentialID === credId);
-
-//     if (user && cred) {
-//       // Update the credential's device name.
-//       cred.deviceName = deviceName;
-//       UserManager.saveUser(user);
-//     }
-//     res.json({ status: true });
-//   }
-// );
 
 /**
  * Removes a credential id attached to the user
@@ -117,57 +89,15 @@ router.post('/removeCredential', authzAPI, async (
   }
 });
 
-// router.get('/resetDB', (req, res) => {
-//   db.set('users', []).write();
-//   const users = db.get('users').value();
-//   res.json(users);
-// });
-
-/**
- * Respond with required information to call navigator.credential.create()
- * Input is passed via `req.body` with similar format as output
- * Output format:
- * ```{
-     rp: {
-       id: String,
-       name: String
-     },
-     user: {
-       displayName: String,
-       id: String,
-       name: String
-     },
-     publicKeyCredParams: [{  // @herrjemand
-       type: 'public-key', alg: -7
-     }],
-     timeout: Number,
-     challenge: String,
-     excludeCredentials: [{
-       id: String,
-       type: 'public-key',
-       transports: [('ble'|'nfc'|'usb'|'internal'), ...]
-     }, ...],
-     authenticatorSelection: {
-       authenticatorAttachment: ('platform'|'cross-platform'),
-       requireResidentKey: Boolean,
-       userVerification: ('required'|'preferred'|'discouraged')
-     },
-     attestation: ('none'|'indirect'|'direct')
- * }```
- **/
 router.post('/registerRequest', authzAPI, async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    // Unlikely exception
     if (!res.locals.user) throw 'Unauthorized.';
-
-    const user = res.locals.user;
-
-    // Unlikely exception
     if (!process.env.HOSTNAME) throw 'HOSTNAME not configured as an environment variable.';
 
+    const user = res.locals.user;
     const creationOptions = <WebAuthnRequestObject>req.body || {};
 
     const excludeCredentials: PublicKeyCredentialDescriptor[] = [];
@@ -236,7 +166,6 @@ router.post('/registerRequest', authzAPI, async (
       extensions,
     });
 
-    // TODO: Are you sure using AuthenticationSession is a good idea?
     req.session.challenge = options.challenge;
     req.session.timeout = getNow() + WEBAUTHN_TIMEOUT;
 
@@ -246,32 +175,13 @@ router.post('/registerRequest', authzAPI, async (
   }
 });
 
-/**
- * Register user credential.
- * Input format:
- * ```{
-     id: String,
-     type: 'public-key',
-     rawId: String,
-     response: {
-       clientDataJSON: String,
-       attestationObject: String,
-       signature: String,
-       userHandle: String
-     }
- * }```
- **/
 router.post('/registerResponse', authzAPI, async (
   req: Request,
   res: Response
 ) => {
   try {
-    // Unlikely exception
     if (!res.locals.user) throw 'Unauthorized.';
-
     if (!req.session.challenge) throw 'No challenge found.';
-
-    // Unlikely exception
     if (!process.env.HOSTNAME) throw 'HOSTNAME not configured as an environment variable.';
     if (!process.env.ORIGIN) throw 'ORIGIN not configured as an environment variable.';
 
@@ -343,25 +253,10 @@ router.post('/registerResponse', authzAPI, async (
   }
 });
 
-/**
- * Respond with required information to call navigator.credential.get()
- * Input is passed via `req.body` with similar format as output
- * Output format:
- * ```{
-     challenge: String,
-     userVerification: ('required'|'preferred'|'discouraged'),
-     allowCredentials: [{
-       id: String,
-       type: 'public-key',
-       transports: [('ble'|'nfc'|'usb'|'internal'), ...]
-     }, ...]
- * }```
- **/
 router.post('/authRequest', authzAPI, async (
   req: Request,
   res: Response
 ) => {
-  // Unlikely exception
   if (!res.locals.user) throw 'Unauthorized.';
 
   try {
@@ -403,29 +298,12 @@ router.post('/authRequest', authzAPI, async (
   }
 });
 
-/**
- * Authenticate the user.
- * Input format:
- * ```{
-     id: String,
-     type: 'public-key',
-     rawId: String,
-     response: {
-       clientDataJSON: String,
-       authenticatorData: String,
-       signature: String,
-       userHandle: String
-     }
- * }```
- **/
 router.post('/authResponse', authzAPI, async (
   req: Request,
   res: Response
 ) => {
-  // Unlikely exception
   if (!res.locals.user) throw 'Unauthorized.';
 
-  // Unlikely exception
   if (!process.env.HOSTNAME) throw 'HOSTNAME not configured as an environment variable.';
   if (!process.env.ORIGIN) throw 'ORIGIN not configured as an environment variable.';
 
