@@ -1,19 +1,10 @@
-import { Drawer } from '@material/mwc-drawer';
 import { Snackbar } from '@material/mwc-snackbar';
 import { LinearProgress } from '@material/mwc-linear-progress';
 import { html, render } from 'lit';
 
 const $: any = document.querySelector.bind(document);
 
-const menu = $('#menu');
-const drawer = $('#drawer') as Drawer;
 const snackbar = $('#snackbar') as Snackbar;
-
-if (menu && drawer) {
-  menu.addEventListener('click', () => {
-    drawer.open = !drawer.open;
-  });
-}
 
 function showSnackbar(message: string): void {
   snackbar.labelText = message;

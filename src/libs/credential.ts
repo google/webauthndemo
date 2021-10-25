@@ -17,6 +17,7 @@ export interface StoredCredential {
   registered?: number // registered epoc time,
   transports?: AuthenticatorTransport[] // list of transports,
   last_used?: number // last used epoc time,
+  clientExtensionResults?: any
 }
 
 export async function getCredentials(
@@ -27,6 +28,13 @@ export async function getCredentials(
   creds.forEach(cred => results.push(<StoredCredential>cred.data()));
   return results;
 };
+
+export async function getCredential(
+  credential_id: credential_id
+): Promise<StoredCredential> {
+  const credRef = await db.collection('credentials').doc(credential_id).get();
+  return <StoredCredential>credRef.data();
+}
 
 export function storeCredential(
   credential: StoredCredential

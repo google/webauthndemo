@@ -55,6 +55,7 @@ const collectOptions = (): WebAuthnRequestObject => {
   const residentKey = $('#resident-key').value;
   const userVerification = $('#user-verification').value;
   const uvm = $('#switch-uvm').checked;
+  const credProps = $('#switch-cred-props').checked;
   const customTimeout = parseInt($('#custom-timeout').value);
   // const abortTimeout = parseInt($('#abort-timeout').value);
 
@@ -65,7 +66,7 @@ const collectOptions = (): WebAuthnRequestObject => {
       userVerification,
       residentKey
     },
-    extensions: { uvm },
+    extensions: { uvm, credProps },
     excludeCredentials,
     emptyAllowCredentials,
     customTimeout,
@@ -100,13 +101,18 @@ const listCredentials = async (): Promise<void> => {
     loading.stop();
     render(credentials.map(cred => {
       cred.id = cred.credentialID.substr(0, 16);
+      const extensions = cred.clientExtensionResults;
       return html`
-      <div class="mdc-card mdc-card--outlined">
+      <div class="mdc-card">
         <div class="mdc-card__primary-action" id="ID-${cred.credentialID}">
-          <div class="card-title">
-            <mwc-formfield label="${cred.id}">
+          <div class="card-title mdc-card__action-buttons">
+            <span class="cred-title">${cred.id}</span>
+            <!-- <mwc-formfield label="${cred.id}" class="mdc-card__action-button">
               <mwc-switch id="switch-${cred.credentialID}" selected></mwc-switch>  
-            </mwc-formfield>
+            </mwc-formfield> -->
+            <div class="mdc-card__action-icons">
+              <mwc-icon-button @click="${removeCredential(cred.credentialID)}" icon="delete_forever" title="Removes this credential registration from the server"></mwc-icon>
+            </div>
           </div>
           <div class="card-body">
             <dt>Enrolled</dt>
@@ -115,8 +121,6 @@ const listCredentials = async (): Promise<void> => {
             <dd>${cred.credentialPublicKey}</dd>
             <dt>Key Handle</dt>
             <dd>${cred.credentialID}</dd>
-            <dt>User Verification Method</dt>
-            <dd>${cred.userVerificationMethod ? cred.userVerificationMethod : 'N/A'}</dd>
             <dt>Transports</dt>
             <dd class="transports">
               ${['usb', 'nfc', 'ble', 'internal', 'cable'].map((transport, index) => html`
@@ -125,12 +129,13 @@ const listCredentials = async (): Promise<void> => {
               </mwc-formfield>
               `)}
             </dd>
+            ${extensions?.uvm ? html`
+            <dt>User Verification Method Extension</dt>
+            <dd>${extensions.uvm}</dd>`:''}
+            ${extensions?.credProps ? html`
+            <dt>Credential Properties Extension</dt>
+            <dd>${extensions.credProps.rk ? 'true' : 'false'}</dd>`:''}
             <div class="mdc-card__ripple"></div>
-          </div>
-        </div>
-        <div class="mdc-card__actions">
-          <div class="mdc-card__action-icons">
-            <mwc-icon-button @click="${removeCredential(cred.credentialID)}" icon="delete_forever" title="Removes this credential registration from the server"></mwc-icon>
           </div>
         </div>
       </div>
@@ -181,8 +186,11 @@ const registerCredential = async (opts: WebAuthnRequestObject): Promise<any> => 
   // if `getClientExtensionResults()` is supported:
   if (credential.getClientExtensionResults) {
     const extensions = credential.getClientExtensionResults();
-    if (extensions.uvm) {
+    if ('uvm' in extensions) {
       clientExtensionResults.uvm = serializeUvm(extensions.uvm);
+    }
+    if ('credProps' in extensions) {
+      clientExtensionResults.credProps = extensions.credProps;
     }
   }
   let transports: any[] = [];
@@ -309,6 +317,9 @@ const signedIn = (user: User) => {
 }
 
 const signout = async () => {
+  if (!confirm('Do you want to sign out?')) {
+    return;
+  }
   await auth.signOut();
   await _fetch('/auth/signout');
   icon.innerHTML = '';
@@ -323,6 +334,13 @@ const signout = async () => {
  * Invoked when Firebase Auth status is changed.
  */
 onAuthStateChanged(auth, user => {
+  if (!window.PublicKeyCredential) {
+    render(html`
+      <p>Your browser does not support WebAuthn.</p>
+    `, $('#firebaseui-auth-container'));
+    $('#dialog').show();
+    return;
+  }
   if (user) {
     // Signed in
     signedIn(user);
@@ -415,7 +433,7 @@ const onAuthenticate = async (): Promise<void> => {
   }
 };
 
-$('#signout').addEventListener('click', signout);
+$('#user-icon').addEventListener('click', signout);
 $('#isuvpaa-button').addEventListener('click', onISUVPAA);
 $('#credential-button').addEventListener('click', onRegisterNewCredential);
 $('#platform-button').addEventListener('click', onRegisterPlatformAuthenticator);

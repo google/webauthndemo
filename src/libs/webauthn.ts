@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import base64url from 'base64url';
 import { getNow, csrfCheck, authzAPI } from '../libs/helper';
-import { getCredentials, removeCredential, storeCredential } from './credential';
+import { getCredentials, getCredential, removeCredential, storeCredential } from './credential';
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -314,14 +314,11 @@ router.post('/registerResponse', authzAPI, async (
     const { credentialPublicKey, credentialID, counter } = registrationInfo;
     const base64PublicKey = base64url.encode(credentialPublicKey);
     const base64CredentialID = base64url.encode(credentialID);
-    const { transports } = credential;
+    const { transports, clientExtensionResults } = credential;
 
-    const existingCred = await getCredentials(base64CredentialID)
+    const existingCred = await getCredential(base64CredentialID);
 
-    if (existingCred.length === 0) {
-      /*
-       * Add the returned device to the user's list of devices
-       */
+    if (!existingCred) {
       await storeCredential({
         user_id: user.user_id,
         credentialPublicKey: base64PublicKey,
@@ -329,6 +326,7 @@ router.post('/registerResponse', authzAPI, async (
         counter,
         transports,
         registered: getNow(),
+        clientExtensionResults,
       });
     }
 

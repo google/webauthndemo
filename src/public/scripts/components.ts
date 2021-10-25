@@ -12,3 +12,14 @@ import '@material/mwc-switch';
 import '@material/mwc-formfield';
 import '@material/mwc-icon-button';
 import '@material/mwc-textfield';
+import { TopAppBarFixed } from '@material/mwc-top-app-bar-fixed';
+import { Drawer } from '@material/mwc-drawer';
+
+const topAppBar = document.querySelector('#top-app-bar') as TopAppBarFixed;
+const drawer = document.querySelector('#drawer') as Drawer;
+
+if (topAppBar && drawer) {
+  topAppBar.addEventListener('MDCTopAppBar:nav', () => {
+    drawer.open = !drawer.open;
+  });
+}

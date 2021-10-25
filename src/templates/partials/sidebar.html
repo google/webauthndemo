@@ -43,17 +43,22 @@
   </mwc-select>
 </div>
 <div class="advanced-option">
-  <mwc-formfield label="User Verification Method">
-    <mwc-checkbox id="switch-uvm"></mwc-checkbox>
-  </mwc-formfield>
-</div>
-<div class="advanced-option">
   <mwc-textfield
     id="custom-timeout"
     label="Timeout (miliseconds)"
     validationMessage="Input is not a number!"
     pattern="-?[0-9]*(\.[0-9]+)?"
     outlined></mwc-textfield>
+</div>
+<div class="advanced-option">
+  <mwc-formfield label="User Verification Method">
+    <mwc-checkbox id="switch-uvm"></mwc-checkbox>
+  </mwc-formfield>
+</div>
+<div class="advanced-option">
+  <mwc-formfield label="Credential Properties">
+    <mwc-checkbox id="switch-cred-props"></mwc-checkbox>
+  </mwc-formfield>
 </div>
 <!-- <div class="advanced-option">
   <mwc-textfield
@@ -63,6 +68,3 @@
     pattern="-?[0-9]*(\.[0-9]+)?"
     outlined></mwc-textfield> -->
 </div>
-<mwc-list-item>
-  <span id="signout">Logout</span>
-</mwc-list-item>
