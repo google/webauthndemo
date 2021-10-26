@@ -5,3 +5,4 @@ node_modules
 .data
 .log
 service-account.json
+.vscode
