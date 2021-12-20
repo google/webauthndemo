@@ -30,9 +30,8 @@ const authzAPI = async (
   next: NextFunction
 ): Promise<void> => {
   const { user_id, name } = req.session;
-  let user;
 
-  if (process.env.NODE_ENV != 'production') {
+  if (process.env.NODE_ENV !== 'production') {
     console.log('Session:', req.session);
   }
   if (!user_id) {
@@ -42,8 +41,8 @@ const authzAPI = async (
   }
 
   res.locals.user = { user_id, name };
-  if (process.env.NODE_ENV != 'production') {
-    console.log('User:', user);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('User:', res.locals.user);
   }
   next();
 };

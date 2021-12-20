@@ -9,5 +9,7 @@ declare module 'express-session' {
     timeout?: number,
     // Enrollment session for the second step.
     challenge?: string
+    // Enrollment type
+    type?: 'platform' | 'cross-platform' | 'undefined'
   }
 }

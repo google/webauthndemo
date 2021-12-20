@@ -54,13 +54,9 @@ const icon = $('#user-icon');
  * @param authResult 
  * @returns always return `false`
  */
-const verifyIdToken = (authResult: any): boolean => {
-  authResult.user.getIdToken()
-    .then((id_token: string) => _fetch('/auth/verify', { id_token }))
-    .then((res: any) => {
-      if (!res.status) showSnackbar('Sign-in failed.');
-    });
-  return false;
+const verifyIdToken = async (user: User): Promise<boolean> => {
+  const id_token = await user.getIdToken();
+  return await _fetch('/auth/verify', { id_token });
 }
 
 /**
@@ -69,29 +65,25 @@ const verifyIdToken = (authResult: any): boolean => {
 const displaySignin = () => {
   loading.start();
   ui.start('#firebaseui-auth-container', {
-    signInOptions: [
-      GoogleAuthProvider.PROVIDER_ID
-    ],
+    signInOptions: [ GoogleAuthProvider.PROVIDER_ID ],
     signInFlow: 'popup',
-    callbacks: {
-      signInSuccessWithAuthResult: verifyIdToken
-    }
+    callbacks: { signInSuccessWithAuthResult: () => false, }
   });
   $('#dialog').show();
 };
 
-/**
- *  Signed in to Firebase Auth 
- * @param user 
- */
-const signedIn = (user: User) => {
-  $('#dialog').close();
-  icon.removeAttribute('icon');
-  render(html`<img src="${user.photoURL}">`, icon);
-  showSnackbar('You are signed in!');
-  loading.stop();
-  listCredentials();
-}
+// /**
+//  *  Signed in to Firebase Auth 
+//  * @param user 
+//  */
+// const signedIn = (user: User) => {
+//   $('#dialog').close();
+//   icon.removeAttribute('icon');
+//   render(html`<img src="${user.photoURL}">`, icon);
+//   showSnackbar('You are signed in!');
+//   loading.stop();
+//   listCredentials();
+// }
 
 /**
  * Sign out from Firebase Auth
@@ -113,7 +105,7 @@ const signout = async () => {
 /**
  * Invoked when Firebase Auth status is changed.
  */
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async user => {
   if (!window.PublicKeyCredential) {
     render(html`
       <p>Your browser does not support WebAuthn.</p>
@@ -122,12 +114,24 @@ onAuthStateChanged(auth, user => {
     return;
   }
   if (user) {
-    // Signed in
-    signedIn(user);
+    try {
+      // Signed in
+      await verifyIdToken(user);
+      $('#dialog').close();
+      icon.removeAttribute('icon');
+      render(html`<img src="${user.photoURL}">`, icon);
+      showSnackbar('You are signed in!');
+      loading.stop();
+      listCredentials();
+    } catch (error) {
+      console.error(error);
+      showSnackbar('Sign-in failed.');
+    };
   } else {
     // Signed out
     displaySignin();
   }
+  return false;
 });
 
 /**
@@ -195,12 +199,20 @@ function serializeUvm(uvms: any) {
  */
 const listCredentials = async (): Promise<void> => {
   loading.start();
+  const transportIconMap = {
+    internal: "devices",
+    usb: "usb",
+    nfc: "nfc",
+    ble: "bluetooth",
+    cable: "cable",
+  } as { [key: string]: string };
   try {
     const credentials = <any[]>await _fetch('/webauthn/getCredentials');
     loading.stop();
     render(credentials.map(cred => {
       cred.id = cred.credentialID.substr(0, 16);
       const extensions = cred.clientExtensionResults;
+      const transports = cred.transports as string[];
       return html`
       <div class="mdc-card">
         <div class="mdc-card__primary-action" id="ID-${cred.credentialID}">
@@ -216,16 +228,16 @@ const listCredentials = async (): Promise<void> => {
           <div class="card-body">
             <dt>Enrolled</dt>
             <dd>${(new Date(cred.registered)).toLocaleString()}</dd>
-            <dt>Public Key</dt>
+            <!-- <dt>Public Key</dt>
             <dd>${cred.credentialPublicKey}</dd>
             <dt>Key Handle</dt>
-            <dd>${cred.credentialID}</dd>
+            <dd>${cred.credentialID}</dd> -->
             <dt>Transports</dt>
             <dd class="transports">
-              ${['usb', 'nfc', 'ble', 'internal', 'cable'].map((transport, index) => html`
-              <mwc-formfield label="${transport}">
-                <mwc-checkbox ?checked="${cred.transports.includes(transport)}" disabled></mwc-checkbox>
-              </mwc-formfield>
+              ${!transports.length ? html`
+              <span>N/A</span>
+              ` : transports.map(transport => html`
+              <mwc-icon-button icon="${transportIconMap[transport]}"></mwc-icon-button>
               `)}
             </dd>
             ${extensions?.uvm ? html`

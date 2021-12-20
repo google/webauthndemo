@@ -18,7 +18,7 @@ router.post('/verify', async (req: Request, res: Response) => {
   const { id_token } = req.body;
 
   try {
-    const result = await auth.verifyIdToken(<string>id_token);
+    const result = await auth.verifyIdToken(<string>id_token, true);
     if (result) {
       console.log(result);
       req.session.user_id = result.user_id;

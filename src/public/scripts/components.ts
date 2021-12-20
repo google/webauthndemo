@@ -5,6 +5,7 @@ import '@material/mwc-dialog';
 import '@material/mwc-drawer';
 import '@material/mwc-linear-progress';
 import '@material/mwc-list';
+import '@material/mwc-list/mwc-check-list-item';
 import '@material/mwc-radio';
 import '@material/mwc-snackbar';
 import '@material/mwc-select';

@@ -1,2 +1,4 @@
 runtime: nodejs14
 service: dev
+env_variables:
+  ORIGIN: https://dev-dot-webauthndemo-v2.appspot.com

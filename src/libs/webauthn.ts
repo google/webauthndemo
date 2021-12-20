@@ -119,30 +119,22 @@ router.post('/registerRequest', authzAPI, async (
     for (let param of params) {
       pubKeyCredParams.push({ type: 'public-key', alg: param });
     }
-    const as: AuthenticatorSelectionCriteria = {}; // authenticatorSelection
+    const authenticatorSelection: AuthenticatorSelectionCriteria = {};
     const aa = creationOptions.authenticatorSelection?.authenticatorAttachment;
     const rk = creationOptions.authenticatorSelection?.residentKey;
     const uv = creationOptions.authenticatorSelection?.userVerification;
     const cp = creationOptions.attestation; // attestationConveyancePreference
-    let asFlag = false;
-    let authenticatorSelection;
     let attestation: AttestationConveyancePreference = 'none';
 
-    if (aa && (aa == 'platform' || aa == 'cross-platform')) {
-      asFlag = true;
-      as.authenticatorAttachment = aa;
+    if (aa === 'platform' || aa === 'cross-platform') {
+      authenticatorSelection.authenticatorAttachment = aa;
     }
-    if (rk && (rk == 'required' || rk == 'preferred' || rk == 'discouraged')) {
-      asFlag = true;
-      as.residentKey = rk;
-      as.requireResidentKey = (rk == 'required');
+    const enrollmentType = aa || 'undefined';
+    if (rk === 'required' || rk === 'preferred' || rk === 'discouraged') {
+      authenticatorSelection.requireResidentKey = (rk == 'required');
     }
-    if (uv && (uv == 'required' || uv == 'preferred' || uv == 'discouraged')) {
-      asFlag = true;
-      as.userVerification = uv;
-    }
-    if (asFlag) {
-      authenticatorSelection = as;
+    if (uv === 'required' || uv === 'preferred' || uv === 'discouraged') {
+      authenticatorSelection.userVerification = uv;
     }
     if (cp && (cp == 'none' || cp == 'indirect' || cp == 'direct')) {
       attestation = cp;
@@ -168,6 +160,7 @@ router.post('/registerRequest', authzAPI, async (
 
     req.session.challenge = options.challenge;
     req.session.timeout = getNow() + WEBAUTHN_TIMEOUT;
+    req.session.type = enrollmentType;
 
     res.json(options);
   } catch (e) {
@@ -231,23 +224,27 @@ router.post('/registerResponse', authzAPI, async (
     if (!existingCred) {
       await storeCredential({
         user_id: user.user_id,
-        credentialPublicKey: base64PublicKey,
         credentialID: base64CredentialID,
+        credentialPublicKey: base64PublicKey,
         counter,
-        transports,
         registered: getNow(),
+        user_verifying: registrationInfo.userVerified,
+        authenticatorAttachment: req.session.type || "undefined",
+        transports,
         clientExtensionResults,
       });
     }
 
     delete req.session.challenge;
     delete req.session.timeout;
+    delete req.session.type;
 
     // Respond with user info
     res.json(credential);
   } catch (e: any) {
     delete req.session.challenge;
     delete req.session.timeout;
+    delete req.session.type;
 
     res.status(400).send({ status: false, error: e.message });
   }

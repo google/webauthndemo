@@ -91,6 +91,7 @@ footer {
 #credentials {
   display: flex;
   flex-wrap: wrap;
+  margin-bottom: 54px;
 }
 
 .mdc-card {
@@ -108,11 +109,9 @@ footer {
       font-size: 90%;
       color: #666666;
       margin-inline-start: 10px;
-      &:not(.transports) {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        line-height: 36px;
+      mwc-icon-button {
+        --mdc-icon-button-size: 24px;
+        --mdc-icon-size: 16px;
       }
     }
   }
