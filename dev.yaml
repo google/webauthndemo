@@ -1,4 +1,9 @@
 runtime: nodejs14
 service: dev
 env_variables:
-  ORIGIN: https://dev-dot-webauthndemo-v2.appspot.com
+  NODE_ENV: development
+handlers:
+- url: /.*
+  secure: always
+  redirect_http_response_code: 301
+  script: auto

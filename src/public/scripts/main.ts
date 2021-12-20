@@ -72,19 +72,6 @@ const displaySignin = () => {
   $('#dialog').show();
 };
 
-// /**
-//  *  Signed in to Firebase Auth 
-//  * @param user 
-//  */
-// const signedIn = (user: User) => {
-//   $('#dialog').close();
-//   icon.removeAttribute('icon');
-//   render(html`<img src="${user.photoURL}">`, icon);
-//   showSnackbar('You are signed in!');
-//   loading.stop();
-//   listCredentials();
-// }
-
 /**
  * Sign out from Firebase Auth
  */
@@ -213,6 +200,8 @@ const listCredentials = async (): Promise<void> => {
       cred.id = cred.credentialID.substr(0, 16);
       const extensions = cred.clientExtensionResults;
       const transports = cred.transports as string[];
+      const authenticatorType = `${cred.user_verifying?'User Verifying ':''}`+
+        `${cred.authenticatorAttachment==='platform'?'Platform':'Roaming'} Authenticator`;
       return html`
       <div class="mdc-card">
         <div class="mdc-card__primary-action" id="ID-${cred.credentialID}">
@@ -226,12 +215,8 @@ const listCredentials = async (): Promise<void> => {
             </div>
           </div>
           <div class="card-body">
-            <dt>Enrolled</dt>
-            <dd>${(new Date(cred.registered)).toLocaleString()}</dd>
-            <!-- <dt>Public Key</dt>
-            <dd>${cred.credentialPublicKey}</dd>
-            <dt>Key Handle</dt>
-            <dd>${cred.credentialID}</dd> -->
+            <dt>Authenticator Type</dt>
+            <dd>${authenticatorType}</dd>
             <dt>Transports</dt>
             <dd class="transports">
               ${!transports.length ? html`
@@ -240,12 +225,18 @@ const listCredentials = async (): Promise<void> => {
               <mwc-icon-button icon="${transportIconMap[transport]}"></mwc-icon-button>
               `)}
             </dd>
+            <dt>Enrolled</dt>
+            <dd>${(new Date(cred.registered)).toLocaleString()}</dd>
             ${extensions?.uvm ? html`
             <dt>User Verification Method Extension</dt>
             <dd>${extensions.uvm}</dd>`:''}
             ${extensions?.credProps ? html`
             <dt>Credential Properties Extension</dt>
             <dd>${extensions.credProps.rk ? 'true' : 'false'}</dd>`:''}
+            <dt>Public Key</dt>
+            <dd>${cred.credentialPublicKey}</dd>
+            <dt>Key Handle</dt>
+            <dd>${cred.credentialID}</dd>
             <div class="mdc-card__ripple"></div>
           </div>
         </div>

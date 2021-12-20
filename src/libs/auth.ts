@@ -4,12 +4,9 @@ import { getAuth } from 'firebase-admin/auth';
 import { cert } from 'firebase-admin/app';
 import ServiceAccount from '../service-account.json';
 
-// if (process.env.IS_LOCALHOST) {
-//   initializeApp();
-// } else {
-  // @ts-ignore
-  initializeApp({ credential: cert(ServiceAccount) });
-// }
+// Service Account config is required only when it's using non-default Firestore.
+// @ts-ignore
+initializeApp({ credential: cert(ServiceAccount) });
 
 const auth = getAuth();
 const router = express.Router();
@@ -20,7 +17,6 @@ router.post('/verify', async (req: Request, res: Response) => {
   try {
     const result = await auth.verifyIdToken(<string>id_token, true);
     if (result) {
-      console.log(result);
       req.session.user_id = result.user_id;
       req.session.name = result.name;
       res.json({

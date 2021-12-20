@@ -1,12 +1,10 @@
 import path from 'path';
+// @ts-ignore The file will be copied with rollup and no problem.
+import firebaseJson from './firebase.json';
 
 if (process.env.NODE_ENV === 'localhost') {
-  // If this is a local environment, connect to the emulator.
-  process.env.IS_LOCALHOST = 'true';
   // Ideally this is configured with `.env`;
-  process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8081';
-} else {
-  process.env.IS_LOCALHOST = 'false';
+  process.env.FIRESTORE_EMULATOR_HOST = `localhost:${firebaseJson.emulators.firestore.port}`;
 }
 
 import express, { Request, Response, RequestHandler } from 'express';
@@ -40,7 +38,7 @@ app.use(session({
     kind: 'express-sessions',
   }),
   cookie: {
-    secure: process.env.IS_LOCALHOST === 'false',
+    secure: process.env.NODE_ENV !== 'localhost',
     path: "/",
     sameSite: 'strict',
     httpOnly: true,
@@ -49,18 +47,14 @@ app.use(session({
 }));
 
 // Run helmet only when it's running on a remote server.
-if (process.env.IS_LOCALHOST === 'false') {
+if (process.env.NODE_ENV !== 'localhost') {
   app.use(helmet.hsts());
 }
 
 app.use((req, res, next) => {
-  process.env.HOSTNAME = process.env.HOSTNAME || req.hostname;
-  const protocol = process.env.IS_LOCALHOST == 'true' ? 'http' : 'https';
-  process.env.ORIGIN = process.env.ORIGIN || `${protocol}://${req.headers.host}`;
-  if (process.env.IS_LOCALHOST === 'false' && req.protocol === 'http') {
-    return res.redirect(301, process.env.ORIGIN);
-  }
-
+  res.locals.hostname = req.hostname;
+  const protocol = process.env.NODE_ENV === 'localhost' ? 'http' : 'https';
+  res.locals.origin = new URL(`${protocol}://${req.headers.host}`).toString();
   res.locals.title = process.env.PROJECT_NAME;
   next();
 });

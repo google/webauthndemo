@@ -59,6 +59,9 @@ export default () => {
       ...plugins,
       copy({
         targets: [{
+          src: 'firebase.json',
+          dest: dstRoot,
+        }, {
           src: path.join(clientSrc, 'favicon.*'),
           dest: clientDst,
         }, {

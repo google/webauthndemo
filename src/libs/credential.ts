@@ -27,8 +27,8 @@ export async function getCredentials(
 ): Promise<StoredCredential[]> {
   const results: StoredCredential[] = [];
   const refs = await store.collection('credentials')
-    .where('user_id', '==', user_id).get();
-    // .orderBy('registered', 'desc').get();
+    .where('user_id', '==', user_id)
+    .orderBy('registered', 'desc').get();
   refs.forEach(cred => results.push(<StoredCredential>cred.data()));
   return results;
 };

@@ -57,7 +57,8 @@ router.post('/getCredentials', authzAPI, async (
   try {
     const credentials = await getCredentials(user.user_id);
     res.json(credentials);
-  } catch (e) {
+  } catch (error) {
+    console.error(error);
     res.status(401).json({
       status: false,
       error: 'Unauthorized'
@@ -82,7 +83,8 @@ router.post('/removeCredential', authzAPI, async (
     res.json({
       status: true
     });
-  } catch (e) {
+  } catch (error) {
+    console.error(error);
     res.status(400).json({
       status: false
     });
@@ -95,7 +97,7 @@ router.post('/registerRequest', authzAPI, async (
 ): Promise<void> => {
   try {
     if (!res.locals.user) throw 'Unauthorized.';
-    if (!process.env.HOSTNAME) throw 'HOSTNAME not configured as an environment variable.';
+    if (!res.locals.hostname) throw 'Hostname not configured.';
 
     const user = res.locals.user;
     const creationOptions = <WebAuthnRequestObject>req.body || {};
@@ -146,7 +148,7 @@ router.post('/registerRequest', authzAPI, async (
 
     const options = generateRegistrationOptions({
       rpName: RP_NAME,
-      rpID: process.env.HOSTNAME,
+      rpID: res.locals.hostname,
       userID: user.user_id,
       userName: user.name || 'Unnamed User',
       timeout,
@@ -163,8 +165,9 @@ router.post('/registerRequest', authzAPI, async (
     req.session.type = enrollmentType;
 
     res.json(options);
-  } catch (e) {
-    res.status(400).send({ status: false, error: e });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ status: false, error: error });
   }
 });
 
@@ -175,14 +178,14 @@ router.post('/registerResponse', authzAPI, async (
   try {
     if (!res.locals.user) throw 'Unauthorized.';
     if (!req.session.challenge) throw 'No challenge found.';
-    if (!process.env.HOSTNAME) throw 'HOSTNAME not configured as an environment variable.';
-    if (!process.env.ORIGIN) throw 'ORIGIN not configured as an environment variable.';
+    if (!res.locals.hostname) throw 'Hostname not configured.';
+    if (!res.locals.origin) throw 'Origin not configured.';
 
     const user = res.locals.user;
     const credential = <RegistrationCredentialJSON>req.body;
 
     const expectedChallenge = req.session.challenge;
-    const expectedRPID = process.env.HOSTNAME;
+    const expectedRPID = res.locals.hostname;
 
     let expectedOrigin = '';
     const ua = req.get('User-Agent');
@@ -198,7 +201,7 @@ router.post('/registerResponse', authzAPI, async (
       const androidHash = base64url.encode(octArray);
       expectedOrigin = `android:apk-key-hash:${androidHash}`; // TODO: Generate
     } else {
-      expectedOrigin = process.env.ORIGIN;
+      expectedOrigin = res.locals.origin;
     }
 
     const verification = await verifyRegistrationResponse({
@@ -241,12 +244,14 @@ router.post('/registerResponse', authzAPI, async (
 
     // Respond with user info
     res.json(credential);
-  } catch (e: any) {
+  } catch (error: any) {
+    console.error(error);
+
     delete req.session.challenge;
     delete req.session.timeout;
     delete req.session.type;
 
-    res.status(400).send({ status: false, error: e.message });
+    res.status(400).send({ status: false, error: error.message });
   }
 });
 
@@ -290,8 +295,10 @@ router.post('/authRequest', authzAPI, async (
     req.session.timeout = getNow() + WEBAUTHN_TIMEOUT;
 
     res.json(options);
-  } catch (e) {
-    res.status(400).json({ status: false, error: e });
+  } catch (error) {
+    console.error(error);
+
+    res.status(400).json({ status: false, error });
   }
 });
 
@@ -301,13 +308,13 @@ router.post('/authResponse', authzAPI, async (
 ) => {
   if (!res.locals.user) throw 'Unauthorized.';
 
-  if (!process.env.HOSTNAME) throw 'HOSTNAME not configured as an environment variable.';
-  if (!process.env.ORIGIN) throw 'ORIGIN not configured as an environment variable.';
+  if (!res.locals.hostname) throw 'Hostname not configured.';
+  if (!res.locals.origin) throw 'Origin not configured.';
 
   const user = res.locals.user;
   const expectedChallenge = req.session.challenge || '';
-  const expectedRPID = process.env.HOSTNAME;
-  const expectedOrigin = process.env.ORIGIN;
+  const expectedRPID = res.locals.hostname;
+  const expectedOrigin = res.locals.origin;
 
   try {
     const claimedCred = <AuthenticationCredentialJSON>req.body;
@@ -350,10 +357,12 @@ router.post('/authResponse', authzAPI, async (
     delete req.session.challenge;
     delete req.session.timeout;
     res.json(storedCred);
-  } catch (e) {
+  } catch (error) {
+    console.error(error);
+
     delete req.session.challenge;
     delete req.session.timeout;
-    res.status(400).json({ status: false, error: e });
+    res.status(400).json({ status: false, error });
   }
 });
 
