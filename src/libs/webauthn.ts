@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import base64url from 'base64url';
 import { getNow, csrfCheck, authzAPI } from '../libs/helper';
-import { getCredentials, getCredential, removeCredential, storeCredential } from './credential';
+import { getCredentials, removeCredential, storeCredential } from './credential';
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -222,21 +222,17 @@ router.post('/registerResponse', authzAPI, async (
     const base64CredentialID = base64url.encode(credentialID);
     const { transports, clientExtensionResults } = credential;
 
-    const existingCred = await getCredential(base64CredentialID);
-
-    if (!existingCred) {
-      await storeCredential({
-        user_id: user.user_id,
-        credentialID: base64CredentialID,
-        credentialPublicKey: base64PublicKey,
-        counter,
-        registered: getNow(),
-        user_verifying: registrationInfo.userVerified,
-        authenticatorAttachment: req.session.type || "undefined",
-        transports,
-        clientExtensionResults,
-      });
-    }
+    await storeCredential({
+      user_id: user.user_id,
+      credentialID: base64CredentialID,
+      credentialPublicKey: base64PublicKey,
+      counter,
+      registered: getNow(),
+      user_verifying: registrationInfo.userVerified,
+      authenticatorAttachment: req.session.type || "undefined",
+      transports,
+      clientExtensionResults,
+    });
 
     delete req.session.challenge;
     delete req.session.timeout;
