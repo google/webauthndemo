@@ -44,9 +44,7 @@ initializeApp({
 });
 
 const auth = getAuth();
-
 const ui = new firebaseui.auth.AuthUI(auth);
-
 const icon = $('#user-icon');
 
 /**
@@ -492,6 +490,8 @@ const onAuthenticate = async (): Promise<void> => {
     loading.stop();
   }
 };
+
+loading.start();
 
 $('#user-icon').addEventListener('click', signout);
 $('#isuvpaa-button').addEventListener('click', onISUVPAA);
