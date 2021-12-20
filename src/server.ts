@@ -54,7 +54,7 @@ if (process.env.NODE_ENV !== 'localhost') {
 app.use((req, res, next) => {
   res.locals.hostname = req.hostname;
   const protocol = process.env.NODE_ENV === 'localhost' ? 'http' : 'https';
-  res.locals.origin = new URL(`${protocol}://${req.headers.host}`).toString();
+  res.locals.origin = `${protocol}://${req.headers.host}`;
   res.locals.title = process.env.PROJECT_NAME;
   next();
 });
