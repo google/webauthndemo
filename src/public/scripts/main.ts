@@ -199,15 +199,13 @@ const listCredentials = async (): Promise<void> => {
       const extensions = cred.clientExtensionResults;
       const transports = cred.transports as string[];
       const authenticatorType = `${cred.user_verifying?'User Verifying ':''}`+
-        `${cred.authenticatorAttachment==='platform'?'Platform':'Roaming'} Authenticator`;
+        `${cred.authenticatorAttachment==='platform'?'Platform ':
+           cred.authenticatorAttachment==='cross-platform'?'Roaming ':''}Authenticator`;
       return html`
       <div class="mdc-card">
         <div class="mdc-card__primary-action" id="ID-${cred.credentialID}">
           <div class="card-title mdc-card__action-buttons">
             <span class="cred-title">${cred.id}</span>
-            <!-- <mwc-formfield label="${cred.id}" class="mdc-card__action-button">
-              <mwc-switch id="switch-${cred.credentialID}" selected></mwc-switch>  
-            </mwc-formfield> -->
             <div class="mdc-card__action-icons">
               <mwc-icon-button @click="${removeCredential(cred.credentialID)}" icon="delete_forever" title="Removes this credential registration from the server"></mwc-icon>
             </div>
