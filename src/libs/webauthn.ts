@@ -230,6 +230,9 @@ router.post('/registerResponse', authzAPI, async (
       registered: getNow(),
       user_verifying: registrationInfo.userVerified,
       authenticatorAttachment: req.session.type || "undefined",
+      browser: req.useragent?.browser,
+      os: req.useragent?.os,
+      platform: req.useragent?.platform,
       transports,
       clientExtensionResults,
     });

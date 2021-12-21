@@ -9,6 +9,7 @@ if (process.env.NODE_ENV === 'localhost') {
 
 import express, { Request, Response, RequestHandler } from 'express';
 import session from 'express-session';
+import useragent from 'express-useragent';
 import { engine } from 'express-handlebars';
 import { getFirestore } from 'firebase-admin/firestore';
 import { FirestoreStore } from '@google-cloud/connect-firestore';
@@ -26,6 +27,7 @@ app.engine('html', engine({
 app.set('views', views);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json() as RequestHandler);
+app.use(useragent.express());
 
 app.use(session({
   name: process.env.SESSION_STORE_NAME || 'session',

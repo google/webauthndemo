@@ -213,6 +213,8 @@ const listCredentials = async (): Promise<void> => {
           <div class="card-body">
             <dt>Authenticator Type</dt>
             <dd>${authenticatorType}</dd>
+            <dt>Environment</dt>
+            <dd>${cred.browser} / ${cred.os} / ${cred.platform}</dd>
             <dt>Transports</dt>
             <dd class="transports">
               ${!transports.length ? html`
