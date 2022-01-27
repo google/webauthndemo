@@ -29,8 +29,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json() as RequestHandler);
 app.use(useragent.express());
 
+let session_name;
+if (process.env.NODE_ENV === 'localhost') {
+  session_name = process.env.SESSION_STORE_NAME || 'session';
+} else {
+  session_name = `__Host-${process.env.SESSION_STORE_NAME || 'session'}`;
+}
+
+// TODO: The session seems to live very short.
 app.use(session({
-  name: process.env.SESSION_STORE_NAME || 'session',
+  name: session_name,
   secret: process.env.SECRET || 'secret',
   resave: false,
   saveUninitialized: false,
@@ -41,7 +49,7 @@ app.use(session({
   }),
   cookie: {
     secure: process.env.NODE_ENV !== 'localhost',
-    path: "/",
+    path: '/',
     sameSite: 'strict',
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
