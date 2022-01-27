@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import { WebAuthnRegistrationObject, WebAuthnAuthenticationObject } from '../public/scripts/common';
 import base64url from 'base64url';
 import { getNow, csrfCheck, authzAPI } from '../libs/helper';
 import { getCredentials, removeCredential, storeCredential } from './credential';
@@ -16,25 +17,6 @@ import {
   RegistrationCredentialJSON,
   AuthenticationCredentialJSON,
 } from '@simplewebauthn/typescript-types';
-
-interface WebAuthnRequestObject {
-  attestation: AttestationConveyancePreference
-  authenticatorSelection: {
-    authenticatorAttachment: AuthenticatorAttachment
-    userVerification: UserVerificationRequirement
-    residentKey: ResidentKeyRequirement
-  },
-  extensions: {
-    uvm?: boolean
-    appId?: boolean
-    appidExclude?: string
-    credProps?: boolean
-  }
-  excludeCredentials: boolean
-  emptyAllowCredentials: boolean
-  customTimeout?: number
-  abortTimeout?: number
-}
 
 const router = express.Router();
 
@@ -100,18 +82,20 @@ router.post('/registerRequest', authzAPI, async (
     if (!res.locals.hostname) throw 'Hostname not configured.';
 
     const user = res.locals.user;
-    const creationOptions = <WebAuthnRequestObject>req.body || {};
+    const creationOptions = <WebAuthnRegistrationObject>req.body || {};
 
     const excludeCredentials: PublicKeyCredentialDescriptor[] = [];
-    if (creationOptions.excludeCredentials) {
+    if (creationOptions.credentialsToExclude) {
       const credentials = await getCredentials(user.user_id);
       if (credentials.length > 0) {
         for (let cred of credentials) {
-          excludeCredentials.push({
-            id: base64url.toBuffer(cred.credentialID),
-            type: 'public-key',
-            transports: cred.transports,
-          });
+          if (creationOptions.credentialsToExclude.includes(`ID-${cred.credentialID}`)) {
+            excludeCredentials.push({
+              id: base64url.toBuffer(cred.credentialID),
+              type: 'public-key',
+              transports: cred.transports,
+            });
+          }
         }
       }
     }
@@ -133,12 +117,12 @@ router.post('/registerRequest', authzAPI, async (
     }
     const enrollmentType = aa || 'undefined';
     if (rk === 'required' || rk === 'preferred' || rk === 'discouraged') {
-      authenticatorSelection.requireResidentKey = (rk == 'required');
+      authenticatorSelection.residentKey = rk;
     }
     if (uv === 'required' || uv === 'preferred' || uv === 'discouraged') {
       authenticatorSelection.userVerification = uv;
     }
-    if (cp && (cp == 'none' || cp == 'indirect' || cp == 'direct')) {
+    if (cp === 'none' || cp === 'indirect' || cp === 'direct' || cp === 'enterprise') {
       attestation = cp;
     }
 
@@ -263,18 +247,18 @@ router.post('/authRequest', authzAPI, async (
   try {
     const user = res.locals.user;
 
-    const credId = req.query.credId;
-    const requestOptions = <WebAuthnRequestObject>req.body;
+    const requestOptions = <WebAuthnAuthenticationObject>req.body;
 
-    const userVerification = requestOptions.authenticatorSelection.userVerification || 'preferred';
+    const userVerification = requestOptions.userVerification || 'preferred';
     const timeout = requestOptions.customTimeout || WEBAUTHN_TIMEOUT;
     const allowCredentials: PublicKeyCredentialDescriptor[] = [];
 
-    if (!requestOptions.emptyAllowCredentials) {
+    // If `credentialsToAllow` is not defined, leave `allowCredentials` an empty array.
+    if (requestOptions.credentialsToAllow) {
       const credentials = await getCredentials(user.user_id);
       for (let cred of credentials) {
         // When credId is not specified, or matches the one specified
-        if (!credId || cred.credentialID == credId) {
+        if (requestOptions.credentialsToAllow.includes(`ID-${cred.credentialID}`)) {
           allowCredentials.push({
             id: base64url.toBuffer(cred.credentialID),
             type: 'public-key',

@@ -1,8 +1,10 @@
 import { html, render, $, showSnackbar, loading, _fetch } from './util';
+import { WebAuthnRegistrationObject, WebAuthnAuthenticationObject } from './common';
 import { base64url } from './base64url';
 import { MDCRipple } from '@material/ripple';
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
+import { Checkbox } from '@material/mwc-checkbox';
 import * as firebaseui from 'firebaseui';
 import {
   RegistrationCredential,
@@ -14,25 +16,6 @@ import {
   PublicKeyCredentialRequestOptions,
   PublicKeyCredentialRequestOptionsJSON
 } from '@simplewebauthn/typescript-types';
-
-interface WebAuthnRequestObject {
-  attestation: AttestationConveyancePreference
-  authenticatorSelection: {
-    authenticatorAttachment: AuthenticatorAttachment
-    userVerification: UserVerificationRequirement
-    residentKey: ResidentKeyRequirement
-  },
-  extensions: {
-    uvm?: boolean
-    appId?: boolean
-    appidExclude?: string
-    credProps?: boolean
-  }
-  excludeCredentials: boolean
-  emptyAllowCredentials: boolean
-  customTimeout?: number
-  abortTimeout?: number
-}
 
 initializeApp({
   apiKey: "AIzaSyCBxWRgC7bxaek2mwH-RjxhF3mJY2gPBxI",
@@ -121,11 +104,12 @@ onAuthStateChanged(auth, async user => {
 
 /**
  *  Collect advanced options and return a JSON object.
- * @returns WebAuthnRequestObject
+ * @returns WebAuthnRegistrationObject
  */
-const collectOptions = (): WebAuthnRequestObject => {
-  const excludeCredentials = $('#switch-rr').checked;
-  const emptyAllowCredentials = $('#switch-ec').checked;
+const collectOptions = (
+  mode: 'registration' | 'authentication' = 'registration'
+): WebAuthnRegistrationObject|WebAuthnAuthenticationObject => {
+  // const specifyCredentials = $('#switch-rr').checked;
   const authenticatorAttachment = $('#attachment').value;
   const attestation = $('#conveyance').value;
   const residentKey = $('#resident-key').value;
@@ -135,21 +119,36 @@ const collectOptions = (): WebAuthnRequestObject => {
   const customTimeout = parseInt($('#custom-timeout').value);
   // const abortTimeout = parseInt($('#abort-timeout').value);
 
-  const options = {
-    attestation,
-    authenticatorSelection: {
-      authenticatorAttachment,
-      userVerification,
-      residentKey
-    },
-    extensions: { uvm, credProps },
-    excludeCredentials,
-    emptyAllowCredentials,
-    customTimeout,
-    // abortTimeout,
-  } as WebAuthnRequestObject;
+  const cards = document.querySelectorAll<HTMLDivElement>('#credentials .mdc-card__primary-action');
+  const credentialsList: string[] = [];
+  cards.forEach(card => {
+    const checkbox = card.querySelector<Checkbox>('mwc-checkbox');
+    if (checkbox?.checked) credentialsList.push(card.id);
+  });
 
-  return options;
+  if (mode === 'registration') {
+    const credentialsToExclude: string[] = credentialsList;
+    return {
+      attestation,
+      authenticatorSelection: {
+        authenticatorAttachment,
+        userVerification,
+        residentKey
+      },
+      extensions: { uvm, credProps },
+      credentialsToExclude,
+      customTimeout,
+      // abortTimeout,
+    } as WebAuthnRegistrationObject;
+  } else {
+    const credentialsToAllow: string[] = credentialsList;
+    return {
+      extensions: { uvm, credProps },
+      credentialsToAllow,
+      customTimeout,
+      // abortTimeout,
+    } as WebAuthnAuthenticationObject
+  }
 }
 
 /**
@@ -205,7 +204,11 @@ const listCredentials = async (): Promise<void> => {
       <div class="mdc-card">
         <div class="mdc-card__primary-action" id="ID-${cred.credentialID}">
           <div class="card-title mdc-card__action-buttons">
-            <span class="cred-title">${cred.id}</span>
+            <div class="cred-title mdc-card__action-button">
+              <mwc-formfield label="${cred.id}">
+                <mwc-checkbox title="Check to exclude or allow this credential" checked></mwc-checkbox>
+              </mwc-formfield>
+            </div>
             <div class="mdc-card__action-icons">
               <mwc-icon-button @click="${removeCredential(cred.credentialID)}" icon="delete_forever" title="Removes this credential registration from the server"></mwc-icon>
             </div>
@@ -252,7 +255,7 @@ const listCredentials = async (): Promise<void> => {
  *  Register a new credential.
  * @param opts 
  */
-const registerCredential = async (opts: WebAuthnRequestObject): Promise<any> => {
+const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any> => {
   // Fetch credential creation options from the server.
   const options: PublicKeyCredentialCreationOptionsJSON =
     await _fetch('/webauthn/registerRequest', opts);
@@ -332,7 +335,7 @@ const registerCredential = async (opts: WebAuthnRequestObject): Promise<any> => 
  * @param opts 
  * @returns 
  */
-const authenticate = async (opts: WebAuthnRequestObject): Promise<any> => {
+const authenticate = async (opts: WebAuthnAuthenticationObject): Promise<any> => {
   // Fetch the credential request options.
   const options: PublicKeyCredentialRequestOptionsJSON =
     await _fetch('/webauthn/authRequest', opts);
@@ -436,7 +439,7 @@ const onISUVPAA = async (): Promise<void> => {
  */
 const onRegisterNewCredential = async (): Promise<void> => {
   loading.start();
-  const opts = collectOptions();
+  const opts = <WebAuthnRegistrationObject>collectOptions('registration');
   try {
     await registerCredential(opts);
     showSnackbar('A credential successfully registered!');
@@ -457,7 +460,8 @@ const onRegisterNewCredential = async (): Promise<void> => {
  */
 const onRegisterPlatformAuthenticator = async (): Promise<void> => {
   loading.start();
-  const opts = collectOptions();
+  const opts = <WebAuthnRegistrationObject>collectOptions('registration');
+  opts.authenticatorSelection = opts.authenticatorSelection || {};
   opts.authenticatorSelection.authenticatorAttachment = 'platform';
   opts.authenticatorSelection.userVerification = 'required';
   try {
@@ -478,7 +482,7 @@ const onRegisterPlatformAuthenticator = async (): Promise<void> => {
  */
 const onAuthenticate = async (): Promise<void> => {
   loading.start();
-  const opts = collectOptions();
+  const opts = <WebAuthnAuthenticationObject>collectOptions('authentication');
   try {
     const credential = await authenticate(opts);
     rippleCard(credential.credentialID);
