@@ -1,5 +1,5 @@
 import { html, render, $, showSnackbar, loading, _fetch } from './util';
-import { WebAuthnRegistrationObject, WebAuthnAuthenticationObject } from './common';
+import { WebAuthnRegistrationObject, WebAuthnAuthenticationObject, UserInfo } from './common';
 import { base64url } from './base64url';
 import { MDCRipple } from '@material/ripple';
 import { initializeApp } from 'firebase/app';
@@ -35,7 +35,7 @@ const icon = $('#user-icon');
  * @param authResult 
  * @returns always return `false`
  */
-const verifyIdToken = async (user: User): Promise<boolean> => {
+const verifyIdToken = async (user: User): Promise<UserInfo> => {
   const id_token = await user.getIdToken();
   return await _fetch('/auth/verify', { id_token });
 }
@@ -73,33 +73,41 @@ const signout = async () => {
 /**
  * Invoked when Firebase Auth status is changed.
  */
-onAuthStateChanged(auth, async user => {
+onAuthStateChanged(auth, async token => {
   if (!window.PublicKeyCredential) {
     render(html`
       <p>Your browser does not support WebAuthn.</p>
     `, $('#firebaseui-auth-container'));
     $('#dialog').show();
-    return;
+    return false;
   }
-  if (user) {
+
+  let user: UserInfo;
+
+  if (token) {
     try {
-      // Signed in
-      await verifyIdToken(user);
-      $('#dialog').close();
-      icon.removeAttribute('icon');
-      render(html`<img src="${user.photoURL}">`, icon);
-      showSnackbar('You are signed in!');
-      loading.stop();
-      listCredentials();
+      user = await verifyIdToken(token);
     } catch (error) {
       console.error(error);
       showSnackbar('Sign-in failed.');
+      return false;
     };
   } else {
-    // Signed out
-    displaySignin();
+    try {
+      user = await _fetch('/auth/userInfo');
+    } catch {
+      // Signed out
+      displaySignin();
+      return false;
+    }
   }
-  return false;
+  $('#dialog').close();
+  icon.removeAttribute('icon');
+  render(html`<img src="${user.picture}">`, icon);
+  showSnackbar('You are signed in!');
+  loading.stop();
+  listCredentials();
+  return true;
 });
 
 /**

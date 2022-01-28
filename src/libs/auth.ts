@@ -11,6 +11,19 @@ initializeApp({ credential: cert(ServiceAccount) });
 const auth = getAuth();
 const router = express.Router();
 
+router.post('/userInfo', async (req: Request, res: Response) => {
+  if (req.session.user_id) {
+    const user = {
+      user_id: req.session.user_id,
+      name: req.session.name,
+      picture: req.session.picture
+    };
+    res.json(user);
+  } else {
+    res.status(401).send('Unauthorized');
+  }
+});
+
 router.post('/verify', async (req: Request, res: Response) => {
   const { id_token } = req.body;
 
@@ -19,9 +32,11 @@ router.post('/verify', async (req: Request, res: Response) => {
     if (result) {
       req.session.user_id = result.user_id;
       req.session.name = result.name;
+      req.session.picture = result.picture;
       res.json({
-        status: true,
-        message: 'Successfully signed in.'
+        user_id: req.session.user_id,
+        name: req.session.name,
+        picture: req.session.picture
       });
     } else {
       throw 'Verification failed.';
@@ -37,11 +52,15 @@ router.post('/verify', async (req: Request, res: Response) => {
 });
 
 router.post('/signout', (req: Request, res: Response) => {
-  delete req.session.user_id;
-  delete req.session.name;
-  res.json({
-    status: true,
-    message: 'Successfully signed out.'
+  req.session.destroy(error => {
+    if (error) {
+      res.status(500).send(error);
+    } else {
+      res.json({
+        status: true,
+        message: 'Successfully signed out.'
+      });
+    }
   });
 });
 

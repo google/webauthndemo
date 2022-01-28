@@ -1,6 +1,12 @@
 import { PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON }
   from '@simplewebauthn/typescript-types';
 
+export interface UserInfo {
+  user_id: string
+  name: string
+  picture: string
+}
+
 export interface WebAuthnRegistrationObject extends Omit<PublicKeyCredentialCreationOptionsJSON, 'rp' | 'pubKeyCredParams'> {
   credentialsToExclude?: string[]
   customTimeout?: number
