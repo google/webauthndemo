@@ -11,17 +11,23 @@ Checkout the repository, then install.
 $ npm install
 ```
 
-## Set up Firebase
+## Build
 
-To run this project, you'll need [Cloud
-Firestore](https://firebase.google.com/docs/firestore). Follow the instructions
-to set one up (You may be able to run using local emulator as well).
+Bulid the project.
 
-Download [the service account
-key](https://console.cloud.google.com/iam-admin/serviceaccounts) as a JSON file
-and put it under `src` directory as `service-account.json`.
+```sh
+$ npm run build
+```
 
-## Run the server locally
+## Start the local server
+
+Run the Firestore emulator:
+
+```sh
+$ npm run emulator
+```
+
+Run the server:
 
 ```sh
 $ npm run dev
