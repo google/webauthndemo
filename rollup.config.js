@@ -17,7 +17,7 @@ const clientDst = path.join(dstRoot, 'public');
 
 export default () => {
   const sourcemap = process.env.NODE_ENV != 'production' ? 'inline' : false;
-  const env = process.env.NODE_ENV != 'production' ? '.env.development' : '.env.production';
+  const env = process.env.NODE_ENV != 'production' ? '.env.development' : '.env';
 
   const plugins = [
     typescript({

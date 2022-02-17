@@ -3,6 +3,7 @@
     "target": "esnext",
     "module": "commonjs",
     "lib": [ "ESNext", "DOM" ],
+    "rootDir": ".",
     "outDir": "../dist",
     "sourceMap": true,
     "strict": true,

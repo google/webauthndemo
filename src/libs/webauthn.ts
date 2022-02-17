@@ -25,6 +25,38 @@ router.use(csrfCheck);
 const RP_NAME = process.env.PROJECT_NAME || 'WebAuthn Demo';
 const WEBAUTHN_TIMEOUT = 1000 * 60 * 5; // 5 minutes
 
+export const getOrigin = (
+  _origin: string,
+  userAgent?: string
+): string => {
+  let origin = _origin;
+  if (!userAgent) return origin;
+
+  const appRe = /^[a-zA-z0-9_.]+/;
+  const match = userAgent.match(appRe);
+  if (match) {
+    // Check if UserAgent comes from a supported Android app.
+    if (process.env.ANDROID_PACKAGENAME && process.env.ANDROID_SHA256HASH) {
+      const package_names = process.env.ANDROID_PACKAGENAME.split(",").map(name => name.trim());
+      const hashes = process.env.ANDROID_SHA256HASH.split(",").map(hash => hash.trim());
+      const appName = match[0];
+      for (let i = 0; i < package_names.length; i++) {
+        if (appName === package_names[i]) {
+          // We recognize this app, so use the corresponding hash.
+          const octArray = hashes[i].split(':').map((h) =>
+            parseInt(h, 16),
+          );
+          const androidHash = base64url.encode(octArray.join(''));
+          origin = `android:apk-key-hash:${androidHash}`;
+          break;
+        }
+      }
+    }
+  }
+  
+  return origin;
+}
+
 /**
  * Returns a list of credentials
  **/
@@ -171,22 +203,7 @@ router.post('/registerResponse', authzAPI, async (
     const expectedChallenge = req.session.challenge;
     const expectedRPID = res.locals.hostname;
 
-    let expectedOrigin = '';
-    const ua = req.get('User-Agent');
-
-    // We don't plan to support Android native FIDO2 authenticators.
-    if (ua && ua.indexOf('okhttp') > -1) {
-      const hash = process.env.ANDROID_SHA256HASH;
-      if (!hash) {
-        throw 'ANDROID_SHA256HASH not configured as an environment variable.'
-      }
-      const octArray = hash.split(':').map(h => parseInt(h, 16));
-      // @ts-ignore
-      const androidHash = base64url.encode(octArray);
-      expectedOrigin = `android:apk-key-hash:${androidHash}`; // TODO: Generate
-    } else {
-      expectedOrigin = res.locals.origin;
-    }
+    let expectedOrigin = getOrigin(res.locals.origin, req.get('User-Agent'));
 
     const verification = await verifyRegistrationResponse({
       credential,
@@ -297,7 +314,7 @@ router.post('/authResponse', authzAPI, async (
   const user = res.locals.user;
   const expectedChallenge = req.session.challenge || '';
   const expectedRPID = res.locals.hostname;
-  const expectedOrigin = res.locals.origin;
+  const expectedOrigin = getOrigin(res.locals.origin, req.get('User-Agent'));
 
   try {
     const claimedCred = <AuthenticationCredentialJSON>req.body;
