@@ -1,24 +1,27 @@
 <span slot="title">WebAuthn Demo</span>
 <span slot="subtitle">Advanced Options</span>
-<!-- <div class="advanced-option">
-  <mwc-formfield label="Exclude or allow checked credentials">
-    <mwc-checkbox id="switch-rr"></mwc-checkbox>
-  </mwc-formfield>
-</div> -->
-<!-- <div class="advanced-option">
-  <mwc-formfield label="Allow credentials">
-    <mwc-checkbox id="switch-ec"></mwc-checkbox>
-  </mwc-formfield>
-</div> -->
 <div class="advanced-option">
-  <mwc-select id="attachment" label="Attachment Type" outlined>
+  <mwc-formfield
+    label="Toggle all checkboxes"
+    title="Toggles all credential's checkboxes. These checkboxes are used to determine whether to include in `excludeCredentials` or `allowCredentials`.">
+    <mwc-checkbox id="toggle-checkboxes" checked></mwc-checkbox>
+  </mwc-formfield>
+</div>
+<div class="advanced-option">
+  <mwc-select
+    id="attachment"
+    label="Attachment Type"
+    outlined>
     <mwc-list-item selected></mwc-list-item>
     <mwc-list-item value="platform">Platform</mwc-list-item>
     <mwc-list-item value="cross-platform">Cross-Platform</mwc-list-item>
   </mwc-select>
 </div>
 <div class="advanced-option">
-  <mwc-select id="conveyance" label="Conveyance Preference" outlined>
+  <mwc-select
+    id="conveyance"
+    label="Conveyance Preference"
+    outlined>
     <mwc-list-item selected></mwc-list-item>
     <mwc-list-item value="none">None</mwc-list-item>
     <mwc-list-item value="indirect">Indirect</mwc-list-item>
@@ -27,7 +30,10 @@
   </mwc-select>
 </div>
 <div class="advanced-option">
-  <mwc-select id="resident-key" label="Discoverable Credential" outlined>
+  <mwc-select
+    id="resident-key"
+    label="Discoverable Credential"
+    outlined>
     <mwc-list-item selected></mwc-list-item>
     <mwc-list-item value="required">Required</mwc-list-item>
     <mwc-list-item value="preferred">Preferred</mwc-list-item>
@@ -35,7 +41,10 @@
   </mwc-select>
 </div>
 <div class="advanced-option">
-  <mwc-select id="user-verification" label="User Verification" outlined>
+  <mwc-select
+    id="user-verification"
+    label="User Verification"
+    outlined>
     <mwc-list-item selected></mwc-list-item>
     <mwc-list-item value="required">Required</mwc-list-item>
     <mwc-list-item value="preferred">Preferred</mwc-list-item>
@@ -51,7 +60,8 @@
     outlined></mwc-textfield>
 </div>
 <div class="advanced-option">
-  <mwc-formfield label="User Verification Method">
+  <mwc-formfield
+    label="User Verification Method">
     <mwc-checkbox id="switch-uvm"></mwc-checkbox>
   </mwc-formfield>
 </div>

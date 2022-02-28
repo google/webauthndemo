@@ -419,6 +419,16 @@ const removeCredential = (credId: string) => async () => {
   }
 };
 
+const onToggleCheckboxes = (e: any): void => {
+  const checked = !e.target.checked;
+  const cards = document.querySelectorAll<HTMLDivElement>('#credentials .mdc-card__primary-action');
+  cards.forEach(card => {
+    const checkbox = card.querySelector<Checkbox>('mwc-checkbox');
+    if (checkbox) checkbox.checked = checked;
+  });
+  e.target.checked = checked;
+}
+
 /**
  * Determine whether
  * `PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()`
@@ -510,3 +520,4 @@ $('#isuvpaa-button').addEventListener('click', onISUVPAA);
 $('#credential-button').addEventListener('click', onRegisterNewCredential);
 $('#platform-button').addEventListener('click', onRegisterPlatformAuthenticator);
 $('#authenticate-button').addEventListener('click', onAuthenticate);
+$('#toggle-checkboxes').addEventListener('click', onToggleCheckboxes);
