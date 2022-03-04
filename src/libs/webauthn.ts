@@ -270,6 +270,7 @@ router.post('/authRequest', authzAPI, async (
     const userVerification = requestOptions.userVerification || 'preferred';
     const timeout = requestOptions.customTimeout || WEBAUTHN_TIMEOUT;
     const allowCredentials: PublicKeyCredentialDescriptor[] = [];
+    const rpID = res.locals.hostname;
 
     // If `credentialsToAllow` is not defined, leave `allowCredentials` an empty array.
     if (requestOptions.credentialsToAllow) {
@@ -290,6 +291,7 @@ router.post('/authRequest', authzAPI, async (
       timeout,
       allowCredentials,
       userVerification,
+      rpID
     });
 
     req.session.challenge = options.challenge;
