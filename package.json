@@ -8,10 +8,10 @@
     "clean": "rimraf ./dist",
     "build": "npm run clean && rollup -c && tsc --project ./src/tsconfig.json",
     "build:prod": "npm run clean && rollup -c --environment NODE_ENV:production && tsc --project ./src/tsconfig.json",
-    "deploy": "npm run build && gcloud app deploy dev.yaml --project=webauthndemo-v2",
-    "deploy:prod": "npm run build:prod && gcloud app deploy app.yaml --project=webauthndemo-v2",
+    "deploy": "npm run build && gcloud app deploy dev.yaml --project=try-webauthn",
+    "deploy:prod": "npm run build:prod && gcloud app deploy app.yaml --project=try-webauthn",
     "dev": "NODE_ENV=localhost node dist/server.js",
-    "emulator": "firebase emulators:start --only firestore --project webauthndemo-v2 --import=./.data --export-on-exit",
+    "emulator": "firebase emulators:start --only firestore,auth --project try-webauthn --import=./.data --export-on-exit",
     "start": "node dist/server.js"
   },
   "repository": {

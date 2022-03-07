@@ -18,12 +18,13 @@ import {
 } from '@simplewebauthn/typescript-types';
 
 initializeApp({
-  apiKey: "AIzaSyCBxWRgC7bxaek2mwH-RjxhF3mJY2gPBxI",
-  authDomain: "webauthndemo-v2.firebaseapp.com",
-  projectId: "webauthndemo-v2",
-  storageBucket: "webauthndemo-v2.appspot.com",
-  messagingSenderId: "988350542501",
-  appId: "1:988350542501:web:778af145915d7ad05d134c"
+  apiKey: "AIzaSyBC_U6UbKJE0evrgaITJSk6T_sZmMaZO-4",
+  authDomain: "try-webauthn.firebaseapp.com",
+  projectId: "try-webauthn",
+  storageBucket: "try-webauthn.appspot.com",
+  messagingSenderId: "557912693280",
+  appId: "1:557912693280:web:c47da88d666eaf0f40fa45",
+  measurementId: "G-NWVKPRNL5Q"
 });
 
 const auth = getAuth();

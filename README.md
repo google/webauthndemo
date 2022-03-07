@@ -19,7 +19,7 @@ Bulid the project.
 $ npm run build
 ```
 
-## Start the local server
+## Start a local server
 
 Run the Firestore emulator:
 

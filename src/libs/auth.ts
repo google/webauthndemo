@@ -1,12 +1,8 @@
 import express, { Request, Response } from 'express';
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
-import { cert } from 'firebase-admin/app';
-import ServiceAccount from '../service-account.json';
 
-// Service Account config is required only when it's using non-default Firestore.
-// @ts-ignore
-initializeApp({ credential: cert(ServiceAccount) });
+initializeApp();
 
 const auth = getAuth();
 const router = express.Router();

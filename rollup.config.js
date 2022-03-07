@@ -71,9 +71,6 @@ export default () => {
           src: path.join(serverSrc, 'templates', '*'),
           dest: path.join(dstRoot, 'templates'),
         }, {
-          src: path.join(clientSrc, '.well-known', '*'),
-          dest: path.join(clientDst, '.well-known'),
-        }, {
           src: path.join(serverSrc, env),
           dest: dstRoot,
           rename: '.env'
