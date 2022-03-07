@@ -82,7 +82,7 @@ app.get('/.well-known/assetlinks.json', (req, res) => {
     relation: relation,
     target: {
       namespace: 'web',
-      site: process.env.ORIGIN,
+      site: res.locals.origin,
     },
   });
   if (process.env.ANDROID_PACKAGENAME && process.env.ANDROID_SHA256HASH) {
