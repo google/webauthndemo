@@ -3,9 +3,15 @@ import { WebAuthnRegistrationObject, WebAuthnAuthenticationObject, UserInfo } fr
 import { base64url } from './base64url';
 import { MDCRipple } from '@material/ripple';
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
 import { Checkbox } from '@material/mwc-checkbox';
 import * as firebaseui from 'firebaseui';
+import {
+  getAuth,
+  connectAuthEmulator,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  User
+} from 'firebase/auth';
 import {
   RegistrationCredential,
   RegistrationCredentialJSON,
@@ -28,6 +34,9 @@ initializeApp({
 });
 
 const auth = getAuth();
+if (location.hostname === 'localhost') {
+  connectAuthEmulator(auth, 'http://localhost:9099');
+}
 const ui = new firebaseui.auth.AuthUI(auth);
 const icon = $('#user-icon');
 
