@@ -2,9 +2,14 @@
 <span slot="subtitle">Advanced Options</span>
 <div class="advanced-option">
   <mwc-formfield
-    label="Toggle all checkboxes"
+    label="Exclude all credentials"
     title="Toggles all credential's checkboxes. These checkboxes are used to determine whether to include in `excludeCredentials` or `allowCredentials`.">
-    <mwc-checkbox id="toggle-checkboxes" checked></mwc-checkbox>
+    <mwc-checkbox id="exclude-all-credentials" checked></mwc-checkbox>
+  </mwc-formfield>
+  <mwc-formfield
+    label="Send empty `allowCredentials`"
+    title="Toggles all credential's checkboxes. These checkboxes are used to determine whether to include in `excludeCredentials` or `allowCredentials`.">
+    <mwc-checkbox id="empty-allow-credentials"></mwc-checkbox>
   </mwc-formfield>
 </div>
 <div class="advanced-option">

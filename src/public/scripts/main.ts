@@ -139,12 +139,20 @@ const collectOptions = (
 
   const cards = document.querySelectorAll<HTMLDivElement>('#credentials .mdc-card__primary-action');
   const credentialsList: string[] = [];
-  cards.forEach(card => {
-    const checkbox = card.querySelector<Checkbox>('mwc-checkbox');
-    if (checkbox?.checked) credentialsList.push(card.id);
-  });
 
+  // This is registration
   if (mode === 'registration') {
+    // Force exclude all credentials.
+    if ($('#exclude-all-credentials').checked) {
+      cards.forEach(card => credentialsList.push(card.id));
+
+    // // Otherewise exclude ones that are checked.
+    // } else {
+    //   cards.forEach(card => {
+    //     const checkbox = card.querySelector<Checkbox>('mwc-checkbox');
+    //     if (checkbox?.checked) credentialsList.push(card.id);
+    //   });
+    }
     const credentialsToExclude: string[] = credentialsList;
     return {
       attestation,
@@ -158,8 +166,20 @@ const collectOptions = (
       customTimeout,
       // abortTimeout,
     } as WebAuthnRegistrationObject;
+  
+  // This is authentication
   } else {
+    // "Force empty `allowCredentials`"" is not checked
+    if (!$('#empty-allow-credentials').checked) {
+      // cards.forEach(card => {
+      //   const checkbox = card.querySelector<Checkbox>('mwc-checkbox');
+      //   if (checkbox?.checked) credentialsList.push(card.id);
+      // });
+      cards.forEach(card => credentialsList.push(card.id));
+    }
+    // If "Force empty `allowCredentials`" is checked, pass an empty array.
     const credentialsToAllow: string[] = credentialsList;
+
     return {
       extensions: { uvm, credProps },
       credentialsToAllow,
@@ -222,11 +242,12 @@ const listCredentials = async (): Promise<void> => {
       <div class="mdc-card">
         <div class="mdc-card__primary-action" id="ID-${cred.credentialID}">
           <div class="card-title mdc-card__action-buttons">
-            <div class="cred-title mdc-card__action-button">
+            <div>${cred.id}</div>
+            <!-- <div class="cred-title mdc-card__action-button">
               <mwc-formfield label="${cred.id}">
                 <mwc-checkbox title="Check to exclude or allow this credential" checked></mwc-checkbox>
               </mwc-formfield>
-            </div>
+            </div> -->
             <div class="mdc-card__action-icons">
               <mwc-icon-button @click="${removeCredential(cred.credentialID)}" icon="delete_forever" title="Removes this credential registration from the server"></mwc-icon>
             </div>
@@ -429,15 +450,15 @@ const removeCredential = (credId: string) => async () => {
   }
 };
 
-const onToggleCheckboxes = (e: any): void => {
-  const checked = !e.target.checked;
-  const cards = document.querySelectorAll<HTMLDivElement>('#credentials .mdc-card__primary-action');
-  cards.forEach(card => {
-    const checkbox = card.querySelector<Checkbox>('mwc-checkbox');
-    if (checkbox) checkbox.checked = checked;
-  });
-  e.target.checked = checked;
-}
+// const onToggleCheckboxes = (e: any): void => {
+//   const checked = !e.target.checked;
+//   const cards = document.querySelectorAll<HTMLDivElement>('#credentials .mdc-card__primary-action');
+//   cards.forEach(card => {
+//     const checkbox = card.querySelector<Checkbox>('mwc-checkbox');
+//     if (checkbox) checkbox.checked = checked;
+//   });
+//   e.target.checked = checked;
+// }
 
 /**
  * Determine whether
@@ -474,7 +495,7 @@ const onRegisterNewCredential = async (): Promise<void> => {
     listCredentials();
   } catch (e: any) {
     console.error(e);
-    showSnackbar('Registering a credential failed');
+    showSnackbar(e.message);
   } finally {
     loading.stop();
   }
@@ -498,7 +519,7 @@ const onRegisterPlatformAuthenticator = async (): Promise<void> => {
     listCredentials();
   } catch (e: any) {
     console.error(e);
-    showSnackbar('Registering a credential failed');
+    showSnackbar(e.message);
   } finally {
     loading.stop();
   }
@@ -517,7 +538,7 @@ const onAuthenticate = async (): Promise<void> => {
     showSnackbar('Authentication succeeded!');
   } catch (e: any) {
     console.error(e);
-    showSnackbar('Authentication failed');
+    showSnackbar(e.message);
   } finally {
     loading.stop();
   }
@@ -530,4 +551,4 @@ $('#isuvpaa-button').addEventListener('click', onISUVPAA);
 $('#credential-button').addEventListener('click', onRegisterNewCredential);
 $('#platform-button').addEventListener('click', onRegisterPlatformAuthenticator);
 $('#authenticate-button').addEventListener('click', onAuthenticate);
-$('#toggle-checkboxes').addEventListener('click', onToggleCheckboxes);
+// $('#toggle-checkboxes').addEventListener('click', onToggleCheckboxes);
