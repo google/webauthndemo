@@ -144,7 +144,10 @@ const collectOptions = (
   if (mode === 'registration') {
     // Force exclude all credentials.
     if ($('#exclude-all-credentials').checked) {
-      cards.forEach(card => credentialsList.push(card.id));
+      cards.forEach(card => {
+        const checkbox = card.querySelector<Checkbox>('mwc-checkbox');
+        if (checkbox?.checked) credentialsList.push(card.id)
+      });
 
     // // Otherewise exclude ones that are checked.
     // } else {
@@ -171,11 +174,11 @@ const collectOptions = (
   } else {
     // "Force empty `allowCredentials`"" is not checked
     if (!$('#empty-allow-credentials').checked) {
-      // cards.forEach(card => {
-      //   const checkbox = card.querySelector<Checkbox>('mwc-checkbox');
-      //   if (checkbox?.checked) credentialsList.push(card.id);
-      // });
-      cards.forEach(card => credentialsList.push(card.id));
+       cards.forEach(card => {
+         const checkbox = card.querySelector<Checkbox>('mwc-checkbox');
+         if (checkbox?.checked) credentialsList.push(card.id);
+       });
+      //cards.forEach(card => credentialsList.push(card.id));
     }
     // If "Force empty `allowCredentials`" is checked, pass an empty array.
     const credentialsToAllow: string[] = credentialsList;
@@ -242,12 +245,11 @@ const listCredentials = async (): Promise<void> => {
       <div class="mdc-card">
         <div class="mdc-card__primary-action" id="ID-${cred.credentialID}">
           <div class="card-title mdc-card__action-buttons">
-            <div>${cred.id}</div>
-            <!-- <div class="cred-title mdc-card__action-button">
+            <div class="cred-title mdc-card__action-button">
               <mwc-formfield label="${cred.id}">
                 <mwc-checkbox title="Check to exclude or allow this credential" checked></mwc-checkbox>
               </mwc-formfield>
-            </div> -->
+            </div>
             <div class="mdc-card__action-icons">
               <mwc-icon-button @click="${removeCredential(cred.credentialID)}" icon="delete_forever" title="Removes this credential registration from the server"></mwc-icon>
             </div>
@@ -283,6 +285,13 @@ const listCredentials = async (): Promise<void> => {
       </div>
     `}), $('#credentials'));
     loading.stop();
+    if (!$('#exclude-all-credentials').checked) {
+      const cards = document.querySelectorAll<HTMLDivElement>('#credentials .mdc-card__primary-action');
+      cards.forEach(card => {
+        const checkbox = card.querySelector<Checkbox>('mwc-checkbox');
+        if (checkbox) checkbox.checked = false;
+      });
+    }
   } catch (e) {
     console.error(e);
     showSnackbar('Loading credentials failed.');
@@ -460,6 +469,16 @@ const removeCredential = (credId: string) => async () => {
 //   e.target.checked = checked;
 // }
 
+const onExcludeAllCredentials = (e: any): void => {
+  const checked = !e.target.checked;
+  const cards = document.querySelectorAll<HTMLDivElement>('#credentials .mdc-card__primary-action');
+  cards.forEach(card => {
+    const checkbox = card.querySelector<Checkbox>('mwc-checkbox');
+    if (checkbox) checkbox.checked = checked;
+  });
+  e.target.checked = checked;
+}
+
 /**
  * Determine whether
  * `PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()`
@@ -552,3 +571,4 @@ $('#credential-button').addEventListener('click', onRegisterNewCredential);
 $('#platform-button').addEventListener('click', onRegisterPlatformAuthenticator);
 $('#authenticate-button').addEventListener('click', onAuthenticate);
 // $('#toggle-checkboxes').addEventListener('click', onToggleCheckboxes);
+$('#exclude-all-credentials').addEventListener('click', onExcludeAllCredentials);
