@@ -552,6 +552,10 @@ const onAuthenticate = async (): Promise<void> => {
   loading.start();
   const opts = <WebAuthnAuthenticationObject>collectOptions('authentication');
   try {
+    // throw errors when the allow credential list is empty when discoverable credential is not required
+    if (opts?.credentialsToAllow?.length == 0 && $('#resident-key').value !== 'required' ) {
+      throw new Error('Authentication failed with NotSupportedError');
+    }
     const credential = await authenticate(opts);
     rippleCard(credential.credentialID);
     showSnackbar('Authentication succeeded!');
