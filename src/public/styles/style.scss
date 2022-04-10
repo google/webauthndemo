@@ -23,6 +23,12 @@ body {
   height: 100%;
 }
 
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .flex-layout {
   display: flex;
   height: calc(100% - 138px);
@@ -115,5 +121,12 @@ footer {
         --mdc-icon-size: 16px;
       }
     }
+  }
+}
+
+mwc-dialog {
+  min-width: 300px;
+  mwc-textfield {
+    margin: 8px 0;
   }
 }

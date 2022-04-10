@@ -66,10 +66,12 @@ const displaySignin = () => {
 /**
  * Sign out from Firebase Auth
  */
-const signout = async () => {
+const onSignout = async (e: any) => {
   if (!confirm('Do you want to sign out?')) {
+    e.preventDefault();
     return;
   }
+  $('#user-info').close();
   await auth.signOut();
   await _fetch('/auth/signout');
   icon.innerHTML = '';
@@ -95,14 +97,31 @@ onAuthStateChanged(auth, async token => {
   let user: UserInfo;
 
   if (token) {
+    // When signed in.
     try {
       user = await verifyIdToken(token);
+
+      const _userInfo = localStorage.getItem('userInfo');
+      // If there's already stored user info, fill the User Info dialog with them.
+      if (!_userInfo) {
+        localStorage.setItem('userInfo', JSON.stringify(user));
+        $('#username').value = user.name;
+        $('#display-name').value = user.displayName;
+        $('#picture-url').value = user.picture;
+      } else {
+        const userInfo = JSON.parse(_userInfo);
+        $('#username').value = userInfo.name;
+        $('#display-name').value = userInfo.displayName;
+        $('#picture-url').value = userInfo.picture;
+      }
     } catch (error) {
       console.error(error);
       showSnackbar('Sign-in failed.');
       return false;
     };
+
   } else {
+    // When signed out.
     try {
       user = await _fetch('/auth/userInfo');
     } catch {
@@ -156,6 +175,10 @@ const collectOptions = (
     //     if (checkbox?.checked) credentialsList.push(card.id);
     //   });
     }
+
+    const userInfo = localStorage.getItem('userInfo');
+    const user = userInfo ? JSON.parse(userInfo) : undefined;
+
     const credentialsToExclude: string[] = credentialsList;
     return {
       attestation,
@@ -167,6 +190,7 @@ const collectOptions = (
       extensions: { uvm, credProps },
       credentialsToExclude,
       customTimeout,
+      user,
       // abortTimeout,
     } as WebAuthnRegistrationObject;
   
@@ -459,16 +483,6 @@ const removeCredential = (credId: string) => async () => {
   }
 };
 
-// const onToggleCheckboxes = (e: any): void => {
-//   const checked = !e.target.checked;
-//   const cards = document.querySelectorAll<HTMLDivElement>('#credentials .mdc-card__primary-action');
-//   cards.forEach(card => {
-//     const checkbox = card.querySelector<Checkbox>('mwc-checkbox');
-//     if (checkbox) checkbox.checked = checked;
-//   });
-//   e.target.checked = checked;
-// }
-
 const onExcludeAllCredentials = (e: any): void => {
   const checked = !e.target.checked;
   const cards = document.querySelectorAll<HTMLDivElement>('#credentials .mdc-card__primary-action');
@@ -478,6 +492,47 @@ const onExcludeAllCredentials = (e: any): void => {
   });
   e.target.checked = checked;
 }
+
+/**
+ * When the user icon is clicked, show the User Info dialog.
+ */
+const onUserIconClicked = () => {
+  $('#user-info').show();
+}
+
+/**
+ * When "Save" button in the User Info dialog is clicked, update the user info.
+ * @param e 
+ */
+const onUserInfoUpdate = (e: any): void => {
+  const username = $('#username');
+  const displayName = $('#display-name');
+  const pictureUrl = $('#picture-url');
+
+  let success = true;
+  if (!username.checkValidity()) {
+    username.reportValidity();
+    success = false;
+  }
+  if (!displayName.checkValidity()) {
+    displayName.reportValidity();
+    success = false;
+  }
+  if(!pictureUrl.checkValidity()) {
+    pictureUrl.reportValidity();
+    success = false;
+  }
+
+  if (!success) {
+    e.preventDefault();
+  } else {
+    localStorage.setItem('userInfo', JSON.stringify({
+      name: username.value,
+      displayName: displayName.value,
+      picture: pictureUrl.value,
+    }));
+  }
+};
 
 /**
  * Determine whether
@@ -565,10 +620,11 @@ const onAuthenticate = async (): Promise<void> => {
 
 loading.start();
 
-$('#user-icon').addEventListener('click', signout);
 $('#isuvpaa-button').addEventListener('click', onISUVPAA);
 $('#credential-button').addEventListener('click', onRegisterNewCredential);
 $('#platform-button').addEventListener('click', onRegisterPlatformAuthenticator);
 $('#authenticate-button').addEventListener('click', onAuthenticate);
-// $('#toggle-checkboxes').addEventListener('click', onToggleCheckboxes);
 $('#exclude-all-credentials').addEventListener('click', onExcludeAllCredentials);
+$('#user-icon').addEventListener('click', onUserIconClicked);
+$('#signout').addEventListener('click', onSignout);
+$('#save-user-info').addEventListener('click', onUserInfoUpdate);
