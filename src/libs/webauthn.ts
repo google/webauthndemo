@@ -16,6 +16,7 @@ import {
   AuthenticatorDevice,
   RegistrationCredentialJSON,
   AuthenticationCredentialJSON,
+  PublicKeyCredentialUserEntityJSON,
 } from '@simplewebauthn/typescript-types';
 
 const router = express.Router();
@@ -114,12 +115,13 @@ router.post('/registerRequest', authzAPI, async (
     if (!res.locals.user) throw 'Unauthorized.';
     if (!res.locals.hostname) throw 'Hostname not configured.';
 
-    const user = res.locals.user;
+    // TODO: Make sure to type this variable.
+    const googleUser = res.locals.user;
     const creationOptions = <WebAuthnRegistrationObject>req.body || {};
 
     const excludeCredentials: PublicKeyCredentialDescriptor[] = [];
     if (creationOptions.credentialsToExclude) {
-      const credentials = await getCredentials(user.user_id);
+      const credentials = await getCredentials(googleUser.user_id);
       if (credentials.length > 0) {
         for (let cred of credentials) {
           if (creationOptions.credentialsToExclude.includes(`ID-${cred.credentialID}`)) {
@@ -159,6 +161,12 @@ router.post('/registerRequest', authzAPI, async (
       attestation = cp;
     }
 
+    const user = {
+      id: googleUser.user_id,
+      name: creationOptions.user?.name || googleUser.name || 'Unnamed User',
+      displayName: creationOptions.user?.displayName || googleUser.displayName || 'Unnamed User',
+    } as PublicKeyCredentialUserEntityJSON
+
     // TODO: Validate
     const extensions = creationOptions.extensions;
     const timeout = creationOptions.customTimeout || WEBAUTHN_TIMEOUT;
@@ -166,8 +174,9 @@ router.post('/registerRequest', authzAPI, async (
     const options = generateRegistrationOptions({
       rpName: RP_NAME,
       rpID: res.locals.hostname,
-      userID: user.user_id,
-      userName: user.name || 'Unnamed User',
+      userID: user.id,
+      userName: user.name,
+      userDisplayName: user.displayName,
       timeout,
       // Prompt users for additional information about the authenticator.
       attestationType: attestation,

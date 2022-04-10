@@ -4,6 +4,7 @@ import { PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptio
 export interface UserInfo {
   user_id: string
   name: string
+  displayName: string
   picture: string
 }
 

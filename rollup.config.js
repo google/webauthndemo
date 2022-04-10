@@ -62,7 +62,7 @@ export default () => {
           src: 'firebase.json',
           dest: dstRoot,
         }, {
-          src: path.join(clientSrc, 'favicon.*'),
+          src: path.join(clientSrc, '*.svg'),
           dest: clientDst,
         }, {
           src: path.join(clientSrc, 'manifest.json'),

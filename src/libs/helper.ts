@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { UserInfo } from '../public/scripts/common';
 
 const getNow = () => new Date().getTime();
 
@@ -29,7 +30,7 @@ const authzAPI = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const { user_id, name } = req.session;
+  const { user_id, name, displayName, picture } = req.session;
 
   if (process.env.NODE_ENV !== 'production') {
     console.log('Session:', req.session);
@@ -40,7 +41,7 @@ const authzAPI = async (
     return;
   }
 
-  res.locals.user = { user_id, name };
+  res.locals.user = {user_id, name, displayName, picture } as UserInfo;
   if (process.env.NODE_ENV !== 'production') {
     console.log('User:', res.locals.user);
   }

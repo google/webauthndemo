@@ -5,6 +5,7 @@ declare module 'express-session' {
     // User ID and the indicator that the user is signed in.
     user_id?: string,
     name?: string,
+    displayName?: string,
     picture?: string,
     // Timestamp of the recent successful sign-in time.
     timeout?: number,
