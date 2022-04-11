@@ -68,7 +68,7 @@ const displaySignin = () => {
  */
 const onSignout = async (e: any) => {
   if (!confirm('Do you want to sign out?')) {
-    e.preventDefault();
+    e.stopPropagation();
     return;
   }
   $('#user-info').close();
@@ -101,14 +101,18 @@ onAuthStateChanged(auth, async token => {
     try {
       user = await verifyIdToken(token);
 
+      // User Info is stored in the local storage.
+      // This will be deleted when signing out.
       const _userInfo = localStorage.getItem('userInfo');
       // If there's already stored user info, fill the User Info dialog with them.
       if (!_userInfo) {
+        // If there's no previous user info, store the current user info.
         localStorage.setItem('userInfo', JSON.stringify(user));
         $('#username').value = user.name;
         $('#display-name').value = user.displayName;
         $('#picture-url').value = user.picture;
       } else {
+        // If there's user info in the local storage, use it.
         const userInfo = JSON.parse(_userInfo);
         $('#username').value = userInfo.name;
         $('#display-name').value = userInfo.displayName;
@@ -497,6 +501,13 @@ const onExcludeAllCredentials = (e: any): void => {
  * When the user icon is clicked, show the User Info dialog.
  */
 const onUserIconClicked = () => {
+  const _userInfo = localStorage.getItem('userInfo');
+  if (_userInfo) {
+    const userInfo = JSON.parse(_userInfo);
+    $('#username').value = userInfo.name;
+    $('#display-name').value = userInfo.displayName;
+    $('#picture-url').value = userInfo.picture;
+  }
   $('#user-info').show();
 }
 
@@ -524,7 +535,7 @@ const onUserInfoUpdate = (e: any): void => {
   }
 
   if (!success) {
-    e.preventDefault();
+    e.stopPropagation();
   } else {
     localStorage.setItem('userInfo', JSON.stringify({
       name: username.value,

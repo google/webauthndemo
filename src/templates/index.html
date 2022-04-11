@@ -26,17 +26,30 @@
     <mwc-textfield
       type="text"
       label="username"
+      pattern="^.{3,512}"
       id="username"></mwc-textfield>
     <mwc-textfield
       type="text"
       label="display-name"
+      pattern="^.{3,512}"
       id="display-name"></mwc-textfield>
     <mwc-textfield
       type="url"
       label="Picture URL"
+      pattern="^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.?[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$"
       id="picture-url"></mwc-textfieldtype=>
   </div>
-  <mwc-button slot="secondaryAction" dialogAction="close">Cancel</mwc-button>
-  <mwc-button id="save-user-info" slot="primaryAction" dialogAction="save" outlined>Save</mwc-button>
-  <mwc-button id="signout" slot="primaryAction" dialogAction="signout" outlined>Sign-out</mwc-button>
+  <mwc-button
+    slot="secondaryAction"
+    dialogAction="close">Cancel</mwc-button>
+  <mwc-button
+    id="save-user-info"
+    slot="primaryAction"
+    dialogAction="save"
+    outlined>Save</mwc-button>
+  <mwc-button
+    id="signout"
+    slot="primaryAction"
+    dialogAction="signout"
+    outlined>Sign-out</mwc-button>
 </mwc-dialog>
