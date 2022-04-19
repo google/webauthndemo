@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { WebAuthnRegistrationObject, WebAuthnAuthenticationObject } from '../public/scripts/common';
 import base64url from 'base64url';
+import { createHash } from 'crypto';
 import { getNow, csrfCheck, authzAPI } from '../libs/helper';
 import { getCredentials, removeCredential, storeCredential } from './credential';
 import {
@@ -161,10 +162,16 @@ router.post('/registerRequest', authzAPI, async (
       attestation = cp;
     }
 
+    const encoder = new TextEncoder();
+    const name = creationOptions.user?.name || googleUser.name || 'Unnamed User';
+    const displayName = creationOptions.user?.displayName || googleUser.displayName || 'Unnamed User';
+    const data = encoder.encode(`${name}${displayName}`)
+    const userId = createHash('sha256').update(data).digest();
+
     const user = {
-      id: googleUser.user_id,
-      name: creationOptions.user?.name || googleUser.name || 'Unnamed User',
-      displayName: creationOptions.user?.displayName || googleUser.displayName || 'Unnamed User',
+      id: base64url.encode(Buffer.from(userId)),
+      name,
+      displayName
     } as PublicKeyCredentialUserEntityJSON
 
     // TODO: Validate
