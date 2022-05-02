@@ -292,12 +292,16 @@ router.post('/authRequest', authzAPI, async (
     if (requestOptions.credentialsToAllow) {
       const credentials = await getCredentials(user.user_id);
       for (let cred of credentials) {
-        // When credId is not specified, or matches the one specified
-        if (requestOptions.credentialsToAllow.includes(`ID-${cred.credentialID}`)) {
+        // Find the credential in the list of allowed credentials.
+        const _cred = requestOptions.credentialsToAllow.find(_cred => {
+          return _cred.id == cred.credentialID;
+        });
+        // If the credential is found, add it to the list of allowed credentials.
+        if (_cred) {
           allowCredentials.push({
-            id: base64url.toBuffer(cred.credentialID),
+            id: base64url.toBuffer(_cred.id),
             type: 'public-key',
-            transports: cred.transports
+            transports: _cred.transports
           });
         }
       }

@@ -20,8 +20,10 @@ import {
   PublicKeyCredentialCreationOptions,
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptions,
-  PublicKeyCredentialRequestOptionsJSON
+  PublicKeyCredentialRequestOptionsJSON,
+  PublicKeyCredentialDescriptorJSON
 } from '@simplewebauthn/typescript-types';
+import { IconButton } from '@material/mwc-icon-button';
 
 initializeApp({
   apiKey: "AIzaSyBC_U6UbKJE0evrgaITJSk6T_sZmMaZO-4",
@@ -39,6 +41,13 @@ if (location.hostname === 'localhost') {
 }
 const ui = new firebaseui.auth.AuthUI(auth);
 const icon = $('#user-icon');
+const transportIconMap = {
+  internal: "devices",
+  usb: "usb",
+  nfc: "nfc",
+  ble: "bluetooth",
+  cable: "cable",
+} as { [key: string]: string };
 
 /**
  *  Verify ID Token received via Firebase Auth
@@ -161,29 +170,22 @@ const collectOptions = (
   // const abortTimeout = parseInt($('#abort-timeout').value);
 
   const cards = document.querySelectorAll<HTMLDivElement>('#credentials .mdc-card__primary-action');
-  const credentialsList: string[] = [];
 
   // This is registration
   if (mode === 'registration') {
+    const credentialsToExclude: string[] = [];
+
     // Force exclude all credentials.
     if ($('#exclude-all-credentials').checked) {
       cards.forEach(card => {
-        const checkbox = card.querySelector<Checkbox>('mwc-checkbox');
-        if (checkbox?.checked) credentialsList.push(card.id)
+        const checkbox = card.querySelector<Checkbox>('mwc-checkbox.credential-checkbox');
+        if (checkbox?.checked) credentialsToExclude.push(card.id)
       });
-
-    // // Otherewise exclude ones that are checked.
-    // } else {
-    //   cards.forEach(card => {
-    //     const checkbox = card.querySelector<Checkbox>('mwc-checkbox');
-    //     if (checkbox?.checked) credentialsList.push(card.id);
-    //   });
     }
 
     const userInfo = localStorage.getItem('userInfo');
     const user = userInfo ? JSON.parse(userInfo) : undefined;
 
-    const credentialsToExclude: string[] = credentialsList;
     return {
       attestation,
       authenticatorSelection: {
@@ -200,16 +202,30 @@ const collectOptions = (
   
   // This is authentication
   } else {
+    const credentialsToAllow: PublicKeyCredentialDescriptorJSON[] = [];
+
     // "Force empty `allowCredentials`"" is not checked
     if (!$('#empty-allow-credentials').checked) {
-       cards.forEach(card => {
-         const checkbox = card.querySelector<Checkbox>('mwc-checkbox');
-         if (checkbox?.checked) credentialsList.push(card.id);
-       });
-      //cards.forEach(card => credentialsList.push(card.id));
+      // Traverse all checked credentials
+      cards.forEach(card => {
+        const checkbox = card.querySelector<Checkbox>('mwc-checkbox.credential-checkbox');
+        if (checkbox?.checked) {
+          // Look for all checked transport checkboxes
+          const _transports = card.querySelectorAll<Checkbox>('mwc-checkbox.transport-checkbox[checked]');
+          // Convert checkboxes into a list of transports
+          const transports = Array.from(_transports).map(_transport => {
+            const iconNode = <IconButton>_transport.previousElementSibling;
+            const index = Object.values(transportIconMap).findIndex(_transport => _transport == iconNode.icon);
+            return <AuthenticatorTransport>Object.keys(transportIconMap)[index];
+          });
+          credentialsToAllow.push({
+            id: card.id,
+            type: 'public-key',
+            transports
+          });
+        }
+      });
     }
-    // If "Force empty `allowCredentials`" is checked, pass an empty array.
-    const credentialsToAllow: string[] = credentialsList;
 
     return {
       extensions: { uvm, credProps },
@@ -225,7 +241,7 @@ const collectOptions = (
  * @param credID 
  */
 const rippleCard = (credID: string) => {
-  const ripple = new MDCRipple($(`#ID-${credID}`));
+  const ripple = new MDCRipple($(`#${credID}`));
   ripple.activate();
   ripple.deactivate();
 }
@@ -252,13 +268,6 @@ function serializeUvm(uvms: any) {
  */
 const listCredentials = async (): Promise<void> => {
   loading.start();
-  const transportIconMap = {
-    internal: "devices",
-    usb: "usb",
-    nfc: "nfc",
-    ble: "bluetooth",
-    cable: "cable",
-  } as { [key: string]: string };
   try {
     const credentials = <any[]>await _fetch('/webauthn/getCredentials');
     loading.stop();
@@ -271,11 +280,11 @@ const listCredentials = async (): Promise<void> => {
            cred.authenticatorAttachment==='cross-platform'?'Roaming ':''}Authenticator`;
       return html`
       <div class="mdc-card">
-        <div class="mdc-card__primary-action" id="ID-${cred.credentialID}">
+        <div class="mdc-card__primary-action" id="${cred.credentialID}">
           <div class="card-title mdc-card__action-buttons">
             <div class="cred-title mdc-card__action-button">
               <mwc-formfield label="${cred.id}">
-                <mwc-checkbox title="Check to exclude or allow this credential" checked></mwc-checkbox>
+                <mwc-checkbox class="credential-checkbox" title="Check to exclude or allow this credential" checked></mwc-checkbox>
               </mwc-formfield>
             </div>
             <div class="mdc-card__action-icons">
@@ -292,7 +301,10 @@ const listCredentials = async (): Promise<void> => {
               ${!transports.length ? html`
               <span>N/A</span>
               ` : transports.map(transport => html`
-              <mwc-icon-button icon="${transportIconMap[transport]}"></mwc-icon-button>
+              <mwc-formfield>
+                <mwc-icon-button icon="${transportIconMap[transport]}"></mwc-icon-button>
+                <mwc-checkbox class="transport-checkbox" title="Check to request '${transport}' as a transport on authentication." checked></mwc-checkbox>
+              </mwc-formfield>
               `)}
             </dd>
             <dt>Enrolled</dt>
@@ -305,7 +317,7 @@ const listCredentials = async (): Promise<void> => {
             <dd>${extensions.credProps.rk ? 'true' : 'false'}</dd>`:''}
             <dt>Public Key</dt>
             <dd>${cred.credentialPublicKey}</dd>
-            <dt>Key Handle</dt>
+            <dt>Credential ID</dt>
             <dd>${cred.credentialID}</dd>
             <div class="mdc-card__ripple"></div>
           </div>
