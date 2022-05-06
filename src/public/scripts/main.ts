@@ -202,7 +202,7 @@ const collectOptions = (
   
   // This is authentication
   } else {
-    const credentialsToAllow: PublicKeyCredentialDescriptorJSON[] = [];
+    const allowCredentials: PublicKeyCredentialDescriptorJSON[] = [];
 
     // "Force empty `allowCredentials`"" is not checked
     if (!$('#empty-allow-credentials').checked) {
@@ -218,7 +218,7 @@ const collectOptions = (
             const index = Object.values(transportIconMap).findIndex(_transport => _transport == iconNode.icon);
             return <AuthenticatorTransport>Object.keys(transportIconMap)[index];
           });
-          credentialsToAllow.push({
+          allowCredentials.push({
             id: card.id,
             type: 'public-key',
             transports
@@ -229,7 +229,7 @@ const collectOptions = (
 
     return {
       extensions: { uvm, credProps },
-      credentialsToAllow,
+      allowCredentials,
       customTimeout,
       // abortTimeout,
     } as WebAuthnAuthenticationObject

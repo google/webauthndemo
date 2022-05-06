@@ -1,4 +1,4 @@
-import { PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialDescriptorJSON, PublicKeyCredentialRequestOptionsJSON }
+import { PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON }
   from '@simplewebauthn/typescript-types';
 
 export interface UserInfo {
@@ -15,7 +15,6 @@ export interface WebAuthnRegistrationObject extends Omit<PublicKeyCredentialCrea
 }
 
 export interface WebAuthnAuthenticationObject extends PublicKeyCredentialRequestOptionsJSON {
-  credentialsToAllow?: PublicKeyCredentialDescriptorJSON[]
   customTimeout?: number
   abortTimeout?: number
 }

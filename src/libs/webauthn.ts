@@ -288,12 +288,12 @@ router.post('/authRequest', authzAPI, async (
     const allowCredentials: PublicKeyCredentialDescriptor[] = [];
     const rpID = res.locals.hostname;
 
-    // If `credentialsToAllow` is not defined, leave `allowCredentials` an empty array.
-    if (requestOptions.credentialsToAllow) {
+    // If `.allowCredentials` is not defined, leave `allowCredentials` an empty array.
+    if (requestOptions.allowCredentials) {
       const credentials = await getCredentials(user.user_id);
       for (let cred of credentials) {
         // Find the credential in the list of allowed credentials.
-        const _cred = requestOptions.credentialsToAllow.find(_cred => {
+        const _cred = requestOptions.allowCredentials.find(_cred => {
           return _cred.id == cred.credentialID;
         });
         // If the credential is found, add it to the list of allowed credentials.
