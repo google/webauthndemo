@@ -169,20 +169,8 @@ const collectOptions = (
   const customTimeout = parseInt($('#custom-timeout').value);
   // const abortTimeout = parseInt($('#abort-timeout').value);
 
-  const cards = document.querySelectorAll<HTMLDivElement>('#credentials .mdc-card__primary-action');
-
   // This is registration
   if (mode === 'registration') {
-    const credentialsToExclude: string[] = [];
-
-    // Force exclude all credentials.
-    if ($('#exclude-all-credentials').checked) {
-      cards.forEach(card => {
-        const checkbox = card.querySelector<Checkbox>('mwc-checkbox.credential-checkbox');
-        if (checkbox?.checked) credentialsToExclude.push(card.id)
-      });
-    }
-
     const userInfo = localStorage.getItem('userInfo');
     const user = userInfo ? JSON.parse(userInfo) : undefined;
 
@@ -194,7 +182,6 @@ const collectOptions = (
         residentKey
       },
       extensions: { uvm, credProps },
-      credentialsToExclude,
       customTimeout,
       user,
       // abortTimeout,
@@ -202,39 +189,41 @@ const collectOptions = (
   
   // This is authentication
   } else {
-    const allowCredentials: PublicKeyCredentialDescriptorJSON[] = [];
-
-    // "Force empty `allowCredentials`"" is not checked
-    if (!$('#empty-allow-credentials').checked) {
-      // Traverse all checked credentials
-      cards.forEach(card => {
-        const checkbox = card.querySelector<Checkbox>('mwc-checkbox.credential-checkbox');
-        if (checkbox?.checked) {
-          // Look for all checked transport checkboxes
-          const _transports = card.querySelectorAll<Checkbox>('mwc-checkbox.transport-checkbox[checked]');
-          // Convert checkboxes into a list of transports
-          const transports = Array.from(_transports).map(_transport => {
-            const iconNode = <IconButton>_transport.previousElementSibling;
-            const index = Object.values(transportIconMap).findIndex(_transport => _transport == iconNode.icon);
-            return <AuthenticatorTransport>Object.keys(transportIconMap)[index];
-          });
-          allowCredentials.push({
-            id: card.id,
-            type: 'public-key',
-            transports
-          });
-        }
-      });
-    }
-
     return {
       extensions: { uvm, credProps },
-      allowCredentials,
       customTimeout,
       // abortTimeout,
     } as WebAuthnAuthenticationObject
   }
 }
+
+const collectCredentials = () => {
+  const cards = document.querySelectorAll<HTMLDivElement>('#credentials .mdc-card__primary-action');
+
+  const credentials: PublicKeyCredentialDescriptorJSON[] = [];
+
+  // Traverse all checked credentials
+  cards.forEach(card => {
+    const checkbox = card.querySelector<Checkbox>('mwc-checkbox.credential-checkbox');
+    if (checkbox?.checked) {
+      // Look for all checked transport checkboxes
+      const _transports = card.querySelectorAll<Checkbox>('mwc-checkbox.transport-checkbox[checked]');
+      // Convert checkboxes into a list of transports
+      const transports = Array.from(_transports).map(_transport => {
+        const iconNode = <IconButton>_transport.previousElementSibling;
+        const index = Object.values(transportIconMap).findIndex(_transport => _transport == iconNode.icon);
+        return <AuthenticatorTransport>Object.keys(transportIconMap)[index];
+      });
+      credentials.push({
+        id: card.id,
+        type: 'public-key',
+        transports
+      });
+    }
+  });
+
+  return credentials;
+};
 
 /**
  *  Ripple on the specified credential card to indicate it's found.
@@ -354,15 +343,13 @@ const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any
     id: base64url.decode(options.user.id)
   } as PublicKeyCredentialUserEntity;
   const challenge = base64url.decode(options.challenge);
-  const excludeCredentials: PublicKeyCredentialDescriptor[] = [];
-  if (options.excludeCredentials) {
-    options.excludeCredentials.map(cred => {
-      excludeCredentials.push({
-        ...cred,
-        id: base64url.decode(cred.id),
-      });
-    });
-  }
+  const _excludeCredentials: PublicKeyCredentialDescriptorJSON[] = collectCredentials();
+  const excludeCredentials = _excludeCredentials.map(cred => {
+    return {
+      ...cred,
+      id: base64url.decode(cred.id),
+    } as PublicKeyCredentialDescriptor;
+  });
   const decodedOptions = {
     ...options,
     user,
@@ -430,15 +417,16 @@ const authenticate = async (opts: WebAuthnAuthenticationObject): Promise<any> =>
 
   // Decode encoded parameters.
   const challenge = base64url.decode(options.challenge);
-  const allowCredentials: PublicKeyCredentialDescriptor[] = [];
-  if (options.allowCredentials) {
-    options.allowCredentials.map(cred => {
-      allowCredentials.push({
-        ...cred,
-        id: base64url.decode(cred.id),
-      });
-    });
-  }
+
+  
+  const _allowCredentials: PublicKeyCredentialDescriptorJSON[] =
+    $('#empty-allow-credentials').checked ? [] : collectCredentials();
+  const allowCredentials = _allowCredentials.map(cred => {
+    return {
+      ...cred,
+      id: base64url.decode(cred.id),
+    } as PublicKeyCredentialDescriptor;
+  });
   const decodedOptions = {
     ...options,
     allowCredentials,
