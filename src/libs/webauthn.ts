@@ -1,3 +1,19 @@
+/**
+ * Copyright 2022 Google LLC
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import express, { Request, Response } from 'express';
 import { WebAuthnRegistrationObject, WebAuthnAuthenticationObject } from '../public/scripts/common';
 import base64url from 'base64url';
@@ -12,7 +28,7 @@ import {
 } from '@simplewebauthn/server';
 import {
   AttestationConveyancePreference,
-  PublicKeyCredentialDescriptor,
+  // PublicKeyCredentialDescriptor,
   PublicKeyCredentialParameters,
   AuthenticatorDevice,
   RegistrationCredentialJSON,
@@ -116,25 +132,24 @@ router.post('/registerRequest', authzAPI, async (
     if (!res.locals.user) throw 'Unauthorized.';
     if (!res.locals.hostname) throw 'Hostname not configured.';
 
-    // TODO: Make sure to type this variable.
     const googleUser = res.locals.user;
     const creationOptions = <WebAuthnRegistrationObject>req.body || {};
 
-    const excludeCredentials: PublicKeyCredentialDescriptor[] = [];
-    if (creationOptions.credentialsToExclude) {
-      const credentials = await getCredentials(googleUser.user_id);
-      if (credentials.length > 0) {
-        for (let cred of credentials) {
-          if (creationOptions.credentialsToExclude.includes(`ID-${cred.credentialID}`)) {
-            excludeCredentials.push({
-              id: base64url.toBuffer(cred.credentialID),
-              type: 'public-key',
-              transports: cred.transports,
-            });
-          }
-        }
-      }
-    }
+    // const excludeCredentials: PublicKeyCredentialDescriptor[] = [];
+    // if (creationOptions.credentialsToExclude) {
+    //   const credentials = await getCredentials(googleUser.user_id);
+    //   if (credentials.length > 0) {
+    //     for (let cred of credentials) {
+    //       if (creationOptions.credentialsToExclude.includes(`ID-${cred.credentialID}`)) {
+    //         excludeCredentials.push({
+    //           id: base64url.toBuffer(cred.credentialID),
+    //           type: 'public-key',
+    //           transports: cred.transports,
+    //         });
+    //       }
+    //     }
+    //   }
+    // }
     const pubKeyCredParams: PublicKeyCredentialParameters[] = [];
     // const params = [-7, -35, -36, -257, -258, -259, -37, -38, -39, -8];
     const params = [-7, -257];
@@ -188,7 +203,7 @@ router.post('/registerRequest', authzAPI, async (
       // Prompt users for additional information about the authenticator.
       attestationType: attestation,
       // Prevent users from re-registering existing authenticators
-      excludeCredentials,
+      // excludeCredentials,
       authenticatorSelection,
       extensions,
     });
@@ -279,33 +294,37 @@ router.post('/authRequest', authzAPI, async (
   if (!res.locals.user) throw 'Unauthorized.';
 
   try {
-    const user = res.locals.user;
+    // const user = res.locals.user;
 
     const requestOptions = <WebAuthnAuthenticationObject>req.body;
 
     const userVerification = requestOptions.userVerification || 'preferred';
     const timeout = requestOptions.customTimeout || WEBAUTHN_TIMEOUT;
-    const allowCredentials: PublicKeyCredentialDescriptor[] = [];
+    // const allowCredentials: PublicKeyCredentialDescriptor[] = [];
     const rpID = res.locals.hostname;
 
-    // If `credentialsToAllow` is not defined, leave `allowCredentials` an empty array.
-    if (requestOptions.credentialsToAllow) {
-      const credentials = await getCredentials(user.user_id);
-      for (let cred of credentials) {
-        // When credId is not specified, or matches the one specified
-        if (requestOptions.credentialsToAllow.includes(`ID-${cred.credentialID}`)) {
-          allowCredentials.push({
-            id: base64url.toBuffer(cred.credentialID),
-            type: 'public-key',
-            transports: cred.transports
-          });
-        }
-      }
-    }
+    // // If `.allowCredentials` is not defined, leave `allowCredentials` an empty array.
+    // if (requestOptions.allowCredentials) {
+    //   const credentials = await getCredentials(user.user_id);
+    //   for (let cred of credentials) {
+    //     // Find the credential in the list of allowed credentials.
+    //     const _cred = requestOptions.allowCredentials.find(_cred => {
+    //       return _cred.id == cred.credentialID;
+    //     });
+    //     // If the credential is found, add it to the list of allowed credentials.
+    //     if (_cred) {
+    //       allowCredentials.push({
+    //         id: base64url.toBuffer(_cred.id),
+    //         type: 'public-key',
+    //         transports: _cred.transports
+    //       });
+    //     }
+    //   }
+    // }
 
     const options = generateAuthenticationOptions({
       timeout,
-      allowCredentials,
+      // allowCredentials,
       userVerification,
       rpID
     });

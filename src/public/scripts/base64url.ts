@@ -1,5 +1,4 @@
-const chars =
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 
 // Use a lookup table to find the index.
 const lookup = new Uint8Array(256);
@@ -7,13 +6,14 @@ for (let i = 0; i < chars.length; i++) {
   lookup[chars.charCodeAt(i)] = i;
 }
 
-const encode = function (arraybuffer: ArrayBuffer) {
-  let bytes = new Uint8Array(arraybuffer),
-    i,
-    len = bytes.length,
-    base64 = "";
+const encode = function (
+  arraybuffer: ArrayBuffer
+): string {
+  const bytes = new Uint8Array(arraybuffer);
+  const len = bytes.length;
+  let base64 = '';
 
-  for (i = 0; i < len; i += 3) {
+  for (let i = 0; i < len; i += 3) {
     base64 += chars[bytes[i] >> 2];
     base64 += chars[((bytes[i] & 3) << 4) | (bytes[i + 1] >> 4)];
     base64 += chars[((bytes[i + 1] & 15) << 2) | (bytes[i + 2] >> 6)];
@@ -29,24 +29,20 @@ const encode = function (arraybuffer: ArrayBuffer) {
   return base64;
 };
 
-const decode = function (base64: string) {
-  let bufferLength = base64.length * 0.75,
-    len = base64.length,
-    i,
-    p = 0,
-    encoded1,
-    encoded2,
-    encoded3,
-    encoded4;
+const decode = function (
+  base64: string
+): ArrayBuffer {
+  const len = base64.length;
+  const bufferLength = base64.length * 0.75;
+  const arraybuffer = new ArrayBuffer(bufferLength);
+  const bytes = new Uint8Array(arraybuffer);
 
-  const arraybuffer = new ArrayBuffer(bufferLength),
-    bytes = new Uint8Array(arraybuffer);
-
-  for (i = 0; i < len; i += 4) {
-    encoded1 = lookup[base64.charCodeAt(i)];
-    encoded2 = lookup[base64.charCodeAt(i + 1)];
-    encoded3 = lookup[base64.charCodeAt(i + 2)];
-    encoded4 = lookup[base64.charCodeAt(i + 3)];
+  let p = 0;
+  for (let i = 0; i < len; i += 4) {
+    const encoded1 = lookup[base64.charCodeAt(i)];
+    const encoded2 = lookup[base64.charCodeAt(i + 1)];
+    const encoded3 = lookup[base64.charCodeAt(i + 2)];
+    const encoded4 = lookup[base64.charCodeAt(i + 3)];
 
     bytes[p++] = (encoded1 << 2) | (encoded2 >> 4);
     bytes[p++] = ((encoded2 & 15) << 4) | (encoded3 >> 2);
