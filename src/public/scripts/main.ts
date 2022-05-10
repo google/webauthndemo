@@ -28,6 +28,7 @@ import {
   onAuthStateChanged,
   User
 } from 'firebase/auth';
+import { getAnalytics } from 'firebase/analytics';
 import {
   RegistrationCredential,
   RegistrationCredentialJSON,
@@ -41,7 +42,7 @@ import {
 } from '@simplewebauthn/typescript-types';
 import { IconButton } from '@material/mwc-icon-button';
 
-initializeApp({
+const app = initializeApp({
   apiKey: "AIzaSyBC_U6UbKJE0evrgaITJSk6T_sZmMaZO-4",
   authDomain: "try-webauthn.firebaseapp.com",
   projectId: "try-webauthn",
@@ -50,6 +51,8 @@ initializeApp({
   appId: "1:557912693280:web:c47da88d666eaf0f40fa45",
   measurementId: "G-NWVKPRNL5Q"
 });
+
+getAnalytics(app);
 
 const auth = getAuth();
 if (location.hostname === 'localhost') {
