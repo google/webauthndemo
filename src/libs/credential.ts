@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import {
-  getFirestore,
-} from 'firebase-admin/firestore';
+import { getFirestore } from 'firebase-admin/firestore';
+import { AuthenticatorTransportFuture } from '@simplewebauthn/typescript-types/';
 
 const store = getFirestore();
 
@@ -33,7 +32,7 @@ export interface StoredCredential {
   registered?: number // registered epoc time,
   user_verifying: boolean // user verifying authenticator,
   authenticatorAttachment: "platform" | "cross-platform" | "undefined" // authenticator attachment,
-  transports?: AuthenticatorTransport[] // list of transports,
+  transports?: AuthenticatorTransportFuture[] // list of transports,
   browser?: string
   os?: string
   platform?: string

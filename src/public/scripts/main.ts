@@ -66,6 +66,7 @@ const transportIconMap = {
   nfc: "nfc",
   ble: "bluetooth",
   cable: "cable",
+  hybrid: "cable",
 } as { [key: string]: string };
 
 /**
@@ -234,7 +235,7 @@ const collectCredentials = () => {
         return <AuthenticatorTransport>Object.keys(transportIconMap)[index];
       });
       credentials.push({
-        id: card.id,
+        id: card.id.substring(3), // Remove first `ID-`
         type: 'public-key',
         transports
       });
@@ -288,7 +289,7 @@ const listCredentials = async (): Promise<void> => {
            cred.authenticatorAttachment==='cross-platform'?'Roaming ':''}Authenticator`;
       return html`
       <div class="mdc-card">
-        <div class="mdc-card__primary-action" id="${cred.credentialID}">
+        <div class="mdc-card__primary-action" id="ID-${cred.credentialID}">
           <div class="card-title mdc-card__action-buttons">
             <div class="cred-title mdc-card__action-button">
               <mwc-formfield label="${cred.id}">
@@ -638,7 +639,8 @@ const onAuthenticate = async (): Promise<void> => {
   const opts = <WebAuthnAuthenticationObject>collectOptions('authentication');
   try {
     const credential = await authenticate(opts);
-    rippleCard(credential.credentialID);
+    // Prepended `ID-` is necessary to avoid IDs start with a number.
+    rippleCard(`ID-${credential.credentialID}`);
     showSnackbar('Authentication succeeded!');
   } catch (e: any) {
     console.error(e);
