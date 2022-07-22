@@ -184,8 +184,9 @@ const collectOptions = (
   const attestation = $('#conveyance').value;
   const residentKey = $('#resident-key').value;
   const userVerification = $('#user-verification').value;
-  const uvm = $('#switch-uvm').checked;
-  const credProps = $('#switch-cred-props').checked;
+  const uvm = $('#switch-uvm').checked || undefined;
+  const credProps = $('#switch-cred-props').checked || undefined;
+  const devicePubKey = $('#switch-device-pub-key').checked || undefined;
   const customTimeout = parseInt($('#custom-timeout').value);
   // const abortTimeout = parseInt($('#abort-timeout').value);
 
@@ -201,7 +202,7 @@ const collectOptions = (
         userVerification,
         residentKey
       },
-      extensions: { uvm, credProps },
+      extensions: { uvm, credProps, devicePubKey },
       customTimeout,
       user,
       // abortTimeout,
@@ -210,7 +211,7 @@ const collectOptions = (
   // This is authentication
   } else {
     return {
-      extensions: { uvm, credProps },
+      extensions: { uvm, devicePubKey },
       customTimeout,
       // abortTimeout,
     } as WebAuthnAuthenticationObject
@@ -398,6 +399,10 @@ const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any
     }
     if ('credProps' in extensions) {
       clientExtensionResults.credProps = extensions.credProps;
+    }
+    if ('devicePubKey' in extensions) {
+      // @ts-ignore temporarily ignore the type error.
+      clientExtensionResults.devicePubKey = base64url.encode(extensions.devicePubKey);
     }
   }
   let transports: any[] = [];
