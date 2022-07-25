@@ -49,11 +49,11 @@
     "express-session": "^1.17.3",
     "express-useragent": "^1.0.15",
     "express-validator": "^6.14.2",
-    "firebase": "^9.9.0",
-    "firebase-admin": "^10.2.0",
+    "firebase": "^9.9.1",
+    "firebase-admin": "^10.3.0",
     "firebaseui": "^0.600.0",
-    "helmet": "^5.1.0",
-    "lit": "^2.2.7",
+    "helmet": "^5.1.1",
+    "lit": "^2.2.8",
     "uid-safe": "^2.1.5"
   },
   "devDependencies": {
@@ -68,11 +68,11 @@
     "@types/express-handlebars": "^5.3.1",
     "@types/express-session": "^1.17.5",
     "@types/express-useragent": "^1.0.2",
-    "@types/node": "^18.0.6",
+    "@types/node": "^18.6.1",
     "@types/rollup-plugin-node-builtins": "^2.1.2",
     "@types/rollup-plugin-node-globals": "^1.4.1",
     "@types/uid-safe": "^2.1.2",
-    "firebase-tools": "^10.8.0",
+    "firebase-tools": "^10.9.2",
     "rimraf": "^3.0.2",
     "rollup": "^2.77.0",
     "rollup-plugin-copy": "^3.4.0",
@@ -81,7 +81,7 @@
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-scss": "^3.0.0",
     "rollup-plugin-sourcemaps": "^0.6.3",
-    "sass": "^1.53.0",
+    "sass": "^1.54.0",
     "typescript": "^4.7.4"
   }
 }
