@@ -185,9 +185,13 @@ const collectOptions = (
   const residentKey = $('#resident-key').value;
   const userVerification = $('#user-verification').value;
   const credProps = $('#switch-cred-props').checked || undefined;
-  const devicePubKey = $('#switch-device-pub-key').checked || undefined;
+  const dpk = $('#switch-device-pub-key').checked || undefined;
   const customTimeout = parseInt($('#custom-timeout').value);
   // const abortTimeout = parseInt($('#abort-timeout').value);
+
+  // Device Public Key extension
+  // const devicePubKey = dpk ? { attestation } : undefined;
+  const devicePubKey = dpk;
 
   // This is registration
   if (mode === 'registration') {
