@@ -19,7 +19,12 @@ import { WebAuthnRegistrationObject, WebAuthnAuthenticationObject } from '../pub
 import base64url from 'base64url';
 import { createHash } from 'crypto';
 import { getNow, csrfCheck, authzAPI } from '../libs/helper';
-import { getCredentials, removeCredential, storeCredential } from './credential';
+import { 
+  getCredentials,
+  removeCredential,
+  storeCredential,
+  storeDevicePublicKey,
+  getDevicePublicKeys } from './credential';
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -234,7 +239,7 @@ router.post('/registerResponse', authzAPI, async (
 
     const expectedChallenge = req.session.challenge;
     const expectedRPID = res.locals.hostname;
-
+ 
     let expectedOrigin = getOrigin(res.locals.origin, req.get('User-Agent'));
 
     const verification = await verifyRegistrationResponse({
@@ -250,11 +255,11 @@ router.post('/registerResponse', authzAPI, async (
       throw 'User verification failed.';
     }
 
-    const { credentialPublicKey, credentialID, counter } = registrationInfo;
+    const { credentialPublicKey, credentialID, counter, authenticatorExtensionResults } = registrationInfo;
     const base64PublicKey = base64url.encode(credentialPublicKey);
     const base64CredentialID = base64url.encode(credentialID);
     const { transports, clientExtensionResults } = credential;
-
+     
     await storeCredential({
       user_id: user.user_id,
       credentialID: base64CredentialID,
@@ -269,6 +274,21 @@ router.post('/registerResponse', authzAPI, async (
       transports,
       clientExtensionResults,
     });
+    
+    if (authenticatorExtensionResults && authenticatorExtensionResults.devicePublicKey) {
+      const {dpk} = authenticatorExtensionResults.devicePublicKey;
+      console.log(authenticatorExtensionResults.devicePublicKey);
+      if (!dpk) {
+        throw 'DPK data is missing!';
+      } 
+      
+      const base64Dpk = base64url.encode(dpk)
+      
+      await storeDevicePublicKey({
+        credentialID: base64CredentialID,
+        dpk: base64Dpk,
+      });
+    }
 
     delete req.session.challenge;
     delete req.session.timeout;
@@ -391,6 +411,25 @@ router.post('/authResponse', authzAPI, async (
 
     storedCred.counter = authenticationInfo.newCounter;
     storedCred.last_used = getNow();
+    
+    if (authenticationInfo && 
+        authenticationInfo.authenticatorExtensionResults &&
+        authenticationInfo.authenticatorExtensionResults.devicePublicKey) {
+      const {dpk} = authenticationInfo.authenticatorExtensionResults.devicePublicKey;
+      if (!dpk) {
+        throw 'DPK data is missing!';
+      }
+      
+      const storedDpks = await getDevicePublicKeys(storedCred.credentialID);
+      const base64Dpk = base64url.encode(dpk)
+      if (!storedDpks.includes(base64Dpk)) { 
+        const base64Dpk = base64url.encode(dpk)
+        await storeDevicePublicKey({
+          credentialID: storedCred.credentialID,
+          dpk: base64Dpk,
+        }); 
+      }
+    }
 
     delete req.session.challenge;
     delete req.session.timeout;

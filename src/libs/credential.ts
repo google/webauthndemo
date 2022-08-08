@@ -38,16 +38,20 @@ export interface StoredCredential {
   platform?: string
   last_used?: number // last used epoc time,
   clientExtensionResults?: any
+  dpks?: string[] // Device Public Key,
 }
 
 export async function getCredentials(
   user_id: user_id
 ): Promise<StoredCredential[]> {
-  const results: StoredCredential[] = [];
+  let results: StoredCredential[] = [];
   const refs = await store.collection('credentials')
     .where('user_id', '==', user_id)
     .orderBy('registered', 'desc').get();
   refs.forEach(cred => results.push(<StoredCredential>cred.data()));
+  for (var cred of results) {
+    cred.dpks = await getDevicePublicKeys(cred.credentialID);
+  }
   return results;
 };
 
@@ -65,9 +69,44 @@ export function storeCredential(
   return ref.set(credential);
 }
 
-export function removeCredential(
+export async function removeCredential(
   credential_id: credential_id
 ): Promise<FirebaseFirestore.WriteResult> {
+  const getDpks = await getDevicePublicKeys(credential_id);
+  getDpks.forEach(item => removeDevicePublicKey(item));
   const ref = store.collection('credentials').doc(credential_id);
   return ref.delete();
+}
+
+export interface StoredDevicePublicKey {
+  credentialID: credential_id
+  dpk: string
+}
+
+export async function getDevicePublicKeys(
+  credential_id: credential_id
+): Promise<string[]> {
+  const results: string[] = [];
+  const refs = await store.collection('dpks')
+    .where('credentialID', '==', credential_id)
+    .get();
+  refs.forEach(item => {
+    let itemDpk = <StoredDevicePublicKey>(item.data());
+    results.push(itemDpk.dpk)
+  });
+  return results;
+}
+
+export function removeDevicePublicKey(
+  dpk: string
+): Promise<FirebaseFirestore.WriteResult> {
+  const ref = store.collection('dpks').doc(dpk);
+  return ref.delete();
+}
+
+export function storeDevicePublicKey(
+  devicePublicKey: StoredDevicePublicKey
+): Promise<FirebaseFirestore.WriteResult> {
+  const ref = store.collection('dpks').doc(devicePublicKey.dpk);
+  return ref.set(devicePublicKey);
 }
