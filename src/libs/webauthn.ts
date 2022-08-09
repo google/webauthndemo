@@ -415,7 +415,7 @@ router.post('/authResponse', authzAPI, async (
     if (authenticationInfo && 
         authenticationInfo.authenticatorExtensionResults &&
         authenticationInfo.authenticatorExtensionResults.devicePublicKey) {
-      const {dpk} = authenticationInfo.authenticatorExtensionResults.devicePublicKey;
+      const { dpk } = authenticationInfo.authenticatorExtensionResults.devicePublicKey;
       if (!dpk) {
         throw 'DPK data is missing!';
       }
