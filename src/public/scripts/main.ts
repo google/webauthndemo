@@ -283,7 +283,7 @@ const listCredentials = async (): Promise<void> => {
     loading.stop();
     render(credentials.map(cred => {
       cred.id = cred.credentialID.substr(0, 16);
-      const dpks : string[] = cred.dpks;
+      const dpks: string[] = cred.dpks;
       const extensions = cred.clientExtensionResults;
       const transports = cred.transports as string[];
       const authenticatorType = `${cred.user_verifying?'User Verifying ':''}`+
