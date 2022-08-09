@@ -49,7 +49,7 @@ export async function getCredentials(
     .where('user_id', '==', user_id)
     .orderBy('registered', 'desc').get();
   refs.forEach(cred => results.push(<StoredCredential>cred.data()));
-  for (var cred of results) {
+  for (let cred of results) {
     cred.dpks = await getDevicePublicKeys(cred.credentialID);
   }
   return results;
