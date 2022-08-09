@@ -44,7 +44,7 @@ export interface StoredCredential {
 export async function getCredentials(
   user_id: user_id
 ): Promise<StoredCredential[]> {
-  let results: StoredCredential[] = [];
+  const results: StoredCredential[] = [];
   const refs = await store.collection('credentials')
     .where('user_id', '==', user_id)
     .orderBy('registered', 'desc').get();

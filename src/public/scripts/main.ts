@@ -330,8 +330,10 @@ const listCredentials = async (): Promise<void> => {
             <dd>${cred.credentialPublicKey}</dd>
             <dt>Credential ID</dt>
             <dd>${cred.credentialID}</dd>
+            ${dpks.length ? html`
             <dt>Device Public Key</dt>
              ${dpks.map((dpk, i) => html`<dd>${i} : ${dpk}</dd>`)}
+            ` : ''}
             <div class="mdc-card__ripple"></div>
           </div>
         </div>
