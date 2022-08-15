@@ -283,6 +283,7 @@ const listCredentials = async (): Promise<void> => {
     loading.stop();
     render(credentials.map(cred => {
       cred.id = cred.credentialID.substr(0, 16);
+      const dpks: string[] = cred.dpks;
       const extensions = cred.clientExtensionResults;
       const transports = cred.transports as string[];
       const authenticatorType = `${cred.user_verifying?'User Verifying ':''}`+
@@ -329,6 +330,10 @@ const listCredentials = async (): Promise<void> => {
             <dd>${cred.credentialPublicKey}</dd>
             <dt>Credential ID</dt>
             <dd>${cred.credentialID}</dd>
+            ${dpks.length ? html`
+            <dt>Device Public Key</dt>
+             ${dpks.map((dpk, i) => html`<dd>${i} : ${dpk}</dd>`)}
+            ` : ''}
             <div class="mdc-card__ripple"></div>
           </div>
         </div>
@@ -647,6 +652,8 @@ const onAuthenticate = async (): Promise<void> => {
     // Prepended `ID-` is necessary to avoid IDs start with a number.
     rippleCard(`ID-${credential.credentialID}`);
     showSnackbar('Authentication succeeded!');
+    // Refresh card info for dpk
+    listCredentials();
   } catch (e: any) {
     console.error(e);
     showSnackbar(e.message);
