@@ -184,7 +184,6 @@ const collectOptions = (
   const attestation = $('#conveyance').value;
   const residentKey = $('#resident-key').value;
   const userVerification = $('#user-verification').value;
-  const uvm = $('#switch-uvm').checked || undefined;
   const credProps = $('#switch-cred-props').checked || undefined;
   const devicePubKey = $('#switch-device-pub-key').checked || undefined;
   const customTimeout = parseInt($('#custom-timeout').value);
@@ -202,7 +201,7 @@ const collectOptions = (
         userVerification,
         residentKey
       },
-      extensions: { uvm, credProps, devicePubKey },
+      extensions: { credProps, devicePubKey },
       customTimeout,
       user,
       // abortTimeout,
@@ -211,7 +210,7 @@ const collectOptions = (
   // This is authentication
   } else {
     return {
-      extensions: { uvm, devicePubKey },
+      extensions: { devicePubKey },
       customTimeout,
       // abortTimeout,
     } as WebAuthnAuthenticationObject
@@ -254,23 +253,6 @@ const rippleCard = (credID: string) => {
   const ripple = new MDCRipple($(`#${credID}`));
   ripple.activate();
   ripple.deactivate();
-}
-
-/**
- *  Serialize the User Verification Method Extension result
- * @param uvms 
- * @returns 
- */
-function serializeUvm(uvms: any) {
-  var uvmJson = [];
-  for (let uvm of uvms) {
-    const uvmEntry: any = {};
-    uvmEntry.userVerificationMethod = uvm[0];
-    uvmEntry.keyProtectionType = uvm[1];
-    uvmEntry.atchuvmJsonerProtectionType = uvm[2];
-    uvmJson.push(uvmEntry);
-  }
-  return uvmJson;
 }
 
 /**
@@ -320,9 +302,6 @@ const listCredentials = async (): Promise<void> => {
             </dd>
             <dt>Enrolled</dt>
             <dd>${(new Date(cred.registered)).toLocaleString()}</dd>
-            ${extensions?.uvm ? html`
-            <dt>User Verification Method Extension</dt>
-            <dd>${extensions.uvm}</dd>`:''}
             ${extensions?.credProps ? html`
             <dt>Credential Properties Extension</dt>
             <dd>${extensions.credProps.rk ? 'true' : 'false'}</dd>`:''}
@@ -399,9 +378,6 @@ const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any
   // if `getClientExtensionResults()` is supported, serialize the result.
   if (credential.getClientExtensionResults) {
     const extensions = credential.getClientExtensionResults();
-    if ('uvm' in extensions) {
-      clientExtensionResults.uvm = serializeUvm(extensions.uvm);
-    }
     if ('credProps' in extensions) {
       clientExtensionResults.credProps = extensions.credProps;
     }
