@@ -295,7 +295,7 @@ const listCredentials = async (): Promise<void> => {
               <span>N/A</span>
               ` : transports.map(transport => html`
               <mwc-formfield>
-                <mwc-icon-button icon="${transportIconMap[transport]}"></mwc-icon-button>
+                <mwc-icon-button icon="${transportIconMap[transport]}" title="${transport}"></mwc-icon-button>
                 <mwc-checkbox class="transport-checkbox" title="Check to request '${transport}' as a transport on authentication." checked></mwc-checkbox>
               </mwc-formfield>
               `)}
