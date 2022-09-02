@@ -379,7 +379,7 @@ router.post('/authResponse', authzAPI, async (
 
     const credentialPublicKey = base64url.toBuffer(storedCred.credentialPublicKey);
     const credentialID = base64url.toBuffer(storedCred.credentialID);
-    const { counter, transports } = storedCred; 
+    const { counter, transports } = storedCred;
 
     const authenticator: AuthenticatorDevice = {
       credentialPublicKey,
@@ -394,6 +394,7 @@ router.post('/authResponse', authzAPI, async (
       expectedOrigin,
       expectedRPID,
       authenticator,
+      userDevicePublicKeys: storedCred.dpks
     });
 
     const { verified, authenticationInfo } = verification;
@@ -406,8 +407,7 @@ router.post('/authResponse', authzAPI, async (
     storedCred.counter = authenticationInfo.newCounter;
     storedCred.last_used = getNow();
 
-    if (extensionOutputs &&
-        extensionOutputs.devicePubKeyToStore) {
+    if (extensionOutputs && extensionOutputs.devicePubKeyToStore) {
       const devicePubKey = extensionOutputs.devicePubKeyToStore;
       await storeDevicePublicKey(
         credentialID,
