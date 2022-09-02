@@ -42,7 +42,7 @@
     "@material/mwc-snackbar": "^0.27.0",
     "@material/mwc-textfield": "^0.27.0",
     "@material/mwc-top-app-bar-fixed": "^0.27.0",
-    "@simplewebauthn/server": "^6.2.0",
+    "@simplewebauthn/server": "^6.3.0-alpha.0",
     "dotenv": "^16.0.2",
     "express": "^4.18.1",
     "express-handlebars": "^6.0.6",

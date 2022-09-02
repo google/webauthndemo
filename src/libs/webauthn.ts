@@ -23,8 +23,8 @@ import {
   getCredentials,
   removeCredential,
   storeCredential,
-  storeDevicePublicKey,
-  getDevicePublicKeys } from './credential';
+  storeDevicePublicKey
+} from './credential';
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -252,7 +252,7 @@ router.post('/registerResponse', authzAPI, async (
     const { verified, registrationInfo } = verification;
 
     if (!verified || !registrationInfo) {
-      throw 'User verification failed.';
+      throw new Error('User verification failed.');
     }
 
     const { credentialPublicKey, credentialID, counter, authenticatorExtensionResults } = registrationInfo;
@@ -274,20 +274,13 @@ router.post('/registerResponse', authzAPI, async (
       transports,
       clientExtensionResults,
     });
-    
+
     if (authenticatorExtensionResults && authenticatorExtensionResults.devicePubKey) {
-      const { dpk } = authenticatorExtensionResults.devicePubKey;
-console.log(authenticatorExtensionResults.devicePubKey);
-      if (!dpk) {
-        throw 'DPK data is missing!';
-      } 
-      
-      const base64Dpk = base64url.encode(dpk)
-      
-      await storeDevicePublicKey({
-        credentialID: base64CredentialID,
-        dpk: base64Dpk,
-      });
+      const { devicePubKey } = authenticatorExtensionResults;
+      await storeDevicePublicKey(
+        credentialID,
+        devicePubKey,
+      );
     }
 
     delete req.session.challenge;
@@ -384,13 +377,13 @@ router.post('/authResponse', authzAPI, async (
       throw 'Authenticating credential not found.';
     }
 
-    const base64PublicKey = base64url.toBuffer(storedCred.credentialPublicKey);
-    const base64CredentialID = base64url.toBuffer(storedCred.credentialID);
+    const credentialPublicKey = base64url.toBuffer(storedCred.credentialPublicKey);
+    const credentialID = base64url.toBuffer(storedCred.credentialID);
     const { counter, transports } = storedCred; 
 
     const authenticator: AuthenticatorDevice = {
-      credentialPublicKey: base64PublicKey,
-      credentialID: base64CredentialID,
+      credentialPublicKey,
+      credentialID,
       counter,
       transports
     }
@@ -404,6 +397,7 @@ router.post('/authResponse', authzAPI, async (
     });
 
     const { verified, authenticationInfo } = verification;
+    const { extensionOutputs } = authenticationInfo;
 
     if (!verified) {
       throw 'User verification failed.';
@@ -412,23 +406,13 @@ router.post('/authResponse', authzAPI, async (
     storedCred.counter = authenticationInfo.newCounter;
     storedCred.last_used = getNow();
 
-    if (authenticationInfo && 
-        authenticationInfo.authenticatorExtensionResults &&
-        authenticationInfo.authenticatorExtensionResults.devicePubKey) {
-      const { dpk } = authenticationInfo.authenticatorExtensionResults.devicePubKey;
-      if (!dpk) {
-        throw 'DPK data is missing!';
-      }
-      
-      const storedDpks = await getDevicePublicKeys(storedCred.credentialID);
-      const base64Dpk = base64url.encode(dpk)
-      if (!storedDpks.includes(base64Dpk)) { 
-        const base64Dpk = base64url.encode(dpk)
-        await storeDevicePublicKey({
-          credentialID: storedCred.credentialID,
-          dpk: base64Dpk,
-        }); 
-      }
+    if (extensionOutputs &&
+        extensionOutputs.devicePubKeyToStore) {
+      const devicePubKey = extensionOutputs.devicePubKeyToStore;
+      await storeDevicePublicKey(
+        credentialID,
+        devicePubKey,
+      ); 
     }
 
     delete req.session.challenge;
