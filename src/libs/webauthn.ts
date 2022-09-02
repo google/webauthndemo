@@ -275,9 +275,9 @@ router.post('/registerResponse', authzAPI, async (
       clientExtensionResults,
     });
     
-    if (authenticatorExtensionResults && authenticatorExtensionResults.devicePublicKey) {
-      const { dpk } = authenticatorExtensionResults.devicePublicKey;
-      console.log(authenticatorExtensionResults.devicePublicKey);
+    if (authenticatorExtensionResults && authenticatorExtensionResults.devicePubKey) {
+      const { dpk } = authenticatorExtensionResults.devicePubKey;
+console.log(authenticatorExtensionResults.devicePubKey);
       if (!dpk) {
         throw 'DPK data is missing!';
       } 
@@ -395,7 +395,7 @@ router.post('/authResponse', authzAPI, async (
       transports
     }
 
-    const verification = verifyAuthenticationResponse({
+    const verification = await verifyAuthenticationResponse({
       credential: claimedCred,
       expectedChallenge,
       expectedOrigin,
@@ -411,11 +411,11 @@ router.post('/authResponse', authzAPI, async (
 
     storedCred.counter = authenticationInfo.newCounter;
     storedCred.last_used = getNow();
-    
+
     if (authenticationInfo && 
         authenticationInfo.authenticatorExtensionResults &&
-        authenticationInfo.authenticatorExtensionResults.devicePublicKey) {
-      const { dpk } = authenticationInfo.authenticatorExtensionResults.devicePublicKey;
+        authenticationInfo.authenticatorExtensionResults.devicePubKey) {
+      const { dpk } = authenticationInfo.authenticatorExtensionResults.devicePubKey;
       if (!dpk) {
         throw 'DPK data is missing!';
       }

@@ -105,8 +105,8 @@ export function removeDevicePublicKey(
 }
 
 export function storeDevicePublicKey(
-  devicePublicKey: StoredDevicePublicKey
+  devicePubKey: StoredDevicePublicKey
 ): Promise<FirebaseFirestore.WriteResult> {
-  const ref = store.collection('dpks').doc(devicePublicKey.dpk);
-  return ref.set(devicePublicKey);
+  const ref = store.collection('dpks').doc(devicePubKey.dpk);
+  return ref.set(devicePubKey);
 }
