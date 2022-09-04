@@ -23,13 +23,15 @@ import {
   getCredentials,
   removeCredential,
   storeCredential,
-  storeDevicePublicKey
+  storeDevicePublicKey,
+  decodeDevicePublicKey,
 } from './credential';
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
+  DevicePublicKeyAuthenticatorOutput,
 } from '@simplewebauthn/server';
 import {
   AttestationConveyancePreference,
@@ -388,13 +390,24 @@ router.post('/authResponse', authzAPI, async (
       transports
     }
 
+    console.log('Claimed credential', claimedCred);
+    console.log('Stored credential', storedCred);
+
+    const userDevicePublicKeys: DevicePublicKeyAuthenticatorOutput[] = [];
+    if (storedCred.dpks) {
+      for (const dpk of storedCred.dpks) {
+        const decodedDevicePubKey = await decodeDevicePublicKey(dpk);
+        userDevicePublicKeys.push(decodedDevicePubKey);
+      };
+    }
+
     const verification = await verifyAuthenticationResponse({
       credential: claimedCred,
       expectedChallenge,
       expectedOrigin,
       expectedRPID,
       authenticator,
-      userDevicePublicKeys: storedCred.dpks
+      userDevicePublicKeys,
     });
 
     const { verified, authenticationInfo } = verification;
