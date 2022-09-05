@@ -41,6 +41,7 @@ import {
   PublicKeyCredentialDescriptorJSON
 } from '@simplewebauthn/typescript-types';
 import { IconButton } from '@material/mwc-icon-button';
+import { StoredCredential } from './common';
 
 const app = initializeApp({
   apiKey: "AIzaSyBC_U6UbKJE0evrgaITJSk6T_sZmMaZO-4",
@@ -265,11 +266,11 @@ const rippleCard = (credID: string) => {
 const listCredentials = async (): Promise<void> => {
   loading.start();
   try {
-    const credentials = <any[]>await _fetch('/webauthn/getCredentials');
+    const credentials = <StoredCredential[]>await _fetch('/webauthn/getCredentials');
     loading.stop();
     render(credentials.map(cred => {
-      cred.id = cred.credentialID.substr(0, 16);
-      const dpks: string[] = cred.dpks;
+      const credId = cred.credentialID.substring(0, 16);
+      const dpks = cred.dpks;
       const extensions = cred.clientExtensionResults;
       const transports = cred.transports as string[];
       const authenticatorType = `${cred.user_verifying?'User Verifying ':''}`+
@@ -280,7 +281,7 @@ const listCredentials = async (): Promise<void> => {
         <div class="mdc-card__primary-action" id="ID-${cred.credentialID}">
           <div class="card-title mdc-card__action-buttons">
             <div class="cred-title mdc-card__action-button">
-              <mwc-formfield label="${cred.id}">
+              <mwc-formfield label="${credId}">
                 <mwc-checkbox class="credential-checkbox" title="Check to exclude or allow this credential" checked></mwc-checkbox>
               </mwc-formfield>
             </div>
@@ -304,8 +305,9 @@ const listCredentials = async (): Promise<void> => {
               </mwc-formfield>
               `)}
             </dd>
+            ${cred.registered ? html`
             <dt>Enrolled</dt>
-            <dd>${(new Date(cred.registered)).toLocaleString()}</dd>
+            <dd>${(new Date(cred.registered)).toLocaleString()}</dd>`:''}
             ${extensions?.credProps ? html`
             <dt>Credential Properties Extension</dt>
             <dd>${extensions.credProps.rk ? 'true' : 'false'}</dd>`:''}
@@ -313,10 +315,11 @@ const listCredentials = async (): Promise<void> => {
             <dd>${cred.credentialPublicKey}</dd>
             <dt>Credential ID</dt>
             <dd>${cred.credentialID}</dd>
-            ${dpks.length ? html`
-            <dt>Device Public Key</dt>
-             ${dpks.map((dpk, i) => html`<dd>${i} : ${dpk}</dd>`)}
-            ` : ''}
+            ${dpks && dpks.length ? html`
+             ${dpks.map((devicePubKey, i) => html`
+            <dt>Device Public Key ${i}</dt>
+             <dd><strong>aaguid</strong>: ${devicePubKey.aaguid}</dd>
+             <dd><strong>dpk</strong>: ${devicePubKey.dpk}</dd>`)}`:''}
             <div class="mdc-card__ripple"></div>
           </div>
         </div>

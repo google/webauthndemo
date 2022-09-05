@@ -15,35 +15,18 @@
  */
 
 import { getFirestore } from 'firebase-admin/firestore';
-import { AuthenticatorTransportFuture } from '@simplewebauthn/typescript-types/';
-import { DevicePublicKeyAuthenticatorOutput } from '@simplewebauthn/server/./dist';
-import { AttestationFormat } from '@simplewebauthn/server/dist/helpers/decodeAttestationObject';
+import { DevicePublicKeyAuthenticatorOutput } from '@simplewebauthn/server/dist';
+import {
+  user_id,
+  credential_id,
+  StoredCredential,
+  StoredDevicePublicKey,
+  EncodedDevicePublicKey
+} from '../public/scripts/common';
 import base64url from 'base64url';
 
 const store = getFirestore();
 store.settings({ ignoreUndefinedProperties: true });
-
-export type user_id = string;
-export type credential_id = string;
-
-export interface StoredCredential {
-  user_id: user_id
-  // User visible identifier.
-  credentialID: credential_id // roaming authenticator's credential id,
-  credentialPublicKey: string // public key,
-  counter: number // previous counter,
-  aaguid?: string // AAGUID,
-  registered?: number // registered epoc time,
-  user_verifying: boolean // user verifying authenticator,
-  authenticatorAttachment: "platform" | "cross-platform" | "undefined" // authenticator attachment,
-  transports?: AuthenticatorTransportFuture[] // list of transports,
-  browser?: string
-  os?: string
-  platform?: string
-  last_used?: number // last used epoc time,
-  clientExtensionResults?: any
-  dpks?: StoredDevicePublicKey[] // Device Public Key,
-}
 
 export async function getCredentials(
   user_id: user_id
@@ -84,28 +67,6 @@ export async function removeCredential(
   });
   const ref = store.collection('credentials').doc(credential_id);
   return ref.delete();
-}
-
-type EncodedDevicePublicKey = {
-  aaguid: string;
-  dpk: string;
-  scope: string;
-  nonce?: string;
-  fmt?: AttestationFormat;
-  attStmt?: {
-    sig?: string;
-    x5c?: string[];
-    response?: string;
-    alg?: number;
-    ver?: string;
-    certInfo?: string;
-    pubArea?: string;
-  };
-  sig?: string;
-}
-
-export interface StoredDevicePublicKey extends EncodedDevicePublicKey {
-  credentialID: credential_id
 }
 
 export async function getDevicePublicKeys(
