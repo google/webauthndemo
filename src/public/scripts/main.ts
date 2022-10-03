@@ -38,7 +38,9 @@ import {
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptions,
   PublicKeyCredentialRequestOptionsJSON,
-  PublicKeyCredentialDescriptorJSON
+  PublicKeyCredentialDescriptorJSON,
+  AuthenticationExtensionsClientOutputsFuture,
+  AuthenticationExtensionsClientOutputsJSON,
 } from '@simplewebauthn/typescript-types';
 import { IconButton } from '@material/mwc-icon-button';
 import { StoredCredential } from './common';
@@ -191,8 +193,7 @@ const collectOptions = (
   // const abortTimeout = parseInt($('#abort-timeout').value);
 
   // Device Public Key extension
-  // const devicePubKey = dpk ? { attestation } : undefined;
-  const devicePubKey = dpk;
+  const devicePubKey = dpk ? { attestation: 'none' } : undefined;
 
   // This is registration
   if (mode === 'registration') {
@@ -380,17 +381,21 @@ const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any
   const rawId = base64url.encode(credential.rawId);
   const clientDataJSON = base64url.encode(credential.response.clientDataJSON);
   const attestationObject = base64url.encode(credential.response.attestationObject);
-  const clientExtensionResults: any = {};
+  const clientExtensionResults: AuthenticationExtensionsClientOutputsJSON = {};
 
   // if `getClientExtensionResults()` is supported, serialize the result.
   if (credential.getClientExtensionResults) {
-    const extensions = credential.getClientExtensionResults();
+    const extensions: AuthenticationExtensionsClientOutputsFuture = credential.getClientExtensionResults();
     if ('credProps' in extensions) {
       clientExtensionResults.credProps = extensions.credProps;
     }
     if ('devicePubKey' in extensions) {
-      // @ts-ignore temporarily ignore the type error.
-      clientExtensionResults.devicePubKey = base64url.encode(extensions.devicePubKey);
+      const authenticatorOutput = base64url.encode(extensions.devicePubKey.authenticatorOutput);
+      const signature = base64url.encode(extensions.devicePubKey.signature);
+      clientExtensionResults.devicePubKey = {
+        authenticatorOutput,
+        signature
+      };
     }
   }
   let transports: any[] = [];
@@ -460,6 +465,23 @@ const authenticate = async (opts: WebAuthnAuthenticationObject): Promise<any> =>
   const signature = base64url.encode(credential.response.signature);
   const userHandle = credential.response.userHandle ?
     base64url.encode(credential.response.userHandle) : undefined;
+  const clientExtensionResults: AuthenticationExtensionsClientOutputsJSON = {};
+
+  // if `getClientExtensionResults()` is supported, serialize the result.
+  if (credential.getClientExtensionResults) {
+    const extensions: AuthenticationExtensionsClientOutputsFuture = credential.getClientExtensionResults();
+    if ('credProps' in extensions) {
+      clientExtensionResults.credProps = extensions.credProps;
+    }
+    if ('devicePubKey' in extensions) {
+      const authenticatorOutput = base64url.encode(extensions.devicePubKey.authenticatorOutput);
+      const signature = base64url.encode(extensions.devicePubKey.signature);
+      clientExtensionResults.devicePubKey = {
+        authenticatorOutput,
+        signature
+      };
+    }
+  }
 
   const encodedCredential = {
     id: credential.id,
@@ -471,7 +493,7 @@ const authenticate = async (opts: WebAuthnAuthenticationObject): Promise<any> =>
       userHandle,
     },
     type: credential.type,
-    clientExtensionResults: [],
+    clientExtensionResults,
   } as AuthenticationCredentialJSON;
 
   console.log('[AssertionCredential]', encodedCredential);

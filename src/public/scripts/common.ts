@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON }
+import { CredentialDeviceType, PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON }
   from '@simplewebauthn/typescript-types';
 import { AuthenticatorTransportFuture } from '@simplewebauthn/typescript-types';
 
@@ -64,6 +64,8 @@ export interface StoredCredential {
   os?: string
   platform?: string
   last_used?: number // last used epoc time,
+  credentialDeviceType?: CredentialDeviceType,
+  credentialBackedUp?: boolean,
   clientExtensionResults?: any
   dpks?: StoredDevicePublicKey[] // Device Public Key,
 }

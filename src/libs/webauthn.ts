@@ -257,7 +257,14 @@ router.post('/registerResponse', authzAPI, async (
       throw new Error('User verification failed.');
     }
 
-    const { credentialPublicKey, credentialID, counter, authenticatorExtensionResults } = registrationInfo;
+    const {
+      credentialPublicKey,
+      credentialID,
+      counter,
+      credentialDeviceType,
+      credentialBackedUp,
+      extensionOutputs
+    } = registrationInfo;
     const base64PublicKey = base64url.encode(credentialPublicKey);
     const base64CredentialID = base64url.encode(credentialID);
     const { transports, clientExtensionResults } = credential;
@@ -270,6 +277,8 @@ router.post('/registerResponse', authzAPI, async (
       registered: getNow(),
       user_verifying: registrationInfo.userVerified,
       authenticatorAttachment: req.session.type || "undefined",
+      credentialDeviceType,
+      credentialBackedUp,
       browser: req.useragent?.browser,
       os: req.useragent?.os,
       platform: req.useragent?.platform,
@@ -277,11 +286,11 @@ router.post('/registerResponse', authzAPI, async (
       clientExtensionResults,
     });
 
-    if (authenticatorExtensionResults && authenticatorExtensionResults.devicePubKey) {
-      const { devicePubKey } = authenticatorExtensionResults;
+    if (extensionOutputs && extensionOutputs.devicePubKeyToStore) {
+      const { devicePubKeyToStore } = extensionOutputs;
       await storeDevicePublicKey(
         credentialID,
-        devicePubKey,
+        devicePubKeyToStore,
       );
     }
 
@@ -421,10 +430,10 @@ router.post('/authResponse', authzAPI, async (
     storedCred.last_used = getNow();
 
     if (extensionOutputs && extensionOutputs.devicePubKeyToStore) {
-      const devicePubKey = extensionOutputs.devicePubKeyToStore;
+      const { devicePubKeyToStore } = extensionOutputs;
       await storeDevicePublicKey(
         credentialID,
-        devicePubKey,
+        devicePubKeyToStore,
       ); 
     }
 
