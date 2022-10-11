@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-import { CredentialDeviceType, PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON }
-  from '@simplewebauthn/typescript-types';
-import { AuthenticatorTransportFuture } from '@simplewebauthn/typescript-types';
+import {
+  CredentialDeviceType,
+  PublicKeyCredentialCreationOptionsJSON,
+  PublicKeyCredentialRequestOptionsJSON
+} from '@simplewebauthn/typescript-types';
+import {
+  AttestationFormat,
+  AttestationStatement,
+  AuthenticatorTransportFuture
+} from '@simplewebauthn/typescript-types';
 
 export interface UserInfo {
   user_id: string
@@ -36,15 +43,6 @@ export interface WebAuthnAuthenticationObject extends Omit<PublicKeyCredentialRe
   customTimeout?: number
   abortTimeout?: number
 }
-
-type AttestationFormat =
-  | 'fido-u2f'
-  | 'packed'
-  | 'android-safetynet'
-  | 'android-key'
-  | 'tpm'
-  | 'apple'
-  | 'none';
 
 export type user_id = string;
 export type credential_id = string;
@@ -73,7 +71,7 @@ export interface StoredCredential {
 export type EncodedDevicePublicKey = {
   aaguid: string;
   dpk: string;
-  scope: string;
+  scope: number;
   nonce?: string;
   fmt?: AttestationFormat;
   attStmt?: {
@@ -91,3 +89,14 @@ export type EncodedDevicePublicKey = {
 export interface StoredDevicePublicKey extends EncodedDevicePublicKey {
   credentialID: credential_id
 }
+
+// TODO: Ideally this should be served by @simplewebauthn/typescript-types
+// Provide it here as a temporary solution
+export type DevicePublicKeyAuthenticatorOutput = {
+  aaguid: Buffer;
+  dpk: Buffer;
+  scope: number;
+  fmt: AttestationFormat;
+  attStmt: AttestationStatement;
+  nonce?: Buffer;
+};

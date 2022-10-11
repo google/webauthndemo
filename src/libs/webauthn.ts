@@ -15,7 +15,11 @@
  */
 
 import express, { Request, Response } from 'express';
-import { WebAuthnRegistrationObject, WebAuthnAuthenticationObject } from '../public/scripts/common';
+import {
+  WebAuthnRegistrationObject,
+  WebAuthnAuthenticationObject,
+  DevicePublicKeyAuthenticatorOutput
+} from '../public/scripts/common';
 import base64url from 'base64url';
 import { createHash } from 'crypto';
 import { getNow, csrfCheck, authzAPI } from '../libs/helper';
@@ -31,7 +35,7 @@ import {
   verifyRegistrationResponse,
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
-  DevicePublicKeyAuthenticatorOutput,
+  // DevicePublicKeyAuthenticatorOutput,
 } from '@simplewebauthn/server';
 import {
   AttestationConveyancePreference,

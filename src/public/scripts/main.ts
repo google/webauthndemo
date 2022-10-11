@@ -386,10 +386,10 @@ const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any
   // if `getClientExtensionResults()` is supported, serialize the result.
   if (credential.getClientExtensionResults) {
     const extensions: AuthenticationExtensionsClientOutputsFuture = credential.getClientExtensionResults();
-    if ('credProps' in extensions) {
+    if (extensions.credProps) {
       clientExtensionResults.credProps = extensions.credProps;
     }
-    if ('devicePubKey' in extensions) {
+    if (extensions.devicePubKey) {
       const authenticatorOutput = base64url.encode(extensions.devicePubKey.authenticatorOutput);
       const signature = base64url.encode(extensions.devicePubKey.signature);
       clientExtensionResults.devicePubKey = {
@@ -470,10 +470,10 @@ const authenticate = async (opts: WebAuthnAuthenticationObject): Promise<any> =>
   // if `getClientExtensionResults()` is supported, serialize the result.
   if (credential.getClientExtensionResults) {
     const extensions: AuthenticationExtensionsClientOutputsFuture = credential.getClientExtensionResults();
-    if ('credProps' in extensions) {
+    if (extensions.credProps) {
       clientExtensionResults.credProps = extensions.credProps;
     }
-    if ('devicePubKey' in extensions) {
+    if (extensions.devicePubKey) {
       const authenticatorOutput = base64url.encode(extensions.devicePubKey.authenticatorOutput);
       const signature = base64url.encode(extensions.devicePubKey.signature);
       clientExtensionResults.devicePubKey = {

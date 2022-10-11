@@ -15,7 +15,8 @@
  */
 
 import { getFirestore } from 'firebase-admin/firestore';
-import { DevicePublicKeyAuthenticatorOutput } from '@simplewebauthn/server/dist';
+// import { DevicePublicKeyAuthenticatorOutput } from '@simplewebauthn/server/dist';
+import { DevicePublicKeyAuthenticatorOutput } from '../public/scripts/common';
 import {
   user_id,
   credential_id,
@@ -110,17 +111,16 @@ function encodeDevicePublicKey(
 ): EncodedDevicePublicKey {
   const base64Aaguid = base64url.encode(devicePubKey.aaguid);
   const base64Dpk = base64url.encode(devicePubKey.dpk);
-  const base64Scope = base64url.encode(devicePubKey.scope);
+  const base64Nonce = devicePubKey.nonce ? base64url.encode(devicePubKey.nonce) : undefined;
 
   const encodedDevicePubKey: EncodedDevicePublicKey = {
     aaguid: base64Aaguid,
     dpk: base64Dpk,
-    scope: base64Scope,
+    scope: devicePubKey.scope,
+    nonce: base64Nonce,
+    fmt: devicePubKey.fmt || 'none',
   };
 
-  encodedDevicePubKey.nonce = devicePubKey.nonce ? base64url.encode(devicePubKey.nonce) : undefined;
-  encodedDevicePubKey.sig = devicePubKey.sig ? base64url.encode(devicePubKey.sig) : undefined;
-  encodedDevicePubKey.fmt = devicePubKey.fmt || 'none';
   encodedDevicePubKey.attStmt = {};
 
   if (devicePubKey.fmt !== 'none' && devicePubKey.attStmt) {
@@ -147,18 +147,18 @@ export function decodeDevicePublicKey(
 ): DevicePublicKeyAuthenticatorOutput {
   const aaguid = base64url.toBuffer(encodedDevicePubKey.aaguid);
   const dpk = base64url.toBuffer(encodedDevicePubKey.dpk);
-  const scope = base64url.toBuffer(encodedDevicePubKey.scope);
+  const scope = encodedDevicePubKey.scope;
+  const nonce = encodedDevicePubKey.nonce ? base64url.toBuffer(encodedDevicePubKey.nonce) : Buffer.from('', 'hex');
+  const fmt = encodedDevicePubKey.fmt ? encodedDevicePubKey.fmt : 'none';
 
   const decodedDevicePubKey: DevicePublicKeyAuthenticatorOutput = {
     aaguid,
     dpk,
     scope,
+    nonce,
+    fmt,
+    attStmt: {}
   }
-
-  decodedDevicePubKey.nonce = encodedDevicePubKey.nonce ? base64url.toBuffer(encodedDevicePubKey.nonce) : Buffer.from('', 'hex');
-  decodedDevicePubKey.sig = encodedDevicePubKey.sig ? base64url.toBuffer(encodedDevicePubKey.sig) : undefined;
-  decodedDevicePubKey.fmt = encodedDevicePubKey.fmt;
-  decodedDevicePubKey.attStmt = {};
 
   if (encodedDevicePubKey.fmt !== 'none' && encodedDevicePubKey.attStmt) {
     const { attStmt: encodedAttStmt } = encodedDevicePubKey;
