@@ -329,6 +329,7 @@ router.post('/authRequest', authzAPI, async (
     const userVerification = requestOptions.userVerification || 'preferred';
     const timeout = requestOptions.customTimeout || WEBAUTHN_TIMEOUT;
     // const allowCredentials: PublicKeyCredentialDescriptor[] = [];
+    const extensions = requestOptions.extensions || {};
     const rpID = res.locals.hostname;
 
     // // If `.allowCredentials` is not defined, leave `allowCredentials` an empty array.
@@ -354,7 +355,8 @@ router.post('/authRequest', authzAPI, async (
       timeout,
       // allowCredentials,
       userVerification,
-      rpID
+      rpID,
+      extensions,
     });
 
     req.session.challenge = options.challenge;
