@@ -44,6 +44,7 @@ import {
 } from '@simplewebauthn/typescript-types';
 import { IconButton } from '@material/mwc-icon-button';
 import { StoredCredential } from './common';
+import cbor from 'cbor';
 
 const app = initializeApp({
   apiKey: "AIzaSyBC_U6UbKJE0evrgaITJSk6T_sZmMaZO-4",
@@ -383,27 +384,14 @@ const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any
     publicKey: decodedOptions
   }) as RegistrationCredential;
 
+  console.log(await parseRegistrationCredential(credential));
+
   // Encode the attestation.
   const rawId = base64url.encode(credential.rawId);
   const clientDataJSON = base64url.encode(credential.response.clientDataJSON);
   const attestationObject = base64url.encode(credential.response.attestationObject);
-  const clientExtensionResults: AuthenticationExtensionsClientOutputsJSON = {};
+  const clientExtensionResults = parseClientExtensionResults(credential);
 
-  // if `getClientExtensionResults()` is supported, serialize the result.
-  if (credential.getClientExtensionResults) {
-    const extensions: AuthenticationExtensionsClientOutputsFuture = credential.getClientExtensionResults();
-    if (extensions.credProps) {
-      clientExtensionResults.credProps = extensions.credProps;
-    }
-    if (extensions.devicePubKey) {
-      const authenticatorOutput = base64url.encode(extensions.devicePubKey.authenticatorOutput);
-      const signature = base64url.encode(extensions.devicePubKey.signature);
-      clientExtensionResults.devicePubKey = {
-        authenticatorOutput,
-        signature
-      };
-    }
-  }
   let transports: any[] = [];
 
   // if `getTransports()` is supported, serialize the result.
@@ -428,6 +416,117 @@ const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any
   // Verify and store the attestation.
   await _fetch('/webauthn/registerResponse', encodedCredential);
 };
+
+async function parseRegistrationCredential(
+  cred: RegistrationCredential
+): Promise<any> {
+  const credJSON = {
+    id: cred.id,
+    rawId: cred.id,
+    type: cred.type,
+    response: {
+      clientDataJSON: {},
+      attestationObject: {
+        fmt: 'none',
+        attStmt: {},
+        authData: {},
+      },
+    },
+    transports: <any>[],
+    clientExtensionResults: {},
+  };
+
+  const decoder = new TextDecoder('utf-8');
+  credJSON.response.clientDataJSON = JSON.parse(decoder.decode(cred.response.clientDataJSON));
+  const attestationObject = cbor.decodeAllSync(cred.response.attestationObject)[0]
+
+  attestationObject.authData = await parseAuthenticatorData(attestationObject.authData);
+  credJSON.response.attestationObject = attestationObject;
+
+  if (cred.response.getTransports) {
+    credJSON.transports = cred.response.getTransports();
+  }
+
+  credJSON.clientExtensionResults = parseClientExtensionResults(cred);
+
+  return credJSON;
+};
+
+async function parseAuthenticatorData(
+  buffer: any
+): Promise<any> {
+  const authData = {
+    rpIdHash: '',
+    flags: {
+      up: false,
+      uv: false,
+      be: false,
+      bs: false,
+      at: false,
+      ed: false,
+    },
+    counter: 0,
+    aaguid: '',
+    credentialID: '',
+    credentialPublicKey: '',
+  };
+
+  const rpIdHash = buffer.slice(0, 32);
+  buffer = buffer.slice(32);
+  authData.rpIdHash = rpIdHash.toString('hex');
+
+  const flags = (buffer.slice(0, 1))[0];
+  buffer = buffer.slice(1);
+  authData.flags = {
+    up: !!(flags & (1 << 0)),
+    uv: !!(flags & (1 << 2)),
+    be: !!(flags & (1 << 3)),
+    bs: !!(flags & (1 << 4)),
+    at: !!(flags & (1 << 6)),
+    ed: !!(flags & (1 << 7)),
+  };
+
+  const counter = buffer.slice(0, 4);
+  buffer = buffer.slice(4);
+  authData.counter = counter.readUInt32BE(0);
+
+  if (authData.flags.at) {
+    authData.aaguid = base64url.encode(buffer.slice(0, 16));
+    buffer = buffer.slice(16);
+
+    const credIDLenBuf = buffer.slice(0, 2);
+    buffer = buffer.slice(2);
+    const credIDLen = credIDLenBuf.readUInt16BE(0)
+    authData.credentialID = base64url.encode(buffer.slice(0, credIDLen));
+    buffer = buffer.slice(credIDLen);
+
+    const firstDecoded = cbor.decodeFirstSync(buffer.slice(0));
+    authData.credentialPublicKey = base64url.encode(Uint8Array.from(cbor.encode(firstDecoded)));
+  }
+
+  return authData;
+}
+
+function parseClientExtensionResults(
+  credential: RegistrationCredential
+): AuthenticationExtensionsClientOutputsJSON {
+  const clientExtensionResults: AuthenticationExtensionsClientOutputsJSON = {};
+  if (credential.getClientExtensionResults) {
+    const extensions: AuthenticationExtensionsClientOutputsFuture = credential.getClientExtensionResults();
+    if (extensions.credProps) {
+      clientExtensionResults.credProps = extensions.credProps;
+    }
+    if (extensions.devicePubKey) {
+      const authenticatorOutput = base64url.encode(extensions.devicePubKey.authenticatorOutput);
+      const signature = base64url.encode(extensions.devicePubKey.signature);
+      clientExtensionResults.devicePubKey = {
+        authenticatorOutput,
+        signature
+      };
+    }
+  }
+  return clientExtensionResults;
+}
 
 /**
  *  Authenticate the user with a credential.
