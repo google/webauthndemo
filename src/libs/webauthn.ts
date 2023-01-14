@@ -262,6 +262,7 @@ router.post('/registerResponse', authzAPI, async (
     }
 
     const {
+      aaguid,
       credentialPublicKey,
       credentialID,
       counter,
@@ -277,6 +278,7 @@ router.post('/registerResponse', authzAPI, async (
       user_id: user.user_id,
       credentialID: base64CredentialID,
       credentialPublicKey: base64PublicKey,
+      aaguid,
       counter,
       registered: getNow(),
       user_verifying: registrationInfo.userVerified,

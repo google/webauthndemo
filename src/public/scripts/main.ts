@@ -297,6 +297,8 @@ const listCredentials = async (): Promise<void> => {
             <dd>${cred.credentialBackedUp ? 'Multi device' : 'Single device'}</dd>
             <dt>Environment</dt>
             <dd>${cred.browser} / ${cred.os} / ${cred.platform}</dd>
+            <dt>AAGUID</dt>
+            <dd>${cred.aaguid ?? 'Unavailable'}</dd>
             <dt>Transports</dt>
             <dd class="transports">
               ${!transports.length ? html`
@@ -312,8 +314,9 @@ const listCredentials = async (): Promise<void> => {
             <dt>Enrolled</dt>
             <dd>${(new Date(cred.registered)).toLocaleString()}</dd>`:''}
             ${extensions?.credProps ? html`
-            <dt>Credential Properties Extension</dt>
-            <dd>${extensions.credProps.rk ? 'true' : 'false'}</dd>`:''}
+            <dt>Credential Properties Extension</dt>`:''}
+            ${extensions.credProps?.rk ? html`
+            <dd>discoverable credentials: ${extensions.credProps.rk?'true':'false'}</dd>`:''}
             <dt>Public Key</dt>
             <dd>${cred.credentialPublicKey}</dd>
             <dt>Credential ID</dt>
