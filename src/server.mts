@@ -24,8 +24,8 @@ dotenv.config({ path: path.join(__dirname, ".env") });
 
 if (process.env.NODE_ENV === 'localhost') {
   // Ideally this is configured with `.env`;
-  process.env.FIRESTORE_EMULATOR_HOST = `localhost:${firebaseJson.emulators.firestore.port}`;
-  process.env.FIREBASE_AUTH_EMULATOR_HOST = `localhost:${firebaseJson.emulators.auth.port}`
+  process.env.FIRESTORE_EMULATOR_HOST = `${firebaseJson.emulators.firestore.host}:${firebaseJson.emulators.firestore.port}`;
+  process.env.FIREBASE_AUTH_EMULATOR_HOST = `${firebaseJson.emulators.auth.host}:${firebaseJson.emulators.auth.port}`;
 }
 
 import express, { Request, Response, RequestHandler } from 'express';

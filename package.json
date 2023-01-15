@@ -31,7 +31,6 @@
   "type": "module",
   "dependencies": {
     "@google-cloud/connect-firestore": "^2.0.2",
-    "@google-cloud/firestore": "^6.4.2",
     "@material/card": "^14.0.0",
     "@material/mwc-button": "^0.27.0",
     "@material/mwc-checkbox": "^0.27.0",
