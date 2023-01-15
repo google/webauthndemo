@@ -1,4 +1,4 @@
-import './libs/helper';
+import './libs/helper.mjs';
 
 declare module 'express-session' {
   interface Session {

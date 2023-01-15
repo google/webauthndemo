@@ -22,14 +22,14 @@ import {
 } from '../public/scripts/common';
 import base64url from 'base64url';
 import { createHash } from 'crypto';
-import { getNow, csrfCheck, authzAPI } from '../libs/helper';
+import { getNow, csrfCheck, authzAPI } from './helper.mjs';
 import { 
   getCredentials,
   removeCredential,
   storeCredential,
   storeDevicePublicKey,
   decodeDevicePublicKey,
-} from './credential';
+} from './credential.mjs';
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -144,7 +144,7 @@ router.post('/registerRequest', authzAPI, async (
     if (!res.locals.hostname) throw 'Hostname not configured.';
 
     const googleUser = res.locals.user;
-    const creationOptions = <WebAuthnRegistrationObject>req.body || {};
+    const creationOptions = req.body as WebAuthnRegistrationObject|| {};
 
     // const excludeCredentials: PublicKeyCredentialDescriptor[] = [];
     // if (creationOptions.credentialsToExclude) {
@@ -241,7 +241,7 @@ router.post('/registerResponse', authzAPI, async (
     if (!res.locals.origin) throw 'Origin not configured.';
 
     const user = res.locals.user;
-    const credential = <RegistrationCredentialJSON>req.body;
+    const credential = req.body as RegistrationCredentialJSON;
 
     const expectedChallenge = req.session.challenge;
     const expectedRPID = res.locals.hostname;
@@ -326,7 +326,7 @@ router.post('/authRequest', authzAPI, async (
   try {
     // const user = res.locals.user;
 
-    const requestOptions = <WebAuthnAuthenticationObject>req.body;
+    const requestOptions = req.body as WebAuthnAuthenticationObject;
 
     const userVerification = requestOptions.userVerification || 'preferred';
     const timeout = requestOptions.customTimeout || WEBAUTHN_TIMEOUT;
@@ -387,7 +387,7 @@ router.post('/authResponse', authzAPI, async (
   const expectedOrigin = getOrigin(res.locals.origin, req.get('User-Agent'));
 
   try {
-    const claimedCred = <AuthenticationCredentialJSON>req.body;
+    const claimedCred = req.body as AuthenticationCredentialJSON;
 
     const credentials = await getCredentials(user.user_id);
     let storedCred = credentials.find((cred) => cred.credentialID === claimedCred.id);

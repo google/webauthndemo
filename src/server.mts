@@ -15,9 +15,11 @@
  */
 
 import path from 'path';
+import url from 'url';
 // @ts-ignore The file will be copied with rollup and no problem.
-import firebaseJson from './firebase.json';
+import firebaseJson from './firebase.json' assert { type: 'json' };
 import dotenv from 'dotenv';
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 dotenv.config({ path: path.join(__dirname, ".env") });
 
 if (process.env.NODE_ENV === 'localhost') {
@@ -34,8 +36,8 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { FirestoreStore } from '@google-cloud/connect-firestore';
 import helmet from 'helmet';
 
-import { auth } from './libs/auth';
-import { webauthn } from './libs/webauthn';
+import { auth } from './libs/auth.mjs';
+import { webauthn } from './libs/webauthn.mjs';
 
 const views = path.join(__dirname, 'templates');
 const app = express();

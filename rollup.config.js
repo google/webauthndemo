@@ -15,6 +15,7 @@
  */
 
 import path from 'path';
+import url from 'url';
 import typescript from '@rollup/plugin-typescript';
 import commonjs from '@rollup/plugin-commonjs';
 import nodeResolve from '@rollup/plugin-node-resolve';
@@ -25,6 +26,8 @@ import copy from 'rollup-plugin-copy';
 import scss from 'rollup-plugin-scss';
 import css from 'rollup-plugin-import-css';
 import sourcemaps from 'rollup-plugin-sourcemaps';
+
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 const serverSrc = path.join(__dirname, 'src');
 const clientSrc = path.join(__dirname, 'src', 'public');
@@ -41,7 +44,7 @@ export default () => {
       inlineSources: true,
       tsconfig: path.join(clientSrc, 'tsconfig.json'),
     }),
-    commonjs({ extensions: ['.js', '.ts'] }),
+    commonjs({ extensions: ['.js', '.ts', '.mts'] }),
     nodeResolve({
       browser: true,
       preferBuiltins: false
@@ -95,6 +98,11 @@ export default () => {
     ]
   }, {
     input: path.join(clientSrc, 'styles', 'style.js'),
+    output: {
+      file: path.join(clientDst, 'styles', 'style.js'),
+      format: 'esm',
+      assetFileNames: '[name][extname]',
+    },
     plugins: [
       scss({
         include: [
@@ -102,7 +110,8 @@ export default () => {
           path.join(clientSrc, 'styles', '*.scss'),
           './node_modules/**/*.*'
         ],
-        output: path.join(clientDst, 'styles', 'style.css'),
+        name: 'style.css',
+        outputStyle: 'compressed',
       }),
       nodeResolve({
         browser: true,

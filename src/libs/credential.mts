@@ -36,7 +36,7 @@ export async function getCredentials(
   const refs = await store.collection('credentials')
     .where('user_id', '==', user_id)
     .orderBy('registered', 'desc').get();
-  refs.forEach(cred => results.push(<StoredCredential>cred.data()));
+  refs.forEach(cred => results.push(cred.data() as StoredCredential));
   for (let cred of results) {
     cred.dpks = await getDevicePublicKeys(cred.credentialID);
   }
@@ -47,7 +47,7 @@ export async function getCredential(
   credential_id: credential_id
 ): Promise<StoredCredential> {
   const doc = await store.collection('credentials').doc(credential_id).get();
-  const credential = <StoredCredential>doc.data();
+  const credential = doc.data() as StoredCredential;
   credential.dpks = await getDevicePublicKeys(credential_id);
   return credential;
 }
@@ -78,7 +78,7 @@ export async function getDevicePublicKeys(
     .where('credentialID', '==', credential_id)
     .get();
   refs.forEach(item => {
-    results.push(<StoredDevicePublicKey>item.data())
+    results.push(item.data() as StoredDevicePublicKey)
   });
   return results;
 }
