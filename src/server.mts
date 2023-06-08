@@ -16,18 +16,7 @@
 
 import path from 'path';
 import url from 'url';
-// @ts-ignore The file will be copied with rollup and no problem.
-import firebaseJson from './firebase.json' assert { type: 'json' };
-import dotenv from 'dotenv';
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
-dotenv.config({ path: path.join(__dirname, ".env") });
-
-if (process.env.NODE_ENV === 'localhost') {
-  // Ideally this is configured with `.env`;
-  process.env.FIRESTORE_EMULATOR_HOST = `${firebaseJson.emulators.firestore.host}:${firebaseJson.emulators.firestore.port}`;
-  process.env.FIREBASE_AUTH_EMULATOR_HOST = `${firebaseJson.emulators.auth.host}:${firebaseJson.emulators.auth.port}`;
-}
-
 import express, { Request, Response, RequestHandler } from 'express';
 import session from 'express-session';
 import useragent from 'express-useragent';
@@ -121,7 +110,15 @@ app.get('/.well-known/assetlinks.json', (req, res) => {
 });
 
 app.get('/.well-known/passkey-endpoints', (req, res) => {
-  return res.json();
+  // Temporarily hardcoded.
+  const web_endpoint = process.env.DOMAIN;
+  const enroll = {
+    'web': web_endpoint
+  };
+  const manage = {
+    'web': web_endpoint
+  }
+  return res.json({ enroll, manage });
 });
 
 app.get('/', (req: Request, res: Response) => {

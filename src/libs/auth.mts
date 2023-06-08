@@ -14,6 +14,21 @@
  * limitations under the License.
  */
 
+import path from 'path';
+import url from 'url';
+// @ts-ignore The file will be copied with rollup and no problem.
+import firebaseJson from '../firebase.json' assert { type: 'json' };
+import dotenv from 'dotenv';
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+
+dotenv.config({ path: path.join(__dirname, "../.env") });
+
+if (process.env.NODE_ENV === 'localhost') {
+  process.env.DOMAIN = 'localhost:8080';
+  process.env.FIRESTORE_EMULATOR_HOST = `${firebaseJson.emulators.firestore.host}:${firebaseJson.emulators.firestore.port}`;
+  process.env.FIREBASE_AUTH_EMULATOR_HOST = `${firebaseJson.emulators.auth.host}:${firebaseJson.emulators.auth.port}`;
+}
+
 import express, { Request, Response } from 'express';
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
