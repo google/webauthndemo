@@ -87,7 +87,7 @@ app.use((req, res, next) => {
   const protocol = process.env.NODE_ENV === 'localhost' ? 'http' : 'https';
   res.locals.origin = `${protocol}://${req.headers.host}`;
   res.locals.title = process.env.PROJECT_NAME;
-  next();
+  return next();
 });
 
 app.get('/.well-known/assetlinks.json', (req, res) => {
@@ -117,11 +117,15 @@ app.get('/.well-known/assetlinks.json', (req, res) => {
       });
     }
   }
-  res.json(assetlinks);
+  return res.json(assetlinks);
+});
+
+app.get('/.well-known/passkey-endpoints', (req, res) => {
+  return res.json();
 });
 
 app.get('/', (req: Request, res: Response) => {
-  res.render('index.html');
+  return res.render('index.html');
 });
 
 // listen for requests :)

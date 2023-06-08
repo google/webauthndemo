@@ -45,7 +45,7 @@ const authzAPI = async (
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> => {
+): Promise<any> => {
   const { user_id, name, displayName, picture } = req.session;
 
   if (process.env.NODE_ENV !== 'production') {
@@ -53,15 +53,14 @@ const authzAPI = async (
   }
   if (!user_id) {
     // When a non-signed-in user is trying to access.
-    res.status(401).json({ error: 'User not signed in.' });
-    return;
+    return res.status(401).json({ error: 'User not signed in.' });
   }
 
   res.locals.user = {user_id, name, displayName, picture } as UserInfo;
   if (process.env.NODE_ENV !== 'production') {
     console.log('User:', res.locals.user);
   }
-  next();
+  return next();
 };
 
 export { csrfCheck, authzAPI, getNow };

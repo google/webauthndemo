@@ -32,9 +32,9 @@ router.post('/userInfo', async (req: Request, res: Response) => {
       displayName: req.session.displayName,
       picture: req.session.picture
     } as UserInfo;
-    res.json(user);
+    return res.json(user);
   } else {
-    res.status(401).send('Unauthorized');
+    return res.status(401).send('Unauthorized');
   }
 });
 
@@ -49,31 +49,30 @@ router.post('/verify', async (req: Request, res: Response) => {
       req.session.name = result.email;
       req.session.displayName = result.name;
       req.session.picture = result.picture || `${res.locals.origin}/user.svg`;
-      res.json({
+      return res.json({
         user_id: req.session.user_id,
         name: req.session.name,
         displayName: req.session.displayName,
         picture: req.session.picture
       } as UserInfo);
     } else {
-      throw 'Verification failed.';
+      throw new Error('Verification failed.');
     }
   } catch (e) {
     console.error(e);
-    res.status(400).json({
+    return res.status(400).json({
       status: false,
       message: 'Verification failed.'
     });
-    return;
   }
 });
 
 router.post('/signout', (req: Request, res: Response) => {
   req.session.destroy(error => {
     if (error) {
-      res.status(500).send(error);
+      return res.status(500).send(error);
     } else {
-      res.json({
+      return res.json({
         status: true,
         message: 'Successfully signed out.'
       });

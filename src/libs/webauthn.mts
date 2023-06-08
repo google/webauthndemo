@@ -93,17 +93,17 @@ export const getOrigin = (
 router.post('/getCredentials', authzAPI, async (
   req: Request,
   res: Response
-): Promise<void> => {
+): Promise<any> => {
   if (!res.locals.user) throw 'Unauthorized.';
 
   const user = res.locals.user;
 
   try {
     const credentials = await getCredentials(user.user_id);
-    res.json(credentials);
+    return res.json(credentials);
   } catch (error) {
     console.error(error);
-    res.status(401).json({
+    return res.status(401).json({
       status: false,
       error: 'Unauthorized'
     });
@@ -117,19 +117,19 @@ router.post('/getCredentials', authzAPI, async (
 router.post('/removeCredential', authzAPI, async (
   req: Request,
   res: Response
-): Promise<void> => {
+): Promise<any> => {
   if (!res.locals.user) throw 'Unauthorized.';
 
   const { credId } = req.body;
 
   try {
     await removeCredential(credId);
-    res.json({
+    return res.json({
       status: true
     });
   } catch (error) {
     console.error(error);
-    res.status(400).json({
+    return res.status(400).json({
       status: false
     });
   }
@@ -138,10 +138,10 @@ router.post('/removeCredential', authzAPI, async (
 router.post('/registerRequest', authzAPI, async (
   req: Request,
   res: Response
-): Promise<void> => {
+): Promise<any> => {
   try {
-    if (!res.locals.user) throw 'Unauthorized.';
-    if (!res.locals.hostname) throw 'Hostname not configured.';
+    if (!res.locals.user) throw new Error('Unauthorized.');
+    if (!res.locals.hostname) throw new Error('Hostname not configured.');
 
     const googleUser = res.locals.user;
     const creationOptions = req.body as WebAuthnRegistrationObject|| {};
@@ -223,22 +223,22 @@ router.post('/registerRequest', authzAPI, async (
     req.session.timeout = getNow() + WEBAUTHN_TIMEOUT;
     req.session.type = enrollmentType;
 
-    res.json(options);
+    return res.json(options);
   } catch (error) {
     console.error(error);
-    res.status(400).send({ status: false, error: error });
+    return res.status(400).send({ status: false, error: error });
   }
 });
 
 router.post('/registerResponse', authzAPI, async (
   req: Request,
   res: Response
-) => {
+): Promise<any> => {
   try {
-    if (!res.locals.user) throw 'Unauthorized.';
-    if (!req.session.challenge) throw 'No challenge found.';
-    if (!res.locals.hostname) throw 'Hostname not configured.';
-    if (!res.locals.origin) throw 'Origin not configured.';
+    if (!res.locals.user) throw new Error('Unauthorized.');
+    if (!req.session.challenge) throw new Error('No challenge found.');
+    if (!res.locals.hostname) throw new Error('Hostname not configured.');
+    if (!res.locals.origin) throw new Error('Origin not configured.');
 
     const user = res.locals.user;
     const credential = req.body as RegistrationCredentialJSON;
@@ -305,7 +305,7 @@ router.post('/registerResponse', authzAPI, async (
     delete req.session.type;
 
     // Respond with user info
-    res.json(credential);
+    return res.json(credential);
   } catch (error: any) {
     console.error(error);
 
@@ -313,15 +313,15 @@ router.post('/registerResponse', authzAPI, async (
     delete req.session.timeout;
     delete req.session.type;
 
-    res.status(400).send({ status: false, error: error.message });
+    return res.status(400).send({ status: false, error: error.message });
   }
 });
 
 router.post('/authRequest', authzAPI, async (
   req: Request,
   res: Response
-) => {
-  if (!res.locals.user) throw 'Unauthorized.';
+): Promise<any> => {
+  if (!res.locals.user) throw new Error('Unauthorized.');
 
   try {
     // const user = res.locals.user;
@@ -364,22 +364,22 @@ router.post('/authRequest', authzAPI, async (
     req.session.challenge = options.challenge;
     req.session.timeout = getNow() + WEBAUTHN_TIMEOUT;
 
-    res.json(options);
+    return res.json(options);
   } catch (error) {
     console.error(error);
 
-    res.status(400).json({ status: false, error });
+    return res.status(400).json({ status: false, error });
   }
 });
 
 router.post('/authResponse', authzAPI, async (
   req: Request,
   res: Response
-) => {
-  if (!res.locals.user) throw 'Unauthorized.';
+): Promise<any> => {
+  if (!res.locals.user) throw new Error('Unauthorized.');
 
-  if (!res.locals.hostname) throw 'Hostname not configured.';
-  if (!res.locals.origin) throw 'Origin not configured.';
+  if (!res.locals.hostname) throw new Error('Hostname not configured.');
+  if (!res.locals.origin) throw new Error('Origin not configured.');
 
   const user = res.locals.user;
   const expectedChallenge = req.session.challenge || '';
@@ -393,7 +393,7 @@ router.post('/authResponse', authzAPI, async (
     let storedCred = credentials.find((cred) => cred.credentialID === claimedCred.id);
 
     if (!storedCred) {
-      throw 'Authenticating credential not found.';
+      throw new Error('Authenticating credential not found.');
     }
 
     const credentialPublicKey = base64url.toBuffer(storedCred.credentialPublicKey);
@@ -431,7 +431,7 @@ router.post('/authResponse', authzAPI, async (
     const { extensionOutputs } = authenticationInfo;
 
     if (!verified) {
-      throw 'User verification failed.';
+      throw new Error('User verification failed.');
     }
 
     storedCred.counter = authenticationInfo.newCounter;
@@ -447,13 +447,13 @@ router.post('/authResponse', authzAPI, async (
 
     delete req.session.challenge;
     delete req.session.timeout;
-    res.json(storedCred);
+    return res.json(storedCred);
   } catch (error) {
     console.error(error);
 
     delete req.session.challenge;
     delete req.session.timeout;
-    res.status(400).json({ status: false, error });
+    return res.status(400).json({ status: false, error });
   }
 });
 
