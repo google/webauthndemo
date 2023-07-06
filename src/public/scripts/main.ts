@@ -216,6 +216,7 @@ const collectOptions = (
   // This is authentication
   } else {
     return {
+      userVerification,
       extensions: { devicePubKey },
       customTimeout,
       // abortTimeout,

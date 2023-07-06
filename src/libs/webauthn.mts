@@ -224,9 +224,9 @@ router.post('/registerRequest', authzAPI, async (
     req.session.type = enrollmentType;
 
     return res.json(options);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    return res.status(400).send({ status: false, error: error });
+    return res.status(400).send({ status: false, error: error.message });
   }
 });
 
@@ -365,10 +365,10 @@ router.post('/authRequest', authzAPI, async (
     req.session.timeout = getNow() + WEBAUTHN_TIMEOUT;
 
     return res.json(options);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
 
-    return res.status(400).json({ status: false, error });
+    return res.status(400).json({ status: false, error: error.message });
   }
 });
 
@@ -448,12 +448,12 @@ router.post('/authResponse', authzAPI, async (
     delete req.session.challenge;
     delete req.session.timeout;
     return res.json(storedCred);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
 
     delete req.session.challenge;
     delete req.session.timeout;
-    return res.status(400).json({ status: false, error });
+    return res.status(400).json({ status: false, error: error.message });
   }
 });
 

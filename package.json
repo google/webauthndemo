@@ -1,6 +1,6 @@
 {
   "name": "webauthndemo",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "An example JavaScript Relying Party implementation of the WebAuthn specification.",
   "main": "dist/server.mjs",
   "scripts": {
