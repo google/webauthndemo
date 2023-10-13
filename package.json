@@ -47,6 +47,7 @@
     "@material/mwc-top-app-bar-fixed": "^0.27.0",
     "@simplewebauthn/server": "^6.3.0-alpha.1",
     "cbor": "^8.1.0",
+    "cbor-web": "^9.0.0",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-handlebars": "^6.0.6",

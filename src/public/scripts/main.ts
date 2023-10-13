@@ -34,6 +34,7 @@ import {
   RegistrationCredentialJSON,
   AuthenticationCredential,
   AuthenticationCredentialJSON,
+  PublicKeyCredentialFuture,
   PublicKeyCredentialCreationOptions,
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptions,
@@ -44,7 +45,7 @@ import {
 } from '@simplewebauthn/typescript-types';
 import { IconButton } from '@material/mwc-icon-button';
 import { StoredCredential } from './common';
-import cbor from 'cbor';
+import cbor from 'cbor-web';
 
 const app = initializeApp({
   apiKey: "AIzaSyBC_U6UbKJE0evrgaITJSk6T_sZmMaZO-4",
@@ -508,7 +509,7 @@ async function parseAuthenticatorData(
 }
 
 function parseClientExtensionResults(
-  credential: RegistrationCredential
+  credential: PublicKeyCredentialFuture
 ): AuthenticationExtensionsClientOutputsJSON {
   const clientExtensionResults: AuthenticationExtensionsClientOutputsJSON = {};
   if (credential.getClientExtensionResults) {
@@ -563,6 +564,8 @@ const authenticate = async (opts: WebAuthnAuthenticationObject): Promise<any> =>
     publicKey: decodedOptions
   }) as AuthenticationCredential;
 
+  console.log(await parseAuthenticationCredential(credential));
+
   // Encode the credential.
   const rawId = base64url.encode(credential.rawId);
   const authenticatorData = base64url.encode(credential.response.authenticatorData);
@@ -606,6 +609,39 @@ const authenticate = async (opts: WebAuthnAuthenticationObject): Promise<any> =>
   // Verify and store the credential.
   return _fetch('/webauthn/authResponse', encodedCredential);
 };
+
+const parseAuthenticationCredential = async (
+  cred: AuthenticationCredential
+): Promise<any> => {
+  const credJSON = {
+    id: cred.id,
+    rawId: cred.id,
+    type: cred.type,
+    response: {
+      clientDataJSON: {},
+      authenticatorData: {},
+      signature: {},
+      userHandle: {}
+    },
+    clientExtensionResults: {},
+  };
+
+  const decoder = new TextDecoder('utf-8');
+  const clientDataJSON = JSON.parse(decoder.decode(cred.response.clientDataJSON));
+  const authenticatorData = await parseAuthenticatorData(new Uint8Array(cred.response.authenticatorData));
+  const signature = base64url.encode(cred.response.signature);
+  const userHandle = cred.response.userHandle ? base64url.encode(cred.response.userHandle) : '';
+  credJSON.response = {
+    clientDataJSON,
+    authenticatorData,
+    signature,
+    userHandle
+  };
+
+  credJSON.clientExtensionResults = parseClientExtensionResults(cred);
+
+  return credJSON;
+}
 
 /**
  *  Remove a credential.
