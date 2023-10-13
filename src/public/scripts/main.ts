@@ -189,11 +189,17 @@ const collectOptions = (
   const userVerification = $('#user-verification').value;
   const credProps = $('#switch-cred-props').checked || undefined;
   const dpk = $('#switch-device-pub-key').checked || undefined;
+  const tas = $('#tx-auth-simple').value.trim() || undefined;
   const customTimeout = parseInt($('#custom-timeout').value);
   // const abortTimeout = parseInt($('#abort-timeout').value);
 
   // Device Public Key extension
   const devicePubKey = dpk ? { attestation: 'none' } : undefined;
+
+  // Simple Transaction Authorization extension
+  const simpleTransactionAuthorizationExtension = tas ? {
+    txAuthSimple: tas
+  } : undefined;
 
   // This is registration
   if (mode === 'registration') {
@@ -217,7 +223,7 @@ const collectOptions = (
   } else {
     return {
       userVerification,
-      extensions: { devicePubKey },
+      extensions: { devicePubKey, simpleTransactionAuthorizationExtension },
       customTimeout,
       // abortTimeout,
     } as WebAuthnAuthenticationObject
