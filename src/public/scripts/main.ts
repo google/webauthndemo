@@ -197,9 +197,7 @@ const collectOptions = (
   const devicePubKey = dpk ? { attestation: 'none' } : undefined;
 
   // Simple Transaction Authorization extension
-  const simpleTransactionAuthorizationExtension = tas ? {
-    txAuthSimple: tas
-  } : undefined;
+  const txAuthSimple = tas ? tas : undefined;
 
   // This is registration
   if (mode === 'registration') {
@@ -223,7 +221,7 @@ const collectOptions = (
   } else {
     return {
       userVerification,
-      extensions: { devicePubKey, simpleTransactionAuthorizationExtension },
+      extensions: { devicePubKey, txAuthSimple },
       customTimeout,
       // abortTimeout,
     } as WebAuthnAuthenticationObject
