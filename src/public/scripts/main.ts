@@ -189,6 +189,7 @@ const collectOptions = (
   const userVerification = $('#user-verification').value;
   const credProps = $('#switch-cred-props').checked || undefined;
   const dpk = $('#switch-device-pub-key').checked || undefined;
+  const tasSwitch = $('#switch-tx-auth-simple').checked || undefined;
   const tas = $('#tx-auth-simple').value.trim() || undefined;
   const customTimeout = parseInt($('#custom-timeout').value);
   // const abortTimeout = parseInt($('#abort-timeout').value);
@@ -196,8 +197,11 @@ const collectOptions = (
   // Device Public Key extension
   const devicePubKey = dpk ? { attestation: 'none' } : undefined;
 
+  let txAuthSimple;
   // Simple Transaction Authorization extension
-  const txAuthSimple = tas ? tas : undefined;
+  if (tasSwitch) {
+    txAuthSimple = tas ?? undefined;
+  }
 
   // This is registration
   if (mode === 'registration') {
@@ -642,7 +646,6 @@ const onRegisterPlatformAuthenticator = async (): Promise<void> => {
   const opts = <WebAuthnRegistrationObject>collectOptions('registration');
   opts.authenticatorSelection = opts.authenticatorSelection || {};
   opts.authenticatorSelection.authenticatorAttachment = 'platform';
-  opts.authenticatorSelection.userVerification = 'required';
   try {
     await registerCredential(opts);
     showSnackbar('A credential successfully registered!');
@@ -677,6 +680,10 @@ const onAuthenticate = async (): Promise<void> => {
   }
 };
 
+const onTxAuthSimpleSiwtch = async (): Promise<void> => {
+  $('#tx-auth-simple').disabled = $('#switch-tx-auth-simple').checked;
+}
+
 loading.start();
 
 $('#isuvpaa-button').addEventListener('click', onISUVPAA);
@@ -687,3 +694,4 @@ $('#exclude-all-credentials').addEventListener('click', onExcludeAllCredentials)
 $('#user-icon').addEventListener('click', onUserIconClicked);
 $('#signout').addEventListener('click', onSignout);
 $('#save-user-info').addEventListener('click', onUserInfoUpdate);
+$('#switch-tx-auth-simple').addEventListener('click', onTxAuthSimpleSiwtch);
