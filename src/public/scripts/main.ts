@@ -646,7 +646,6 @@ const onRegisterPlatformAuthenticator = async (): Promise<void> => {
   const opts = <WebAuthnRegistrationObject>collectOptions('registration');
   opts.authenticatorSelection = opts.authenticatorSelection || {};
   opts.authenticatorSelection.authenticatorAttachment = 'platform';
-  opts.authenticatorSelection.userVerification = 'required';
   try {
     await registerCredential(opts);
     showSnackbar('A credential successfully registered!');
