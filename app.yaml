@@ -1,4 +1,4 @@
-runtime: nodejs16
+runtime: nodejs18
 env_variables:
   NODE_ENV: production
 handlers:

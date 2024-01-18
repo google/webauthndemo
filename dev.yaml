@@ -1,4 +1,4 @@
-runtime: nodejs16
+runtime: nodejs18
 service: dev
 env_variables:
   NODE_ENV: development
