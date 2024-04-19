@@ -106,10 +106,10 @@ const onSignout = async (e: any) => {
   $('#user-info').close();
   await auth.signOut();
   await _fetch('/auth/signout');
-  icon.innerHTML = '';
+  icon.innerText = '';
   icon.setAttribute('icon', 'account_circle');
   $('#drawer').open = false;
-  $('#credentials').innerHTML = '';
+  $('#credentials').innerText = '';
   showSnackbar('You are signed out.');
   displaySignin();
 };
