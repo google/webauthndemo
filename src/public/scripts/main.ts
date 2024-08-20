@@ -188,14 +188,10 @@ const collectOptions = (
   const residentKey = $('#resident-key').value;
   const userVerification = $('#user-verification').value;
   const credProps = $('#switch-cred-props').checked || undefined;
-  const dpk = $('#switch-device-pub-key').checked || undefined;
   const tasSwitch = $('#switch-tx-auth-simple').checked || undefined;
   const tas = $('#tx-auth-simple').value.trim() || undefined;
   const customTimeout = parseInt($('#custom-timeout').value);
   // const abortTimeout = parseInt($('#abort-timeout').value);
-
-  // Device Public Key extension
-  const devicePubKey = dpk ? { attestation: 'none' } : undefined;
 
   let txAuthSimple;
   // Simple Transaction Authorization extension
@@ -215,7 +211,7 @@ const collectOptions = (
         userVerification,
         residentKey
       },
-      extensions: { credProps, devicePubKey },
+      extensions: { credProps, },
       customTimeout,
       user,
       // abortTimeout,
@@ -225,7 +221,7 @@ const collectOptions = (
   } else {
     return {
       userVerification,
-      extensions: { devicePubKey, txAuthSimple },
+      extensions: { txAuthSimple },
       customTimeout,
       // abortTimeout,
     } as WebAuthnAuthenticationObject
@@ -280,7 +276,6 @@ const listCredentials = async (): Promise<void> => {
     loading.stop();
     render(credentials.map(cred => {
       const credId = cred.credentialID.substring(0, 16);
-      const dpks = cred.dpks;
       const extensions = cred.clientExtensionResults;
       const transports = cred.transports as string[];
       const authenticatorType = `${cred.user_verifying?'User Verifying ':''}`+
@@ -330,11 +325,6 @@ const listCredentials = async (): Promise<void> => {
             <dd>${cred.credentialPublicKey}</dd>
             <dt>Credential ID</dt>
             <dd>${cred.credentialID}</dd>
-            ${dpks && dpks.length ? html`
-             ${dpks.map((devicePubKey, i) => html`
-            <dt>Device Public Key ${i}</dt>
-             <dd><strong>aaguid</strong>: ${devicePubKey.aaguid}</dd>
-             <dd><strong>dpk</strong>: ${devicePubKey.dpk}</dd>`)}`:''}
             <div class="mdc-card__ripple"></div>
           </div>
         </div>
@@ -402,14 +392,6 @@ const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any
     const extensions: AuthenticationExtensionsClientOutputsFuture = credential.getClientExtensionResults();
     if (extensions.credProps) {
       clientExtensionResults.credProps = extensions.credProps;
-    }
-    if (extensions.devicePubKey) {
-      const authenticatorOutput = base64url.encode(extensions.devicePubKey.authenticatorOutput);
-      const signature = base64url.encode(extensions.devicePubKey.signature);
-      clientExtensionResults.devicePubKey = {
-        authenticatorOutput,
-        signature
-      };
     }
   }
   let transports: any[] = [];
@@ -486,14 +468,6 @@ const authenticate = async (opts: WebAuthnAuthenticationObject): Promise<any> =>
     const extensions: AuthenticationExtensionsClientOutputsFuture = credential.getClientExtensionResults();
     if (extensions.credProps) {
       clientExtensionResults.credProps = extensions.credProps;
-    }
-    if (extensions.devicePubKey) {
-      const authenticatorOutput = base64url.encode(extensions.devicePubKey.authenticatorOutput);
-      const signature = base64url.encode(extensions.devicePubKey.signature);
-      clientExtensionResults.devicePubKey = {
-        authenticatorOutput,
-        signature
-      };
     }
   }
 
@@ -670,7 +644,6 @@ const onAuthenticate = async (): Promise<void> => {
     // Prepended `ID-` is necessary to avoid IDs start with a number.
     rippleCard(`ID-${credential.credentialID}`);
     showSnackbar('Authentication succeeded!');
-    // Refresh card info for dpk
     listCredentials();
   } catch (e: any) {
     console.error(e);

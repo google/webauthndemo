@@ -18,7 +18,6 @@ import express, { Request, Response } from 'express';
 import {
   WebAuthnRegistrationObject,
   WebAuthnAuthenticationObject,
-  DevicePublicKeyAuthenticatorOutput
 } from '../public/scripts/common';
 import base64url from 'base64url';
 import { createHash } from 'crypto';
@@ -27,8 +26,6 @@ import {
   getCredentials,
   removeCredential,
   storeCredential,
-  storeDevicePublicKey,
-  decodeDevicePublicKey,
 } from './credential.mjs';
 import {
   generateRegistrationOptions,
@@ -268,7 +265,6 @@ router.post('/registerResponse', authzAPI, async (
       counter,
       credentialDeviceType,
       credentialBackedUp,
-      extensionOutputs
     } = registrationInfo;
     const base64PublicKey = base64url.encode(credentialPublicKey);
     const base64CredentialID = base64url.encode(credentialID);
@@ -291,14 +287,6 @@ router.post('/registerResponse', authzAPI, async (
       transports,
       clientExtensionResults,
     });
-
-    if (extensionOutputs && extensionOutputs.devicePubKeyToStore) {
-      const { devicePubKeyToStore } = extensionOutputs;
-      await storeDevicePublicKey(
-        credentialID,
-        devicePubKeyToStore,
-      );
-    }
 
     delete req.session.challenge;
     delete req.session.timeout;
@@ -410,25 +398,15 @@ router.post('/authResponse', authzAPI, async (
     console.log('Claimed credential', claimedCred);
     console.log('Stored credential', storedCred);
 
-    const userDevicePublicKeys: DevicePublicKeyAuthenticatorOutput[] = [];
-    if (storedCred.dpks) {
-      for (const dpk of storedCred.dpks) {
-        const decodedDevicePubKey = await decodeDevicePublicKey(dpk);
-        userDevicePublicKeys.push(decodedDevicePubKey);
-      };
-    }
-
     const verification = await verifyAuthenticationResponse({
       credential: claimedCred,
       expectedChallenge,
       expectedOrigin,
       expectedRPID,
       authenticator,
-      userDevicePublicKeys,
     });
 
     const { verified, authenticationInfo } = verification;
-    const { extensionOutputs } = authenticationInfo;
 
     if (!verified) {
       throw new Error('User verification failed.');
@@ -436,14 +414,6 @@ router.post('/authResponse', authzAPI, async (
 
     storedCred.counter = authenticationInfo.newCounter;
     storedCred.last_used = getNow();
-
-    if (extensionOutputs && extensionOutputs.devicePubKeyToStore) {
-      const { devicePubKeyToStore } = extensionOutputs;
-      await storeDevicePublicKey(
-        credentialID,
-        devicePubKeyToStore,
-      ); 
-    }
 
     delete req.session.challenge;
     delete req.session.timeout;
