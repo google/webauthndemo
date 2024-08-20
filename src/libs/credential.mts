@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-import { getFirestore } from 'firebase-admin/firestore';
+import { store } from './config.mjs';
 import {
   user_id,
   credential_id,
   StoredCredential,
 } from '../public/scripts/common';
-
-const store = getFirestore();
-store.settings({ ignoreUndefinedProperties: true });
 
 export async function getCredentials(
   user_id: user_id

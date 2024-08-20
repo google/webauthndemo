@@ -15,67 +15,36 @@
  */
 
 import path from 'path';
-import url from 'url';
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 import express, { Request, Response, RequestHandler } from 'express';
-import session from 'express-session';
 import useragent from 'express-useragent';
 import { engine } from 'express-handlebars';
-import { getFirestore } from 'firebase-admin/firestore';
-import { FirestoreStore } from '@google-cloud/connect-firestore';
+import { config, initializeSession } from './libs/config.mjs';
 import helmet from 'helmet';
 
 import { auth } from './libs/auth.mjs';
 import { webauthn } from './libs/webauthn.mjs';
 
-const views = path.join(__dirname, 'templates');
+const views = path.join(config.views_root_file_path, 'templates');
 const app = express();
 app.set('view engine', 'html');
 app.engine('html', engine({
   extname: 'html',
 }));
 app.set('views', views);
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(config.views_root_file_path, 'public')));
 app.use(express.json() as RequestHandler);
 app.use(useragent.express());
-
-let session_name;
-if (process.env.NODE_ENV === 'localhost') {
-  session_name = process.env.SESSION_STORE_NAME || 'session';
-} else {
-  session_name = `__Host-${process.env.SESSION_STORE_NAME || 'session'}`;
-}
-
-// TODO: The session seems to live very short.
-app.use(session({
-  name: session_name,
-  secret: process.env.SECRET || 'secret',
-  resave: false,
-  saveUninitialized: false,
-  proxy: true,
-  store: new FirestoreStore({
-    dataset: getFirestore(),
-    kind: 'express-sessions',
-  }),
-  cookie: {
-    secure: process.env.NODE_ENV !== 'localhost',
-    path: '/',
-    sameSite: 'strict',
-    httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24 * 365, // 1 year
-  }
-}));
+app.use(initializeSession());
 
 // Run helmet only when it's running on a remote server.
-if (process.env.NODE_ENV !== 'localhost') {
+if (config.is_localhost) {
   app.use(helmet.hsts());
 }
 
 app.use((req, res, next) => {
-  res.locals.hostname = req.hostname;
-  const protocol = process.env.NODE_ENV === 'localhost' ? 'http' : 'https';
-  res.locals.origin = `${protocol}://${req.headers.host}`;
-  res.locals.title = process.env.PROJECT_NAME;
+  res.locals.hostname = config.hostname;
+  res.locals.origin = config.origin;
+  res.locals.title = config.project_name;
   return next();
 });
 
@@ -111,7 +80,7 @@ app.get('/.well-known/assetlinks.json', (req, res) => {
 
 app.get('/.well-known/passkey-endpoints', (req, res) => {
   // Temporarily hardcoded.
-  const web_endpoint = process.env.DOMAIN;
+  const web_endpoint = config.origin;
   const enroll = {
     'web': web_endpoint
   };
@@ -126,8 +95,8 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // listen for requests :)
-app.listen(process.env.PORT || 8080, () => {
-  console.log(`Your app is listening on port ${process.env.PORT || 8080}`);
+app.listen(config.port || 8080, () => {
+  console.log(`Your app is listening on port ${config.port || 8080}`);
 });
 
 app.use('/auth', auth);

@@ -3,6 +3,7 @@
   "version": "2.2.0",
   "description": "An example JavaScript Relying Party implementation of the WebAuthn specification.",
   "main": "dist/server.mjs",
+  "engines": { "node": ">=20.x" },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rimraf ./dist",
