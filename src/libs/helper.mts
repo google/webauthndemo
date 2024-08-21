@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { config } from './config.mjs';
 import { Request, Response, NextFunction } from 'express';
 import { UserInfo } from '../public/scripts/common';
 
@@ -48,7 +49,7 @@ const authzAPI = async (
 ): Promise<any> => {
   const { user_id, name, displayName, picture } = req.session;
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (config.debug) {
     console.log('Session:', req.session);
   }
   if (!user_id) {
@@ -57,7 +58,7 @@ const authzAPI = async (
   }
 
   res.locals.user = {user_id, name, displayName, picture } as UserInfo;
-  if (process.env.NODE_ENV !== 'production') {
+  if (config.debug) {
     console.log('User:', res.locals.user);
   }
   return next();

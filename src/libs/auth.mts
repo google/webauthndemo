@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { config } from './config.mjs';
 import express, { Request, Response } from 'express';
 import { getAuth } from 'firebase-admin/auth';
 import { UserInfo } from '../public/scripts/common';
@@ -45,7 +46,7 @@ router.post('/verify', async (req: Request, res: Response) => {
       req.session.user_id = result.user_id;
       req.session.name = result.email;
       req.session.displayName = result.name;
-      req.session.picture = result.picture || `${res.locals.origin}/user.svg`;
+      req.session.picture = result.picture || `${config.origin}/user.svg`;
       return res.json({
         user_id: req.session.user_id,
         name: req.session.name,

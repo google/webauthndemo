@@ -1,6 +1,8 @@
 runtime: nodejs20
 env_variables:
   NODE_ENV: production
+  PROJECT_NAME: "WebAuthn Demo"
+  GOOGLE_CLOUD_PROJECT: try-webauthn
 handlers:
 - url: /.*
   secure: always

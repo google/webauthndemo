@@ -90,23 +90,22 @@ export function initializeSession() {
 }
 
 function configureApp() {
-  console.log('process.env:', process.env);
-  console.log('process.env.ORIGIN:', process.env.ORIGIN);
-
-  const origin = process.env.ORIGIN || `http://localhost:${process.env.PORT || 8080}`;
+  const localhost = `http://localhost:${process.env.PORT || 8080}`;
+  const origin = is_localhost ?  localhost : process.env.ORIGIN || localhost;
+  const project_name = process.env.PROJECT_NAME || 'try-webauthn';
 
   return {
-    project_name: process.env.PROJECT_NAME || 'try-webauthn',
+    project_name,
     debug: is_localhost || process.env.NODE_ENV === 'development',
     project_root_file_path,
     dist_root_file_path,
-    views_root_file_path: dist_root_file_path,
+    views_root_file_path: path.join(dist_root_file_path, 'templates'),
     is_localhost,
     port: is_development_proxy ? 8080 : process.env.PORT || 8080,
     origin,
     secret: process.env.SECRET || crypto.randomBytes(32).toString('hex'),
     hostname: new URL(origin).hostname,
-    title: process.env.PROJECT_NAME,
+    title: project_name,
     repository_url: packageConfig.repository?.url,
     id_token_lifetime: parseInt(
       process.env.ID_TOKEN_LIFETIME || `${1 * 24 * 60 * 60 * 1000}`

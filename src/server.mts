@@ -24,7 +24,7 @@ import helmet from 'helmet';
 import { auth } from './libs/auth.mjs';
 import { webauthn } from './libs/webauthn.mjs';
 
-const views = path.join(config.views_root_file_path, 'templates');
+const views = config.views_root_file_path;
 const app = express();
 app.set('view engine', 'html');
 app.engine('html', engine({
@@ -37,16 +37,9 @@ app.use(useragent.express());
 app.use(initializeSession());
 
 // Run helmet only when it's running on a remote server.
-if (config.is_localhost) {
+if (!config.is_localhost) {
   app.use(helmet.hsts());
 }
-
-app.use((req, res, next) => {
-  res.locals.hostname = config.hostname;
-  res.locals.origin = config.origin;
-  res.locals.title = config.project_name;
-  return next();
-});
 
 app.get('/.well-known/assetlinks.json', (req, res) => {
   const assetlinks = [];
@@ -58,7 +51,7 @@ app.get('/.well-known/assetlinks.json', (req, res) => {
     relation: relation,
     target: {
       namespace: 'web',
-      site: res.locals.origin,
+      site: config.origin,
     },
   });
   if (process.env.ANDROID_PACKAGENAME && process.env.ANDROID_SHA256HASH) {

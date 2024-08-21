@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { config } from './config.mjs';
 import express, { Request, Response } from 'express';
 import {
   WebAuthnRegistrationObject,
@@ -42,6 +43,14 @@ import {
   PublicKeyCredentialParameters,
   PublicKeyCredentialUserEntityJSON,
 } from '@simplewebauthn/types';
+import aaguids from 'aaguid' with { type: 'json' };
+
+interface AAGUIDs {
+  [key: string]: {
+    name: string;
+    icon_light?: string;
+  };
+}
 
 const router = express.Router();
 
@@ -82,6 +91,11 @@ export const getOrigin = (
   
   return origin;
 }
+
+router.get('/aaguids', (req: Request, res: Response) => {
+  console.log('/aaguids');
+  return res.json(aaguids as AAGUIDs);
+});
 
 /**
  * Returns a list of credentials
@@ -137,7 +151,6 @@ router.post('/registerRequest', authzAPI, async (
 ): Promise<any> => {
   try {
     if (!res.locals.user) throw new Error('Unauthorized.');
-    if (!res.locals.hostname) throw new Error('Hostname not configured.');
 
     const googleUser = res.locals.user;
     const creationOptions = req.body as WebAuthnRegistrationObject|| {};
@@ -202,7 +215,7 @@ router.post('/registerRequest', authzAPI, async (
 
     const options = await generateRegistrationOptions({
       rpName: RP_NAME,
-      rpID: res.locals.hostname,
+      rpID: config.hostname,
       userID: userId,
       userName: user.name,
       userDisplayName: user.displayName,
@@ -233,16 +246,14 @@ router.post('/registerResponse', authzAPI, async (
   try {
     if (!res.locals.user) throw new Error('Unauthorized.');
     if (!req.session.challenge) throw new Error('No challenge found.');
-    if (!res.locals.hostname) throw new Error('Hostname not configured.');
-    if (!res.locals.origin) throw new Error('Origin not configured.');
 
     const user = res.locals.user;
     const credential = req.body as RegistrationResponseJSON;
 
     const expectedChallenge = req.session.challenge;
-    const expectedRPID = res.locals.hostname;
+    const expectedRPID = config.hostname;
  
-    let expectedOrigin = getOrigin(res.locals.origin, req.get('User-Agent'));
+    let expectedOrigin = getOrigin(config.origin, req.get('User-Agent'));
 
     const verification = await verifyRegistrationResponse({
       response: credential,
@@ -319,7 +330,7 @@ router.post('/authRequest', authzAPI, async (
     const timeout = requestOptions.customTimeout || WEBAUTHN_TIMEOUT;
     // const allowCredentials: PublicKeyCredentialDescriptor[] = [];
     const extensions = requestOptions.extensions || {};
-    const rpID = res.locals.hostname;
+    const rpID = config.hostname;
 
     // // If `.allowCredentials` is not defined, leave `allowCredentials` an empty array.
     // if (requestOptions.allowCredentials) {
@@ -365,13 +376,10 @@ router.post('/authResponse', authzAPI, async (
 ): Promise<any> => {
   if (!res.locals.user) throw new Error('Unauthorized.');
 
-  if (!res.locals.hostname) throw new Error('Hostname not configured.');
-  if (!res.locals.origin) throw new Error('Origin not configured.');
-
   const user = res.locals.user;
   const expectedChallenge = req.session.challenge || '';
-  const expectedRPID = res.locals.hostname;
-  const expectedOrigin = getOrigin(res.locals.origin, req.get('User-Agent'));
+  const expectedRPID = config.hostname;
+  const expectedOrigin = getOrigin(config.origin, req.get('User-Agent'));
 
   try {
     const claimedCred = req.body as AuthenticationResponseJSON;
