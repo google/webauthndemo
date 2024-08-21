@@ -15,7 +15,7 @@
  */
 
 import { html, render, $, showSnackbar, loading, _fetch } from './util';
-import { WebAuthnRegistrationObject, WebAuthnAuthenticationObject, UserInfo } from './common';
+import { WebAuthnRegistrationObject, WebAuthnAuthenticationObject, UserInfo, AAGUIDs } from './common';
 import { base64url } from './base64url';
 import { MDCRipple } from '@material/ripple';
 import { initializeApp } from 'firebase/app';
@@ -42,6 +42,8 @@ import {
 } from '@simplewebauthn/types';
 import { IconButton } from '@material/mwc-icon-button';
 import { StoredCredential } from './common';
+
+const aaguids = await fetch('/webauthn/aaguids').then(res => res.json());
 
 const app = initializeApp({
   apiKey: "AIzaSyBC_U6UbKJE0evrgaITJSk6T_sZmMaZO-4",
@@ -276,6 +278,7 @@ const listCredentials = async (): Promise<void> => {
       const credId = cred.credentialID.substring(0, 16);
       const extensions = cred.clientExtensionResults;
       const transports = cred.transports as string[];
+      const aaguid = cred.aaguid || '00000000-0000-0000-0000-000000000000';
       const authenticatorType = `${cred.user_verifying?'User Verifying ':''}`+
         `${cred.authenticatorAttachment==='platform'?'Platform ':
            cred.authenticatorAttachment==='cross-platform'?'Roaming ':''}Authenticator`;
@@ -289,6 +292,7 @@ const listCredentials = async (): Promise<void> => {
               </mwc-formfield>
             </div>
             <div class="mdc-card__action-icons">
+              <mwc-icon-button title="${(aaguids as AAGUIDs)[aaguid].name}"><img src="${(aaguids as AAGUIDs)[aaguid].icon_light}"></mwc-icon-button>
               <mwc-icon-button @click="${removeCredential(cred.credentialID)}" icon="delete_forever" title="Removes this credential registration from the server"></mwc-icon>
             </div>
           </div>
@@ -297,10 +301,8 @@ const listCredentials = async (): Promise<void> => {
             <dd>${authenticatorType}</dd>
             <dt>Credential Type</dt>
             <dd>${cred.credentialBackedUp ? 'Multi device' : 'Single device'}</dd>
-            <dt>Environment</dt>
-            <dd>${cred.browser} / ${cred.os} / ${cred.platform}</dd>
             <dt>AAGUID</dt>
-            <dd>${cred.aaguid ?? 'Unavailable'}</dd>
+            <dd>${aaguid}</dd>
             <dt>Transports</dt>
             <dd class="transports">
               ${!transports.length ? html`
@@ -312,8 +314,10 @@ const listCredentials = async (): Promise<void> => {
               </mwc-formfield>
               `)}
             </dd>
+            <dt>Enrolled on</dt>
+            <dd>${cred.browser} / ${cred.os} / ${cred.platform}</dd>
             ${cred.registered ? html`
-            <dt>Enrolled</dt>
+            <dt>Enrolled at</dt>
             <dd>${(new Date(cred.registered)).toLocaleString()}</dd>`:''}
             ${extensions?.credProps ? html`
             <dt>Credential Properties Extension</dt>`:''}

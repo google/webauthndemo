@@ -62,3 +62,13 @@ export interface StoredCredential {
   credentialBackedUp?: boolean,
   clientExtensionResults?: any
 }
+
+export interface AAGUID {
+  name: string;
+  icon_light?: string;
+  icon_dark?: string;
+}
+
+export interface AAGUIDs {
+  [key: string]: AAGUID
+}

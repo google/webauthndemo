@@ -31,7 +31,7 @@ app.engine('html', engine({
   extname: 'html',
 }));
 app.set('views', views);
-app.use(express.static(path.join(config.views_root_file_path, 'public')));
+app.use(express.static(path.join(config.dist_root_file_path, 'public')));
 app.use(express.json() as RequestHandler);
 app.use(useragent.express());
 app.use(initializeSession());

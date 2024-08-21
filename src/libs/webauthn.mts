@@ -19,6 +19,8 @@ import express, { Request, Response } from 'express';
 import {
   WebAuthnRegistrationObject,
   WebAuthnAuthenticationObject,
+  AAGUIDs,
+  AAGUID,
 } from '../public/scripts/common';
 import { createHash } from 'crypto';
 import { getNow, csrfCheck, authzAPI } from './helper.mjs';
@@ -43,18 +45,10 @@ import {
   PublicKeyCredentialParameters,
   PublicKeyCredentialUserEntityJSON,
 } from '@simplewebauthn/types';
+
 import aaguids from 'aaguid' with { type: 'json' };
 
-interface AAGUIDs {
-  [key: string]: {
-    name: string;
-    icon_light?: string;
-  };
-}
-
 const router = express.Router();
-
-router.use(csrfCheck);
 
 const RP_NAME = process.env.PROJECT_NAME || 'WebAuthn Demo';
 const WEBAUTHN_TIMEOUT = 1000 * 60 * 5; // 5 minutes
@@ -92,15 +86,26 @@ export const getOrigin = (
   return origin;
 }
 
-router.get('/aaguids', (req: Request, res: Response) => {
-  console.log('/aaguids');
-  return res.json(aaguids as AAGUIDs);
+router.get('/aaguids', (req: Request, res: Response): Response<AAGUID | AAGUIDs> => {
+  if (Object.keys(aaguids).length === 0) {
+    return res.json();
+  }
+  if (req.query.id) {
+    const id = req.query.id as string;
+    if (Object.keys(aaguids).indexOf(id) > -1) {
+      return res.json((aaguids as AAGUIDs)[id] as AAGUID);
+    }
+    return res.json({
+      name: 'Unknown',
+    } as AAGUID);
+  }
+  return res.json(aaguids);
 });
 
 /**
  * Returns a list of credentials
  **/
-router.post('/getCredentials', authzAPI, async (
+router.post('/getCredentials', csrfCheck, authzAPI, async (
   req: Request,
   res: Response
 ): Promise<any> => {
@@ -124,7 +129,7 @@ router.post('/getCredentials', authzAPI, async (
  * Removes a credential id attached to the user
  * Responds with empty JSON `{}`
  **/
-router.post('/removeCredential', authzAPI, async (
+router.post('/removeCredential', csrfCheck, authzAPI, async (
   req: Request,
   res: Response
 ): Promise<any> => {
@@ -145,7 +150,7 @@ router.post('/removeCredential', authzAPI, async (
   }
 });
 
-router.post('/registerRequest', authzAPI, async (
+router.post('/registerRequest', csrfCheck, authzAPI, async (
   req: Request,
   res: Response
 ): Promise<any> => {
@@ -239,7 +244,7 @@ router.post('/registerRequest', authzAPI, async (
   }
 });
 
-router.post('/registerResponse', authzAPI, async (
+router.post('/registerResponse', csrfCheck, authzAPI, async (
   req: Request,
   res: Response
 ): Promise<any> => {
@@ -315,7 +320,7 @@ router.post('/registerResponse', authzAPI, async (
   }
 });
 
-router.post('/authRequest', authzAPI, async (
+router.post('/authRequest', csrfCheck, authzAPI, async (
   req: Request,
   res: Response
 ): Promise<any> => {
@@ -370,7 +375,7 @@ router.post('/authRequest', authzAPI, async (
   }
 });
 
-router.post('/authResponse', authzAPI, async (
+router.post('/authResponse', csrfCheck, authzAPI, async (
   req: Request,
   res: Response
 ): Promise<any> => {
