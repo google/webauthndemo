@@ -275,7 +275,6 @@ const listCredentials = async (): Promise<void> => {
     const credentials = <StoredCredential[]>await _fetch('/webauthn/getCredentials');
     loading.stop();
     render(credentials.map(cred => {
-      const credId = cred.credentialID.substring(0, 16);
       const extensions = cred.clientExtensionResults;
       const transports = cred.transports as string[];
       const aaguid = cred.aaguid || '00000000-0000-0000-0000-000000000000';
@@ -287,12 +286,15 @@ const listCredentials = async (): Promise<void> => {
         <div class="mdc-card__primary-action" id="ID-${cred.credentialID}">
           <div class="card-title mdc-card__action-buttons">
             <div class="cred-title mdc-card__action-button">
-              <mwc-formfield label="${credId}">
+              <mwc-formfield label="${cred.browser}/${cred.os}/${cred.platform}">
                 <mwc-checkbox class="credential-checkbox" title="Check to exclude or allow this credential" checked></mwc-checkbox>
+                ${(aaguids as AAGUIDs)[aaguid] ? html`
+                <mwc-icon-button title="${(aaguids as AAGUIDs)[aaguid]?.name}">
+                  <img src="${(aaguids as AAGUIDs)[aaguid].icon_light}">
+                </mwc-icon-button>`:''}
               </mwc-formfield>
             </div>
             <div class="mdc-card__action-icons">
-              <mwc-icon-button title="${(aaguids as AAGUIDs)[aaguid].name}"><img src="${(aaguids as AAGUIDs)[aaguid].icon_light}"></mwc-icon-button>
               <mwc-icon-button @click="${removeCredential(cred.credentialID)}" icon="delete_forever" title="Removes this credential registration from the server"></mwc-icon>
             </div>
           </div>
@@ -314,15 +316,15 @@ const listCredentials = async (): Promise<void> => {
               </mwc-formfield>
               `)}
             </dd>
-            <dt>Enrolled on</dt>
-            <dd>${cred.browser} / ${cred.os} / ${cred.platform}</dd>
             ${cred.registered ? html`
             <dt>Enrolled at</dt>
             <dd>${(new Date(cred.registered)).toLocaleString()}</dd>`:''}
             ${extensions?.credProps ? html`
             <dt>Credential Properties Extension</dt>`:''}
             ${extensions.credProps?.rk ? html`
-            <dd>discoverable credentials: ${extensions.credProps.rk?'true':'false'}</dd>`:''}
+            <dd>Discoverable Credentials: ${extensions.credProps.rk?'true':'false'}</dd>`:''}
+            ${extensions.credProps?.authenticatorDisplayName ? html`
+            <dd>Authenticator display name: ${extensions.credProps.authenticatorDisplayName}</dd>`:''}
             <dt>Public Key</dt>
             <dd>${cred.credentialPublicKey}</dd>
             <dt>Credential ID</dt>
