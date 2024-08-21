@@ -46,30 +46,20 @@ const project_root_file_path = path.join(
 );
 const dist_root_file_path = path.join(project_root_file_path, 'dist');
 
-console.log('Reading config from', path.join(project_root_file_path, '/.env'));
-dotenv.config({path: path.join(project_root_file_path, '/.env')});
+console.log('Reading config from', path.join(dist_root_file_path, '/.env'));
+dotenv.config({path: path.join(dist_root_file_path, '/.env')});
 
-/**
- * Pulls together various configurations and returns the configured
- * Firestore instance.
- * @returns {Firestore}
- */
-function initializeFirestore() {
-  if (is_localhost) {
-    process.env.FIRESTORE_EMULATOR_HOST = `${firebaseConfig.emulators.firestore.host}:${firebaseConfig.emulators.firestore.port}`;
-    process.env.FIREBASE_AUTH_EMULATOR_HOST = `${firebaseConfig.emulators.auth.host}:${firebaseConfig.emulators.auth.port}`;
-  }
-
-  initializeApp({
-    projectId: process.env.PROJECT_NAME || 'try-webauthn',
-  });
-
-  const store = getFirestore(process.env.FIRESTORE_DATABASENAME || '');
-  store.settings({ignoreUndefinedProperties: true});
-  return store;
+if (is_localhost) {
+  process.env.FIRESTORE_EMULATOR_HOST = `${firebaseConfig.emulators.firestore.host}:${firebaseConfig.emulators.firestore.port}`;
+  process.env.FIREBASE_AUTH_EMULATOR_HOST = `${firebaseConfig.emulators.auth.host}:${firebaseConfig.emulators.auth.port}`;
 }
 
-export const store = initializeFirestore();
+initializeApp({
+  projectId: process.env.PROJECT_NAME || 'try-webauthn',
+});
+
+export const store = getFirestore(process.env.FIRESTORE_DATABASENAME || '');
+store.settings({ignoreUndefinedProperties: true});
 
 export function initializeSession() {
   let session_name;
@@ -79,7 +69,6 @@ export function initializeSession() {
     session_name = `__Host-${process.env.SESSION_STORE_NAME || 'session'}`;
   }
 
-  // TODO: The session seems to live very short.
   return session({
     name: session_name,
     secret: process.env.SECRET || 'secret',
@@ -91,7 +80,7 @@ export function initializeSession() {
       kind: 'express-sessions',
     }),
     cookie: {
-      secure: process.env.NODE_ENV !== 'localhost',
+      secure: !is_localhost,
       path: '/',
       sameSite: 'strict',
       httpOnly: true,
@@ -101,6 +90,9 @@ export function initializeSession() {
 }
 
 function configureApp() {
+  console.log('process.env:', process.env);
+  console.log('process.env.ORIGIN:', process.env.ORIGIN);
+
   const origin = process.env.ORIGIN || `http://localhost:${process.env.PORT || 8080}`;
 
   return {
