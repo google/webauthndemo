@@ -55,7 +55,7 @@ if (is_localhost) {
 }
 
 initializeApp({
-  projectId: process.env.PROJECT_NAME || 'try-webauthn',
+  projectId: process.env.GOOGLE_CLOUD_PROJECT || 'try-webauthn',
 });
 
 export const store = getFirestore(process.env.FIRESTORE_DATABASENAME || '');
