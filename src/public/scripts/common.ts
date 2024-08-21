@@ -17,13 +17,9 @@
 import {
   CredentialDeviceType,
   PublicKeyCredentialCreationOptionsJSON,
-  PublicKeyCredentialRequestOptionsJSON
-} from '@simplewebauthn/typescript-types';
-import {
-  AttestationFormat,
-  AttestationStatement,
+  PublicKeyCredentialRequestOptionsJSON,
   AuthenticatorTransportFuture
-} from '@simplewebauthn/typescript-types';
+} from '@simplewebauthn/types';
 
 export interface UserInfo {
   user_id: string
@@ -65,38 +61,4 @@ export interface StoredCredential {
   credentialDeviceType?: CredentialDeviceType,
   credentialBackedUp?: boolean,
   clientExtensionResults?: any
-  dpks?: StoredDevicePublicKey[] // Device Public Key,
 }
-
-export type EncodedDevicePublicKey = {
-  aaguid: string;
-  dpk: string;
-  scope: number;
-  nonce?: string;
-  fmt?: AttestationFormat;
-  attStmt?: {
-    sig?: string;
-    x5c?: string[];
-    response?: string;
-    alg?: number;
-    ver?: string;
-    certInfo?: string;
-    pubArea?: string;
-  };
-  sig?: string;
-}
-
-export interface StoredDevicePublicKey extends EncodedDevicePublicKey {
-  credentialID: credential_id
-}
-
-// TODO: Ideally this should be served by @simplewebauthn/typescript-types
-// Provide it here as a temporary solution
-export type DevicePublicKeyAuthenticatorOutput = {
-  aaguid: Buffer;
-  dpk: Buffer;
-  scope: number;
-  fmt: AttestationFormat;
-  attStmt: AttestationStatement;
-  nonce?: Buffer;
-};

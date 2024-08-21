@@ -31,17 +31,15 @@ import {
 import { getAnalytics } from 'firebase/analytics';
 import {
   RegistrationCredential,
-  RegistrationCredentialJSON,
+  RegistrationResponseJSON,
   AuthenticationCredential,
-  AuthenticationCredentialJSON,
+  AuthenticationResponseJSON,
   PublicKeyCredentialCreationOptions,
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptions,
   PublicKeyCredentialRequestOptionsJSON,
   PublicKeyCredentialDescriptorJSON,
-  AuthenticationExtensionsClientOutputsFuture,
-  AuthenticationExtensionsClientOutputsJSON,
-} from '@simplewebauthn/typescript-types';
+} from '@simplewebauthn/types';
 import { IconButton } from '@material/mwc-icon-button';
 import { StoredCredential } from './common';
 
@@ -385,11 +383,11 @@ const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any
   const rawId = base64url.encode(credential.rawId);
   const clientDataJSON = base64url.encode(credential.response.clientDataJSON);
   const attestationObject = base64url.encode(credential.response.attestationObject);
-  const clientExtensionResults: AuthenticationExtensionsClientOutputsJSON = {};
+  const clientExtensionResults: AuthenticationExtensionsClientOutputs = {};
 
   // if `getClientExtensionResults()` is supported, serialize the result.
   if (credential.getClientExtensionResults) {
-    const extensions: AuthenticationExtensionsClientOutputsFuture = credential.getClientExtensionResults();
+    const extensions: AuthenticationExtensionsClientOutputs = credential.getClientExtensionResults();
     if (extensions.credProps) {
       clientExtensionResults.credProps = extensions.credProps;
     }
@@ -406,12 +404,12 @@ const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any
     rawId,
     response: {
       clientDataJSON,
-      attestationObject
+      attestationObject,
+      transports,
     },
     type: credential.type,
-    transports,
     clientExtensionResults, 
-  } as RegistrationCredentialJSON;
+  } as RegistrationResponseJSON;
 
   console.log('[AttestationCredential]', encodedCredential);
 
@@ -461,11 +459,11 @@ const authenticate = async (opts: WebAuthnAuthenticationObject): Promise<any> =>
   const signature = base64url.encode(credential.response.signature);
   const userHandle = credential.response.userHandle ?
     base64url.encode(credential.response.userHandle) : undefined;
-  const clientExtensionResults: AuthenticationExtensionsClientOutputsJSON = {};
+  const clientExtensionResults: AuthenticationExtensionsClientOutputs = {};
 
   // if `getClientExtensionResults()` is supported, serialize the result.
   if (credential.getClientExtensionResults) {
-    const extensions: AuthenticationExtensionsClientOutputsFuture = credential.getClientExtensionResults();
+    const extensions: AuthenticationExtensionsClientOutputs = credential.getClientExtensionResults();
     if (extensions.credProps) {
       clientExtensionResults.credProps = extensions.credProps;
     }
@@ -482,7 +480,7 @@ const authenticate = async (opts: WebAuthnAuthenticationObject): Promise<any> =>
     },
     type: credential.type,
     clientExtensionResults,
-  } as AuthenticationCredentialJSON;
+  } as AuthenticationResponseJSON;
 
   console.log('[AssertionCredential]', encodedCredential);
 

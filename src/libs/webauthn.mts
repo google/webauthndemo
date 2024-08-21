@@ -19,7 +19,6 @@ import {
   WebAuthnRegistrationObject,
   WebAuthnAuthenticationObject,
 } from '../public/scripts/common';
-import base64url from 'base64url';
 import { createHash } from 'crypto';
 import { getNow, csrfCheck, authzAPI } from './helper.mjs';
 import { 
@@ -28,21 +27,21 @@ import {
   storeCredential,
 } from './credential.mjs';
 import {
-  generateRegistrationOptions,
-  verifyRegistrationResponse,
   generateAuthenticationOptions,
+  generateRegistrationOptions,
   verifyAuthenticationResponse,
-  // DevicePublicKeyAuthenticatorOutput,
+  verifyRegistrationResponse,
 } from '@simplewebauthn/server';
+import {isoBase64URL} from '@simplewebauthn/server/helpers';
 import {
-  AttestationConveyancePreference,
-  // PublicKeyCredentialDescriptor,
-  PublicKeyCredentialParameters,
+  AuthenticationResponseJSON,
+  RegistrationResponseJSON,
+  AuthenticatorSelectionCriteria,
   AuthenticatorDevice,
-  RegistrationCredentialJSON,
-  AuthenticationCredentialJSON,
+  AttestationConveyancePreference,
+  PublicKeyCredentialParameters,
   PublicKeyCredentialUserEntityJSON,
-} from '@simplewebauthn/typescript-types';
+} from '@simplewebauthn/types';
 
 const router = express.Router();
 
@@ -192,7 +191,7 @@ router.post('/registerRequest', authzAPI, async (
     const userId = createHash('sha256').update(data).digest();
 
     const user = {
-      id: base64url.encode(Buffer.from(userId)),
+      id: isoBase64URL.fromBuffer(Buffer.from(userId)),
       name,
       displayName
     } as PublicKeyCredentialUserEntityJSON
@@ -201,10 +200,10 @@ router.post('/registerRequest', authzAPI, async (
     const extensions = creationOptions.extensions;
     const timeout = creationOptions.customTimeout || WEBAUTHN_TIMEOUT;
 
-    const options = generateRegistrationOptions({
+    const options = await generateRegistrationOptions({
       rpName: RP_NAME,
       rpID: res.locals.hostname,
-      userID: user.id,
+      userID: userId,
       userName: user.name,
       userDisplayName: user.displayName,
       timeout,
@@ -238,7 +237,7 @@ router.post('/registerResponse', authzAPI, async (
     if (!res.locals.origin) throw new Error('Origin not configured.');
 
     const user = res.locals.user;
-    const credential = req.body as RegistrationCredentialJSON;
+    const credential = req.body as RegistrationResponseJSON;
 
     const expectedChallenge = req.session.challenge;
     const expectedRPID = res.locals.hostname;
@@ -246,7 +245,7 @@ router.post('/registerResponse', authzAPI, async (
     let expectedOrigin = getOrigin(res.locals.origin, req.get('User-Agent'));
 
     const verification = await verifyRegistrationResponse({
-      credential,
+      response: credential,
       expectedChallenge,
       expectedOrigin,
       expectedRPID,
@@ -266,13 +265,13 @@ router.post('/registerResponse', authzAPI, async (
       credentialDeviceType,
       credentialBackedUp,
     } = registrationInfo;
-    const base64PublicKey = base64url.encode(credentialPublicKey);
-    const base64CredentialID = base64url.encode(credentialID);
-    const { transports, clientExtensionResults } = credential;
-     
+    const base64PublicKey = isoBase64URL.fromBuffer(credentialPublicKey);
+    const { response, clientExtensionResults } = credential;
+    const transports = response.transports || [];
+
     await storeCredential({
       user_id: user.user_id,
-      credentialID: base64CredentialID,
+      credentialID,
       credentialPublicKey: base64PublicKey,
       aaguid,
       counter,
@@ -341,7 +340,7 @@ router.post('/authRequest', authzAPI, async (
     //   }
     // }
 
-    const options = generateAuthenticationOptions({
+    const options = await generateAuthenticationOptions({
       timeout,
       // allowCredentials,
       userVerification,
@@ -375,7 +374,7 @@ router.post('/authResponse', authzAPI, async (
   const expectedOrigin = getOrigin(res.locals.origin, req.get('User-Agent'));
 
   try {
-    const claimedCred = req.body as AuthenticationCredentialJSON;
+    const claimedCred = req.body as AuthenticationResponseJSON;
 
     const credentials = await getCredentials(user.user_id);
     let storedCred = credentials.find((cred) => cred.credentialID === claimedCred.id);
@@ -384,13 +383,12 @@ router.post('/authResponse', authzAPI, async (
       throw new Error('Authenticating credential not found.');
     }
 
-    const credentialPublicKey = base64url.toBuffer(storedCred.credentialPublicKey);
-    const credentialID = base64url.toBuffer(storedCred.credentialID);
+    const credentialPublicKey = isoBase64URL.toBuffer(storedCred.credentialPublicKey);
     const { counter, transports } = storedCred;
 
     const authenticator: AuthenticatorDevice = {
       credentialPublicKey,
-      credentialID,
+      credentialID: storedCred.credentialID,
       counter,
       transports
     }
@@ -399,7 +397,7 @@ router.post('/authResponse', authzAPI, async (
     console.log('Stored credential', storedCred);
 
     const verification = await verifyAuthenticationResponse({
-      credential: claimedCred,
+      response: claimedCred,
       expectedChallenge,
       expectedOrigin,
       expectedRPID,
