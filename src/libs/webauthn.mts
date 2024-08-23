@@ -74,8 +74,9 @@ export const getOrigin = (
           const octArray = hashes[i].split(':').map((h) =>
             parseInt(h, 16),
           );
+          const uint8Array = new Uint8Array(octArray.length);
           // @ts-ignore
-          const androidHash = base64url.encode(octArray);
+          const androidHash = isoBase64URL.fromBuffer(uint8Array);
           origin = `android:apk-key-hash:${androidHash}`;
           break;
         }
