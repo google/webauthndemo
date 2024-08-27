@@ -425,6 +425,8 @@ const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any
     clientExtensionResults, 
   } as RegistrationResponseJSON;
 
+  onViewPayload(encodedCredential);
+
   console.log('[AttestationCredential]', encodedCredential);
 
   // Verify and store the attestation.
@@ -664,6 +666,13 @@ const onAuthenticate = async (): Promise<void> => {
   } finally {
     loading.stop();
   }
+};
+
+const onViewPayload = async (
+  payload: JSON
+): Promise<void> => {
+  $('#json-viewer').data = { payload };
+  $('#payload-viewer').show();
 };
 
 const onTxAuthSimpleSiwtch = async (): Promise<void> => {
