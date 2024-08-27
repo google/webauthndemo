@@ -22,9 +22,9 @@ const $: any = document.querySelector.bind(document);
 
 const snackbar = $('#snackbar') as Snackbar;
 
-async function viewPayload(
+function showPayload(
   payload: JSON
-): Promise<void> {
+): void {
   $('#json-viewer').data = { payload };
   $('#json-viewer').expandAll();
   $('#payload-viewer').show();
@@ -38,7 +38,7 @@ function showSnackbar(message: string, payload?: any): void {
     button.slot = 'action';
     button.innerText = 'Show payload';
     button.addEventListener('click', e => {
-      viewPayload(payload);
+      showPayload(payload);
     });
     snackbar.appendChild(button);
   } else {

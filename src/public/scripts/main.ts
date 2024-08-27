@@ -491,7 +491,7 @@ const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any
     excludeCredentials,
   } as PublicKeyCredentialCreationOptions;
 
-  console.log('[CreationOptions]', decodedOptions);
+  console.log('[CredentialCreationOptions]', decodedOptions);
 
   // Create a new attestation.
   const credential = await navigator.credentials.create({
@@ -532,7 +532,7 @@ const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any
 
   const parsedCredential = await parseRegistrationCredential(credential);
 
-  console.log('[AttestationCredential]', encodedCredential);
+  console.log('[RegistrationResponseJSON]', parsedCredential);
 
   // Verify and store the attestation.
   await _fetch('/webauthn/registerResponse', encodedCredential);
@@ -569,7 +569,7 @@ const authenticate = async (opts: WebAuthnAuthenticationObject): Promise<any> =>
     challenge,
   } as PublicKeyCredentialRequestOptions;
 
-  console.log('[RequestOptions]', decodedOptions);
+  console.log('[CredentialRequestOptions]', decodedOptions);
 
   // Authenticate the user.
   const credential = await navigator.credentials.get({
@@ -606,7 +606,7 @@ const authenticate = async (opts: WebAuthnAuthenticationObject): Promise<any> =>
     clientExtensionResults,
   } as AuthenticationResponseJSON;
 
-  console.log('[AssertionCredential]', encodedCredential);
+  console.log('[AuthenticationResponseJSON]', encodedCredential);
 
   // Verify and store the credential.
   return _fetch('/webauthn/authResponse', encodedCredential);
