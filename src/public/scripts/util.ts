@@ -22,8 +22,28 @@ const $: any = document.querySelector.bind(document);
 
 const snackbar = $('#snackbar') as Snackbar;
 
-function showSnackbar(message: string): void {
+async function viewPayload(
+  payload: JSON
+): Promise<void> {
+  $('#json-viewer').data = { payload };
+  $('#json-viewer').expandAll();
+  $('#payload-viewer').show();
+};
+
+function showSnackbar(message: string, payload?: any): void {
   snackbar.labelText = message;
+  if (payload) {
+    const button = document.createElement('mwc-button');
+    button.id = 'snack-button';
+    button.slot = 'action';
+    button.innerText = 'Show payload';
+    button.addEventListener('click', e => {
+      viewPayload(payload);
+    });
+    snackbar.appendChild(button);
+  } else {
+    $('#snack-button')?.remove();
+  }
   snackbar.show();
 };
 

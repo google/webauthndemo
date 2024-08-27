@@ -20,6 +20,7 @@ import { base64url } from './base64url';
 import { MDCRipple } from '@material/ripple';
 import { initializeApp } from 'firebase/app';
 import { Checkbox } from '@material/mwc-checkbox';
+import cbor from 'cbor';
 import * as firebaseui from 'firebaseui';
 import {
   getAuth,
@@ -43,6 +44,7 @@ import {
 import { IconButton } from '@material/mwc-icon-button';
 import { StoredCredential } from './common';
 
+const BASE64_SLICE_LENGTH = 40;
 const aaguids = await fetch('/webauthn/aaguids').then(res => res.json());
 
 const app = initializeApp({
@@ -273,6 +275,109 @@ const rippleCard = (credID: string) => {
   ripple.deactivate();
 }
 
+async function parseRegistrationCredential(
+  cred: RegistrationCredential
+): Promise<any> {
+  const credJSON = {
+    id: cred.id.slice(0, BASE64_SLICE_LENGTH)+'...',
+    rawId: cred.id.slice(0, BASE64_SLICE_LENGTH)+'...',
+    type: cred.type,
+    response: {
+      clientDataJSON: {},
+      attestationObject: {
+        fmt: 'none',
+        attStmt: {},
+        authData: {},
+      },
+      transports: <any>[],
+    },
+    clientExtensionResults: {},
+  };
+
+  const decoder = new TextDecoder('utf-8');
+  credJSON.response.clientDataJSON = JSON.parse(decoder.decode(cred.response.clientDataJSON));
+  const attestationObject = cbor.decodeAllSync(cred.response.attestationObject)[0]
+
+  attestationObject.authData = await parseAuthenticatorData(attestationObject.authData);
+  credJSON.response.attestationObject = attestationObject;
+
+  if (cred.response.getTransports) {
+    credJSON.response.transports = cred.response.getTransports();
+  }
+
+  credJSON.clientExtensionResults = parseClientExtensionResults(cred);
+
+  return credJSON;
+};
+
+async function parseAuthenticatorData(
+  buffer: any
+): Promise<any> {
+  const authData = {
+    rpIdHash: '',
+    flags: {
+      up: false,
+      uv: false,
+      be: false,
+      bs: false,
+      at: false,
+      ed: false,
+    },
+    counter: 0,
+    aaguid: '',
+    credentialID: '',
+    credentialPublicKey: '',
+  };
+
+  const rpIdHash = buffer.slice(0, 32);
+  buffer = buffer.slice(32);
+  authData.rpIdHash = rpIdHash.toString('hex');
+
+  const flags = (buffer.slice(0, 1))[0];
+  buffer = buffer.slice(1);
+  authData.flags = {
+    up: !!(flags & (1 << 0)),
+    uv: !!(flags & (1 << 2)),
+    be: !!(flags & (1 << 3)),
+    bs: !!(flags & (1 << 4)),
+    at: !!(flags & (1 << 6)),
+    ed: !!(flags & (1 << 7)),
+  };
+
+  const counter = buffer.slice(0, 4);
+  buffer = buffer.slice(4);
+  authData.counter = counter.readUInt32BE(0);
+
+  if (authData.flags.at) {
+    authData.aaguid = base64url.encode(buffer.slice(0, 16));
+    buffer = buffer.slice(16);
+
+    const credIDLenBuf = buffer.slice(0, 2);
+    buffer = buffer.slice(2);
+    const credIDLen = credIDLenBuf.readUInt16BE(0)
+    authData.credentialID = (base64url.encode(buffer.slice(0, credIDLen))).slice(0, BASE64_SLICE_LENGTH)+'...';
+    buffer = buffer.slice(credIDLen);
+
+    const firstDecoded = cbor.decodeFirstSync(buffer.slice(0));
+    authData.credentialPublicKey = base64url.encode(Uint8Array.from(cbor.encode(firstDecoded)));
+  }
+
+  return authData;
+}
+
+function parseClientExtensionResults(
+  credential: RegistrationCredential
+): AuthenticationExtensionsClientOutputs {
+  const clientExtensionResults: AuthenticationExtensionsClientOutputs = {};
+  if (credential.getClientExtensionResults) {
+    const extensions: AuthenticationExtensionsClientOutputs = credential.getClientExtensionResults();
+    if (extensions.credProps) {
+      clientExtensionResults.credProps = extensions.credProps;
+    }
+  }
+  return clientExtensionResults;
+}
+
 /**
  * Fetch and render the list of credentials.
  */
@@ -425,12 +530,14 @@ const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any
     clientExtensionResults, 
   } as RegistrationResponseJSON;
 
-  onViewPayload(encodedCredential);
+  const parsedCredential = await parseRegistrationCredential(credential);
 
   console.log('[AttestationCredential]', encodedCredential);
 
   // Verify and store the attestation.
   await _fetch('/webauthn/registerResponse', encodedCredential);
+
+  return parsedCredential;
 };
 
 /**
@@ -613,8 +720,8 @@ const onRegisterNewCredential = async (): Promise<void> => {
   loading.start();
   const opts = <WebAuthnRegistrationObject>collectOptions('registration');
   try {
-    await registerCredential(opts);
-    showSnackbar('A credential successfully registered!');
+    const parsedCredential = await registerCredential(opts);
+    showSnackbar('A credential successfully registered!', parsedCredential);
     listCredentials();
   } catch (e: any) {
     console.error(e);
@@ -666,13 +773,6 @@ const onAuthenticate = async (): Promise<void> => {
   } finally {
     loading.stop();
   }
-};
-
-const onViewPayload = async (
-  payload: JSON
-): Promise<void> => {
-  $('#json-viewer').data = { payload };
-  $('#payload-viewer').show();
 };
 
 const onTxAuthSimpleSiwtch = async (): Promise<void> => {
