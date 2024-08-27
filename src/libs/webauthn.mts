@@ -158,7 +158,7 @@ router.post('/registerRequest', csrfCheck, authzAPI, async (
     if (!res.locals.user) throw new Error('Unauthorized.');
 
     const googleUser = res.locals.user;
-    const creationOptions = req.body as WebAuthnRegistrationObject|| {};
+    const creationOptions = req.body as WebAuthnRegistrationObject || {};
 
     // const excludeCredentials: PublicKeyCredentialDescriptor[] = [];
     // if (creationOptions.credentialsToExclude) {
@@ -265,6 +265,8 @@ router.post('/registerResponse', csrfCheck, authzAPI, async (
       expectedChallenge,
       expectedOrigin,
       expectedRPID,
+      // Since this is testing the client, verifying the UV flag here doesn't matter.
+      requireUserVerification: false,
     });
 
     const { verified, registrationInfo } = verification;
@@ -415,6 +417,8 @@ router.post('/authResponse', csrfCheck, authzAPI, async (
       expectedOrigin,
       expectedRPID,
       authenticator,
+      // Since this is testing the client, verifying the UV flag here doesn't matter.
+      requireUserVerification: false,
     });
 
     const { verified, authenticationInfo } = verification;
