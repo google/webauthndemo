@@ -30,12 +30,14 @@ export interface UserInfo {
 
 export interface WebAuthnRegistrationObject extends
   Omit<PublicKeyCredentialCreationOptionsJSON, 'rp' | 'pubKeyCredParams' | 'challenge' | 'excludeCredentials'> {
+  hints?: string[]
   credentialsToExclude?: string[]
   customTimeout?: number
   abortTimeout?: number
 }
 
 export interface WebAuthnAuthenticationObject extends Omit<PublicKeyCredentialRequestOptionsJSON, 'challenge'> {
+  hints?: string[]
   customTimeout?: number
   abortTimeout?: number
 }

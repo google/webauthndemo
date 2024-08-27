@@ -187,7 +187,12 @@ const collectOptions = (
   const attestation = $('#conveyance').value;
   const residentKey = $('#resident-key').value;
   const userVerification = $('#user-verification').value;
-  const credProps = $('#switch-cred-props').checked || undefined;
+  const hints = [
+    ...$('#hints1').value?[$('#hints1').value]:[],
+    ...$('#hints2').value?[$('#hints2').value]:[],
+    ...$('#hints3').value?[$('#hints3').value]:[],
+  ];
+  const credProps = $('#switch-cred-props').checked || false;
   const tasSwitch = $('#switch-tx-auth-simple').checked || undefined;
   const tas = $('#tx-auth-simple').value.trim() || undefined;
   const customTimeout = parseInt($('#custom-timeout').value);
@@ -213,6 +218,7 @@ const collectOptions = (
       },
       extensions: { credProps, },
       customTimeout,
+      hints,
       user,
       // abortTimeout,
     } as WebAuthnRegistrationObject;
@@ -221,6 +227,7 @@ const collectOptions = (
   } else {
     return {
       userVerification,
+      hints,
       extensions: { txAuthSimple },
       customTimeout,
       // abortTimeout,
@@ -375,6 +382,7 @@ const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any
     ...options,
     user,
     challenge,
+    hints: opts.hints,
     excludeCredentials,
   } as PublicKeyCredentialCreationOptions;
 
@@ -448,6 +456,7 @@ const authenticate = async (opts: WebAuthnAuthenticationObject): Promise<any> =>
   const decodedOptions = {
     ...options,
     allowCredentials,
+    hints: opts.hints,
     challenge,
   } as PublicKeyCredentialRequestOptions;
 
