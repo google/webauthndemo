@@ -310,6 +310,33 @@ async function parseRegistrationCredential(
   return credJSON;
 };
 
+async function parseAuthenticationCredential(
+  cred: AuthenticationCredential
+): Promise<any> {
+  const userHandle = cred.response.userHandle ? base64url.encode(cred.response.userHandle) : undefined;
+
+  const credJSON = {
+    id: cred.id.slice(0, BASE64_SLICE_LENGTH)+'...',
+    rawId: cred.id.slice(0, BASE64_SLICE_LENGTH)+'...',
+    type: cred.type,
+    response: {
+      clientDataJSON: {},
+      authenticatorData: {},
+      signature: base64url.encode(cred.response.signature),
+      userHandle,
+    },
+    clientExtensionResults: {},
+  };
+
+  const decoder = new TextDecoder('utf-8');
+  credJSON.response.clientDataJSON = JSON.parse(decoder.decode(cred.response.clientDataJSON));
+  credJSON.response.authenticatorData = await parseAuthenticatorData(cred.response.authenticatorData);
+
+  credJSON.clientExtensionResults = parseClientExtensionResults(cred);
+
+  return credJSON;
+}
+
 async function parseAuthenticatorData(
   buffer: any
 ): Promise<any> {
@@ -366,7 +393,7 @@ async function parseAuthenticatorData(
 }
 
 function parseClientExtensionResults(
-  credential: RegistrationCredential
+  credential: RegistrationCredential | AuthenticationCredential
 ): AuthenticationExtensionsClientOutputs {
   const clientExtensionResults: AuthenticationExtensionsClientOutputs = {};
   if (credential.getClientExtensionResults) {
@@ -606,10 +633,14 @@ const authenticate = async (opts: WebAuthnAuthenticationObject): Promise<any> =>
     clientExtensionResults,
   } as AuthenticationResponseJSON;
 
+  const parsedCredential = await parseAuthenticationCredential(credential);
+
   console.log('[AuthenticationResponseJSON]', encodedCredential);
 
   // Verify and store the credential.
-  return _fetch('/webauthn/authResponse', encodedCredential);
+  await _fetch('/webauthn/authResponse', encodedCredential);
+
+  return parsedCredential;
 };
 
 /**
@@ -762,10 +793,10 @@ const onAuthenticate = async (): Promise<void> => {
   loading.start();
   const opts = <WebAuthnAuthenticationObject>collectOptions('authentication');
   try {
-    const credential = await authenticate(opts);
+    const parsedCredential = await authenticate(opts);
     // Prepended `ID-` is necessary to avoid IDs start with a number.
-    rippleCard(`ID-${credential.credentialID}`);
-    showSnackbar('Authentication succeeded!');
+    rippleCard(`ID-${parsedCredential.id}`);
+    showSnackbar('Authentication succeeded!', parsedCredential);
     listCredentials();
   } catch (e: any) {
     console.error(e);
