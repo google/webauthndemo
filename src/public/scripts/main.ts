@@ -44,7 +44,6 @@ import {
 import { IconButton } from '@material/mwc-icon-button';
 import { StoredCredential } from './common';
 
-const BASE64_SLICE_LENGTH = 40;
 const aaguids = await fetch('/webauthn/aaguids').then(res => res.json());
 
 const app = initializeApp({
@@ -279,8 +278,8 @@ async function parseRegistrationCredential(
   cred: RegistrationCredential
 ): Promise<any> {
   const credJSON = {
-    id: cred.id.slice(0, BASE64_SLICE_LENGTH)+'...',
-    rawId: cred.id.slice(0, BASE64_SLICE_LENGTH)+'...',
+    id: cred.id,
+    rawId: cred.id,
     type: cred.type,
     response: {
       clientDataJSON: {},
@@ -298,7 +297,7 @@ async function parseRegistrationCredential(
   credJSON.response.clientDataJSON = JSON.parse(decoder.decode(cred.response.clientDataJSON));
   const attestationObject = cbor.decodeAllSync(cred.response.attestationObject)[0]
 
-  attestationObject.authData = await parseAuthenticatorData(attestationObject.authData);
+  attestationObject.authData = await parseAuthData(attestationObject.authData);
   credJSON.response.attestationObject = attestationObject;
 
   if (cred.response.getTransports) {
@@ -316,8 +315,8 @@ async function parseAuthenticationCredential(
   const userHandle = cred.response.userHandle ? base64url.encode(cred.response.userHandle) : undefined;
 
   const credJSON = {
-    id: cred.id.slice(0, BASE64_SLICE_LENGTH)+'...',
-    rawId: cred.id.slice(0, BASE64_SLICE_LENGTH)+'...',
+    id: cred.id,
+    rawId: cred.id,
     type: cred.type,
     response: {
       clientDataJSON: {},
@@ -330,14 +329,14 @@ async function parseAuthenticationCredential(
 
   const decoder = new TextDecoder('utf-8');
   credJSON.response.clientDataJSON = JSON.parse(decoder.decode(cred.response.clientDataJSON));
-  credJSON.response.authenticatorData = await parseAuthenticatorData(cred.response.authenticatorData);
+  credJSON.response.authenticatorData = await parseAuthenticatorData(new Uint8Array(cred.response.authenticatorData));
 
   credJSON.clientExtensionResults = parseClientExtensionResults(cred);
 
   return credJSON;
 }
 
-async function parseAuthenticatorData(
+async function parseAuthData(
   buffer: any
 ): Promise<any> {
   const authData = {
@@ -358,7 +357,7 @@ async function parseAuthenticatorData(
 
   const rpIdHash = buffer.slice(0, 32);
   buffer = buffer.slice(32);
-  authData.rpIdHash = rpIdHash.toString('hex');
+  authData.rpIdHash = [...rpIdHash].map(x => x.toString(16).padStart(2, '0')).join('');
 
   const flags = (buffer.slice(0, 1))[0];
   buffer = buffer.slice(1);
@@ -382,12 +381,45 @@ async function parseAuthenticatorData(
     const credIDLenBuf = buffer.slice(0, 2);
     buffer = buffer.slice(2);
     const credIDLen = credIDLenBuf.readUInt16BE(0)
-    authData.credentialID = (base64url.encode(buffer.slice(0, credIDLen))).slice(0, BASE64_SLICE_LENGTH)+'...';
+    authData.credentialID = base64url.encode(buffer.slice(0, credIDLen));
     buffer = buffer.slice(credIDLen);
 
     const firstDecoded = cbor.decodeFirstSync(buffer.slice(0));
     authData.credentialPublicKey = base64url.encode(Uint8Array.from(cbor.encode(firstDecoded)));
   }
+
+  return authData;
+}
+
+async function parseAuthenticatorData(
+  buffer: any
+): Promise<any> {
+  const authData = {
+    rpIdHash: '',
+    flags: {
+      up: false,
+      uv: false,
+      be: false,
+      bs: false,
+      at: false,
+      ed: false,
+    },
+  };
+
+  const rpIdHash = buffer.slice(0, 32);
+  buffer = buffer.slice(32);
+  authData.rpIdHash = [...rpIdHash].map(x => x.toString(16).padStart(2, '0')).join('');
+
+  const flags = (buffer.slice(0, 1))[0];
+  buffer = buffer.slice(1);
+  authData.flags = {
+    up: !!(flags & (1 << 0)),
+    uv: !!(flags & (1 << 2)),
+    be: !!(flags & (1 << 3)),
+    bs: !!(flags & (1 << 4)),
+    at: !!(flags & (1 << 6)),
+    ed: !!(flags & (1 << 7)),
+  };
 
   return authData;
 }
@@ -635,7 +667,7 @@ const authenticate = async (opts: WebAuthnAuthenticationObject): Promise<any> =>
 
   const parsedCredential = await parseAuthenticationCredential(credential);
 
-  console.log('[AuthenticationResponseJSON]', encodedCredential);
+  console.log('[AuthenticationResponseJSON]', parsedCredential);
 
   // Verify and store the credential.
   await _fetch('/webauthn/authResponse', encodedCredential);
@@ -774,8 +806,8 @@ const onRegisterPlatformAuthenticator = async (): Promise<void> => {
   opts.authenticatorSelection = opts.authenticatorSelection || {};
   opts.authenticatorSelection.authenticatorAttachment = 'platform';
   try {
-    await registerCredential(opts);
-    showSnackbar('A credential successfully registered!');
+    const parsedCredential = await registerCredential(opts);
+    showSnackbar('A credential successfully registered!', parsedCredential);
     listCredentials();
   } catch (e: any) {
     console.error(e);

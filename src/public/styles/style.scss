@@ -24,6 +24,7 @@
 
 * {
   --mdc-theme-primary: rgb(255,64,129);
+  --mdc-dialog-max-width: 1000px;
 }
 
 html, body, main {
@@ -141,7 +142,6 @@ footer {
 }
 
 mwc-dialog {
-  min-width: 300px;
   mwc-textfield {
     margin: 8px 0;
   }
@@ -150,4 +150,5 @@ mwc-dialog {
 json-viewer {
   font-family: monospace;
   font-size: 12px;
+  overflow: scroll;
 }

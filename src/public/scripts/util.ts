@@ -19,18 +19,25 @@ import { LinearProgress } from '@material/mwc-linear-progress';
 import { html, render } from 'lit';
 
 const $: any = document.querySelector.bind(document);
+const BASE64_SLICE_LENGTH = 40;
 
 const snackbar = $('#snackbar') as Snackbar;
 
 function showPayload(
-  payload: JSON
+  payload: any
 ): void {
+  payload.id = payload.id.slice(0, BASE64_SLICE_LENGTH)+'...';
+  payload.rawId = payload.rawId.slice(0, BASE64_SLICE_LENGTH)+'...';
+  if (payload.response?.authData) {
+    payload.response.authData = payload.response.authData.slice(0, BASE64_SLICE_LENGTH)+'...';
+  }
   $('#json-viewer').data = { payload };
   $('#json-viewer').expandAll();
   $('#payload-viewer').show();
 };
 
 function showSnackbar(message: string, payload?: any): void {
+  $('#snack-button')?.remove();
   snackbar.labelText = message;
   if (payload) {
     const button = document.createElement('mwc-button');
@@ -41,8 +48,6 @@ function showSnackbar(message: string, payload?: any): void {
       showPayload(payload);
     });
     snackbar.appendChild(button);
-  } else {
-    $('#snack-button')?.remove();
   }
   snackbar.show();
 };
