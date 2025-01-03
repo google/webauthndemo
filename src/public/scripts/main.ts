@@ -353,6 +353,7 @@ async function parseAuthData(
     aaguid: '',
     credentialID: '',
     credentialPublicKey: '',
+    extensions: {}
   };
 
   const rpIdHash = buffer.slice(0, 32);
@@ -375,17 +376,28 @@ async function parseAuthData(
   authData.counter = counter.readUInt32BE(0);
 
   if (authData.flags.at) {
-    authData.aaguid = base64url.encode(buffer.slice(0, 16));
+    // Decode AAGUID
+    let AAGUID = buffer.slice(0, 16);
+    AAGUID = Array.from(AAGUID).map(a => (<Number>a).toString(16).padStart(2, '0'));
+    authData.aaguid = `${AAGUID.splice(0,4).join('')}-${AAGUID.splice(0,2).join('')}-${AAGUID.splice(0,2).join('')}-${AAGUID.splice(0).join('')}`;
     buffer = buffer.slice(16);
 
     const credIDLenBuf = buffer.slice(0, 2);
     buffer = buffer.slice(2);
     const credIDLen = credIDLenBuf.readUInt16BE(0)
+    // Decode Credential ID
     authData.credentialID = base64url.encode(buffer.slice(0, credIDLen));
     buffer = buffer.slice(credIDLen);
 
-    const firstDecoded = cbor.decodeFirstSync(buffer.slice(0));
-    authData.credentialPublicKey = base64url.encode(Uint8Array.from(cbor.encode(firstDecoded)));
+    const decodedResults = cbor.decodeAllSync(buffer.slice(0));
+    // Decode the public key
+    if (decodedResults[0]) {
+      authData.credentialPublicKey = base64url.encode(Uint8Array.from(cbor.encode(decodedResults[0])).buffer);
+    }
+    // Decode extensions
+    if (decodedResults[1]) {
+      authData.extensions = decodedResults[1];
+    }
   }
 
   return authData;
