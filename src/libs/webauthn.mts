@@ -216,7 +216,7 @@ router.post('/registerRequest', csrfCheck, authzAPI, async (
 
     // TODO: Validate
     const extensions = creationOptions.extensions;
-    const timeout = creationOptions.customTimeout || WEBAUTHN_TIMEOUT;
+    const timeout = creationOptions.timeout || WEBAUTHN_TIMEOUT;
 
     const options = await generateRegistrationOptions({
       rpName: RP_NAME,
@@ -334,7 +334,7 @@ router.post('/authRequest', csrfCheck, authzAPI, async (
     const requestOptions = req.body as WebAuthnAuthenticationObject;
 
     const userVerification = requestOptions.userVerification || 'preferred';
-    const timeout = requestOptions.customTimeout || WEBAUTHN_TIMEOUT;
+    const timeout = requestOptions.timeout || WEBAUTHN_TIMEOUT;
     // const allowCredentials: PublicKeyCredentialDescriptor[] = [];
     const extensions = requestOptions.extensions || {};
     const rpID = config.hostname;

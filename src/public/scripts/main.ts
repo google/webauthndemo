@@ -196,8 +196,7 @@ const collectOptions = (
   const credProps = $('#switch-cred-props').checked || false;
   const tasSwitch = $('#switch-tx-auth-simple').checked || undefined;
   const tas = $('#tx-auth-simple').value.trim() || undefined;
-  const customTimeout = parseInt($('#custom-timeout').value);
-  // const abortTimeout = parseInt($('#abort-timeout').value);
+  const timeout = parseInt($('#timeout').value);
 
   let txAuthSimple;
   // Simple Transaction Authorization extension
@@ -218,10 +217,9 @@ const collectOptions = (
         residentKey
       },
       extensions: { credProps, },
-      customTimeout,
+      timeout,
       hints,
       user,
-      // abortTimeout,
     } as WebAuthnRegistrationObject;
   
   // This is authentication
@@ -230,8 +228,7 @@ const collectOptions = (
       userVerification,
       hints,
       extensions: { txAuthSimple },
-      customTimeout,
-      // abortTimeout,
+      timeout,
     } as WebAuthnAuthenticationObject
   }
 }
