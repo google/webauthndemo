@@ -3,6 +3,7 @@
     "target": "esnext",
     "module": "esnext",
     "lib": [ "ESNext", "DOM" ],
+    "rootDir": ".",
     "outDir": "./dist",
     "sourceMap": true,
     "strict": true,
@@ -17,5 +18,8 @@
   },
   "typeRoots": [
     "./node_modules/@types"
+  ],
+  "exclude": [
+    "./styles"
   ]
 }

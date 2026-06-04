@@ -20,8 +20,6 @@ import typescript from '@rollup/plugin-typescript';
 import commonjs from '@rollup/plugin-commonjs';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import json from '@rollup/plugin-json';
-import builtins from 'rollup-plugin-node-builtins';
-import globals from 'rollup-plugin-node-globals';
 import copy from 'rollup-plugin-copy';
 import scss from 'rollup-plugin-scss';
 import css from 'rollup-plugin-import-css';
@@ -43,14 +41,16 @@ export default () => {
       sourceMap: true,
       inlineSources: true,
       tsconfig: path.join(clientSrc, 'tsconfig.json'),
+      compilerOptions: {
+        outDir: path.join(clientDst, 'scripts'),
+        ignoreDeprecations: '6.0',
+      }
     }),
     commonjs({ extensions: ['.js', '.ts', '.mts'] }),
     nodeResolve({
       browser: true,
       preferBuiltins: false
     }),
-    builtins(),
-    globals(),
     json(),
     sourcemaps(),
   ];
@@ -112,6 +112,7 @@ export default () => {
         ],
         name: 'style.css',
         outputStyle: 'compressed',
+        quietDeps: true,
       }),
       nodeResolve({
         browser: true,

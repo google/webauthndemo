@@ -20,7 +20,7 @@ import { base64url } from './base64url';
 import { MDCRipple } from '@material/ripple';
 import { initializeApp } from 'firebase/app';
 import { Checkbox } from '@material/mwc-checkbox';
-import cbor from 'cbor';
+import cbor from 'cbor-web';
 import * as firebaseui from 'firebaseui';
 import {
   getAuth,
@@ -566,7 +566,7 @@ const registerCredential = async (opts: WebAuthnRegistrationObject): Promise<any
 
   // Create a new attestation.
   const credential = await navigator.credentials.create({
-    publicKey: decodedOptions
+    publicKey: decodedOptions as any
   }) as RegistrationCredential;
 
   // Encode the attestation.
@@ -644,7 +644,7 @@ const authenticate = async (opts: WebAuthnAuthenticationObject): Promise<any> =>
 
   // Authenticate the user.
   const credential = await navigator.credentials.get({
-    publicKey: decodedOptions
+    publicKey: decodedOptions as any
   }) as AuthenticationCredential;
 
   // Encode the credential.

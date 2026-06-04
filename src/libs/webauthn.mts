@@ -26,6 +26,7 @@ import { createHash } from 'crypto';
 import { getNow, csrfCheck, authzAPI } from './helper.mjs';
 import { 
   getCredentials,
+  getCredential,
   removeCredential,
   storeCredential,
 } from './credential.mjs';
@@ -138,6 +139,14 @@ router.post('/removeCredential', csrfCheck, authzAPI, async (
   const { credId } = req.body;
 
   try {
+    const credential = await getCredential(credId);
+    if (!credential || credential.user_id !== res.locals.user.user_id) {
+      return res.status(401).json({
+        status: false,
+        error: 'Unauthorized'
+      });
+    }
+
     await removeCredential(credId);
     return res.json({
       status: true
