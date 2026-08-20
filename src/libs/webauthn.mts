@@ -61,7 +61,7 @@ export const getOrigin = (
   let origin = _origin;
   if (!userAgent) return origin;
 
-  const appRe = /^[a-zA-z0-9_.]+/;
+  const appRe = /^[a-zA-Z0-9_.]+/;
   const match = userAgent.match(appRe);
   if (match) {
     // Check if UserAgent comes from a supported Android app.
