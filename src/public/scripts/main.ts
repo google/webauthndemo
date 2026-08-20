@@ -379,7 +379,7 @@ async function parseAuthData(
     // Decode AAGUID
     let AAGUID = buffer.slice(0, 16);
     AAGUID = Array.from(AAGUID).map(a => (<Number>a).toString(16).padStart(2, '0'));
-    authData.aaguid = `${AAGUID.splice(0,4).join('')}-${AAGUID.splice(0,2).join('')}-${AAGUID.splice(0,2).join('')}-${AAGUID.splice(0).join('')}`;
+    authData.aaguid = `${AAGUID.splice(0,4).join('')}-${AAGUID.splice(0,2).join('')}-${AAGUID.splice(0,2).join('')}-${AAGUID.splice(0,2).join('')}-${AAGUID.splice(0).join('')}`;
     buffer = buffer.slice(16);
 
     const credIDLenBuf = buffer.slice(0, 2);
@@ -504,9 +504,9 @@ const listCredentials = async (): Promise<void> => {
             <dd>${(new Date(cred.registered)).toLocaleString()}</dd>`:''}
             ${extensions?.credProps ? html`
             <dt>Credential Properties Extension</dt>`:''}
-            ${extensions.credProps?.rk ? html`
+            ${extensions?.credProps?.rk ? html`
             <dd>Discoverable Credentials: ${extensions.credProps.rk?'true':'false'}</dd>`:''}
-            ${extensions.credProps?.authenticatorDisplayName ? html`
+            ${extensions?.credProps?.authenticatorDisplayName ? html`
             <dd>Authenticator display name: ${extensions.credProps.authenticatorDisplayName}</dd>`:''}
             <dt>Public Key</dt>
             <dd>${cred.credentialPublicKey}</dd>
