@@ -30,17 +30,18 @@ import {
   User
 } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
-import {
+import type {
   RegistrationCredential,
   RegistrationResponseJSON,
   AuthenticationCredential,
   AuthenticationResponseJSON,
+  AuthenticationExtensionsClientOutputs,
   PublicKeyCredentialCreationOptions,
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptions,
   PublicKeyCredentialRequestOptionsJSON,
   PublicKeyCredentialDescriptorJSON,
-} from '@simplewebauthn/types';
+} from '@simplewebauthn/server';
 import { IconButton } from '@material/mwc-icon-button';
 import { StoredCredential } from './common';
 
@@ -154,6 +155,7 @@ onAuthStateChanged(auth, async token => {
     } catch (error) {
       console.error(error);
       showSnackbar('Sign-in failed.');
+      await auth.signOut();
       return false;
     };
 

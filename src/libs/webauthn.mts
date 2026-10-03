@@ -35,17 +35,16 @@ import {
   generateRegistrationOptions,
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
+  type AuthenticationResponseJSON,
+  type RegistrationResponseJSON,
+  type AuthenticatorSelectionCriteria,
+  type WebAuthnCredential,
+  type AttestationConveyancePreference,
+  type PublicKeyCredentialParameters,
+  type PublicKeyCredentialUserEntityJSON,
+  type GenerateRegistrationOptionsOpts,
 } from '@simplewebauthn/server';
 import {isoBase64URL} from '@simplewebauthn/server/helpers';
-import {
-  AuthenticationResponseJSON,
-  RegistrationResponseJSON,
-  AuthenticatorSelectionCriteria,
-  AuthenticatorDevice,
-  AttestationConveyancePreference,
-  PublicKeyCredentialParameters,
-  PublicKeyCredentialUserEntityJSON,
-} from '@simplewebauthn/types';
 
 import aaguids from 'aaguid' with { type: 'json' };
 
@@ -235,7 +234,7 @@ router.post('/registerRequest', csrfCheck, authzAPI, async (
       userDisplayName: user.displayName,
       timeout,
       // Prompt users for additional information about the authenticator.
-      attestationType: attestation,
+      attestationType: attestation as GenerateRegistrationOptionsOpts['attestationType'],
       // Prevent users from re-registering existing authenticators
       // excludeCredentials,
       authenticatorSelection,
@@ -286,9 +285,11 @@ router.post('/registerResponse', csrfCheck, authzAPI, async (
 
     const {
       aaguid,
-      credentialPublicKey,
-      credentialID,
-      counter,
+      credential: {
+        publicKey: credentialPublicKey,
+        id: credentialID,
+        counter,
+      },
       credentialDeviceType,
       credentialBackedUp,
     } = registrationInfo;
@@ -410,12 +411,12 @@ router.post('/authResponse', csrfCheck, authzAPI, async (
     const credentialPublicKey = isoBase64URL.toBuffer(storedCred.credentialPublicKey);
     const { counter, transports } = storedCred;
 
-    const authenticator: AuthenticatorDevice = {
-      credentialPublicKey,
-      credentialID: storedCred.credentialID,
+    const credential: WebAuthnCredential = {
+      id: storedCred.credentialID,
+      publicKey: credentialPublicKey,
       counter,
-      transports
-    }
+      transports,
+    };
 
     console.log('Claimed credential', claimedCred);
     console.log('Stored credential', storedCred);
@@ -425,7 +426,7 @@ router.post('/authResponse', csrfCheck, authzAPI, async (
       expectedChallenge,
       expectedOrigin,
       expectedRPID,
-      authenticator,
+      credential,
       // Since this is testing the client, verifying the UV flag here doesn't matter.
       requireUserVerification: false,
     });

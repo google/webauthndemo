@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import {
+import type {
   CredentialDeviceType,
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
-  AuthenticatorTransportFuture
-} from '@simplewebauthn/types';
+  AuthenticatorTransport,
+} from '@simplewebauthn/server';
 
 export interface UserInfo {
   user_id: string
@@ -30,14 +30,12 @@ export interface UserInfo {
 
 export interface WebAuthnRegistrationObject extends
   Omit<PublicKeyCredentialCreationOptionsJSON, 'rp' | 'pubKeyCredParams' | 'challenge' | 'excludeCredentials'> {
-  hints?: string[]
   credentialsToExclude?: string[]
   customTimeout?: number
   abortTimeout?: number
 }
 
 export interface WebAuthnAuthenticationObject extends Omit<PublicKeyCredentialRequestOptionsJSON, 'challenge'> {
-  hints?: string[]
   customTimeout?: number
   abortTimeout?: number
 }
@@ -55,7 +53,7 @@ export interface StoredCredential {
   registered?: number // registered epoc time,
   user_verifying: boolean // user verifying authenticator,
   authenticatorAttachment: "platform" | "cross-platform" | "undefined" // authenticator attachment,
-  transports?: AuthenticatorTransportFuture[] // list of transports,
+  transports?: (AuthenticatorTransport | string)[] // list of transports,
   browser?: string
   os?: string
   platform?: string
