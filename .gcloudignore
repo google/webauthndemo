@@ -12,6 +12,7 @@
 # below:
 .git
 .gitignore
+.worktree/
 
 # Node.js dependencies:
 node_modules/

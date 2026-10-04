@@ -43,7 +43,6 @@ export default () => {
       tsconfig: path.join(clientSrc, 'tsconfig.json'),
       compilerOptions: {
         outDir: path.join(clientDst, 'scripts'),
-        ignoreDeprecations: '6.0',
       }
     }),
     commonjs({ extensions: ['.js', '.ts', '.mts'] }),
@@ -109,6 +108,10 @@ export default () => {
           path.join(clientSrc, 'styles', '*.css'),
           path.join(clientSrc, 'styles', '*.scss'),
           './node_modules/**/*.*'
+        ],
+        includePaths: [
+          path.join(__dirname, 'node_modules'),
+          path.join(__dirname, '..', '..', 'node_modules'),
         ],
         name: 'style.css',
         outputStyle: 'compressed',

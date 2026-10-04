@@ -12,14 +12,12 @@
     "noUnusedLocals": true,
     "noImplicitReturns": true,
     "noImplicitThis": false,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
-  "typeRoots": [
-    "../node_modules/@types"
-  ],
   "exclude": [
     "./public"
   ]
