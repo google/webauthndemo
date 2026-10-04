@@ -71,7 +71,7 @@ export function initializeSession() {
 
   return session({
     name: session_name,
-    secret: process.env.SECRET || 'secret',
+    secret: config.secret,
     resave: false,
     saveUninitialized: false,
     proxy: true,
