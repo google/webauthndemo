@@ -119,7 +119,7 @@ const onSignout = async (e: any) => {
 /**
  * Invoked when Firebase Auth status is changed.
  */
-onAuthStateChanged(auth, async token => {
+onAuthStateChanged(auth, async (token: User | null) => {
   if (!window.PublicKeyCredential) {
     render(html`
       <p>Your browser does not support WebAuthn.</p>
