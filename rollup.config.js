@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
+import fs from 'fs';
 import path from 'path';
 import url from 'url';
 import typescript from '@rollup/plugin-typescript';
 import commonjs from '@rollup/plugin-commonjs';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import json from '@rollup/plugin-json';
-import copy from 'rollup-plugin-copy';
 import scss from 'rollup-plugin-scss';
-import css from 'rollup-plugin-import-css';
-import sourcemaps from 'rollup-plugin-sourcemaps';
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
@@ -31,6 +29,36 @@ const serverSrc = path.join(__dirname, 'src');
 const clientSrc = path.join(__dirname, 'src', 'public');
 const dstRoot = path.join(__dirname, 'dist');
 const clientDst = path.join(dstRoot, 'public');
+
+function copyStaticAssets(envFile) {
+  return {
+    name: 'copy-static-assets',
+    writeBundle() {
+      fs.mkdirSync(clientDst, { recursive: true });
+      fs.cpSync(
+        path.join(__dirname, 'firebase.json'),
+        path.join(dstRoot, 'firebase.json')
+      );
+      for (const entry of fs.readdirSync(clientSrc)) {
+        if (entry.endsWith('.svg')) {
+          fs.cpSync(
+            path.join(clientSrc, entry),
+            path.join(clientDst, entry)
+          );
+        }
+      }
+      fs.cpSync(
+        path.join(serverSrc, 'templates'),
+        path.join(dstRoot, 'templates'),
+        { recursive: true }
+      );
+      const envSrc = path.join(serverSrc, envFile);
+      if (fs.existsSync(envSrc)) {
+        fs.cpSync(envSrc, path.join(dstRoot, '.env'));
+      }
+    }
+  };
+}
 
 export default () => {
   const sourcemap = process.env.NODE_ENV != 'production' ? 'inline' : false;
@@ -51,7 +79,6 @@ export default () => {
       preferBuiltins: false
     }),
     json(),
-    sourcemaps(),
   ];
 
   const files = [ 'components' ];
@@ -75,25 +102,7 @@ export default () => {
     },
     plugins: [
       ...plugins,
-      copy({
-        targets: [{
-          src: 'firebase.json',
-          dest: dstRoot,
-        }, {
-          src: path.join(clientSrc, '*.svg'),
-          dest: clientDst,
-        }, {
-          src: path.join(clientSrc, 'manifest.json'),
-          dest: clientDst,
-        }, {
-          src: path.join(serverSrc, 'templates', '*'),
-          dest: path.join(dstRoot, 'templates'),
-        }, {
-          src: path.join(serverSrc, env),
-          dest: dstRoot,
-          rename: '.env'
-        }]
-      }),
+      copyStaticAssets(env),
     ]
   }, {
     input: path.join(clientSrc, 'styles', 'style.js'),
@@ -104,11 +113,6 @@ export default () => {
     },
     plugins: [
       scss({
-        include: [
-          path.join(clientSrc, 'styles', '*.css'),
-          path.join(clientSrc, 'styles', '*.scss'),
-          './node_modules/**/*.*'
-        ],
         includePaths: [
           path.join(__dirname, 'node_modules'),
           path.join(__dirname, '..', '..', 'node_modules'),
@@ -116,12 +120,12 @@ export default () => {
         name: 'style.css',
         outputStyle: 'compressed',
         quietDeps: true,
+        silenceDeprecations: ['legacy-js-api'],
       }),
       nodeResolve({
         browser: true,
         preferBuiltins: false
       }),
-      css(),
     ]
   }];
 };

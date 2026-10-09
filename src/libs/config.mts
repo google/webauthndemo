@@ -23,11 +23,83 @@ import dotenv from 'dotenv';
 
 import session from 'express-session';
 import { initializeApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-import { FirestoreStore } from '@google-cloud/connect-firestore';
+import { getFirestore, Firestore } from 'firebase-admin/firestore';
 
 import packageConfig from '../../package.json' with { type: 'json' };
 import firebaseConfig from '../../firebase.json' with { type: 'json' };
+
+interface FirestoreStoreOptions {
+  dataset: Firestore;
+  kind?: string;
+}
+
+class FirestoreStore extends session.Store {
+  private db: Firestore;
+  private kind: string;
+
+  constructor(options: FirestoreStoreOptions) {
+    super();
+    if (!options.dataset) {
+      throw new Error('No dataset provided to Firestore Session.');
+    }
+    this.db = options.dataset;
+    this.kind = options.kind || 'Session';
+  }
+
+  override get = (
+    sid: string,
+    callback: (err: any, session?: session.SessionData | null) => void
+  ): void => {
+    this.db
+      .collection(this.kind)
+      .doc(sid)
+      .get()
+      .then(doc => {
+        if (!doc.exists) {
+          return callback(null, null);
+        }
+        try {
+          const data = doc.data()?.data;
+          if (!data) {
+            return callback(null, null);
+          }
+          const result = typeof data === 'string' ? JSON.parse(data) : data;
+          return callback(null, result);
+        } catch (err) {
+          return callback(err);
+        }
+      }, callback);
+  };
+
+  override set = (
+    sid: string,
+    sess: session.SessionData,
+    callback?: (err?: any) => void
+  ): void => {
+    let sessJson: string;
+    try {
+      sessJson = JSON.stringify(sess);
+    } catch (err) {
+      return callback?.(err);
+    }
+    this.db
+      .collection(this.kind)
+      .doc(sid)
+      .set({ data: sessJson })
+      .then(() => callback?.(), callback);
+  };
+
+  override destroy = (
+    sid: string,
+    callback?: (err?: any) => void
+  ): void => {
+    this.db
+      .collection(this.kind)
+      .doc(sid)
+      .delete()
+      .then(() => callback?.(), callback);
+  };
+}
 
 const is_localhost =
   process.env.NODE_ENV === 'localhost' || !process.env.NODE_ENV;
