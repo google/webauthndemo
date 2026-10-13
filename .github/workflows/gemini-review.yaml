@@ -1,0 +1,316 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Gemini Code Review
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+  issue_comment:
+    types:
+      - created
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Pull request number to review'
+        required: true
+        type: string
+
+concurrency:
+  group: gemini-review-${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: 'read'
+  issues: 'write'
+  pull-requests: 'write'
+
+jobs:
+  review:
+    name: Review Pull Request with Gemini
+    if: >-
+      (
+        github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        github.event.pull_request.user.login != 'dependabot[bot]'
+      ) ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request != null &&
+        (
+          startsWith(github.event.comment.body, '/review') ||
+          startsWith(github.event.comment.body, '/gemini review') ||
+          contains(github.event.comment.body, fromJSON('"\n/review"')) ||
+          contains(github.event.comment.body, fromJSON('"\n/gemini review"'))
+        ) &&
+        (
+          github.event.comment.author_association == 'OWNER' ||
+          github.event.comment.author_association == 'MEMBER' ||
+          github.event.comment.author_association == 'COLLABORATOR'
+        )
+      ) ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Gemini code review
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-flash-latest
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number || inputs.pr_number }}
+          TRIGGER_COMMENT_ID: ${{ github.event.comment.id || '' }}
+          TRIGGER_COMMENT_BODY: ${{ github.event.comment.body || '' }}
+        run: |
+          python3 - << 'EOF'
+          import json
+          import os
+          import re
+          import subprocess
+          import sys
+          import time
+          import urllib.error
+          import urllib.request
+
+          api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+          if not api_key:
+              msg = "GEMINI_API_KEY secret is not configured. Skipping Gemini code review."
+              print(msg)
+              summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+              if summary_path:
+                  with open(summary_path, "a", encoding="utf-8") as sf:
+                      sf.write(f"> [!NOTE]\n> {msg}\n")
+              sys.exit(0)
+
+          repo = os.environ["REPO"]
+          pr_number = os.environ["PR_NUMBER"].strip()
+          model = os.environ.get("GEMINI_MODEL", "gemini-flash-latest").strip()
+          trigger_comment_id = os.environ.get("TRIGGER_COMMENT_ID", "").strip()
+          trigger_comment_body = os.environ.get("TRIGGER_COMMENT_BODY", "")
+
+          # Ensure slash command is at the start of a line and not a prefix like /reviews
+          if trigger_comment_id:
+              if not re.search(r"(?m)^\s*/(?:gemini\s+)?review(?:\s|$)", trigger_comment_body):
+                  print("Comment does not contain a standalone /review or /gemini review command. Skipping.")
+                  sys.exit(0)
+              subprocess.run(
+                  [
+                      "gh",
+                      "api",
+                      f"repos/{repo}/issues/comments/{trigger_comment_id}/reactions",
+                      "-f",
+                      "content=eyes",
+                  ],
+                  check=False,
+                  stdout=subprocess.DEVNULL,
+                  stderr=subprocess.DEVNULL,
+              )
+
+          # Fetch pull request metadata via GitHub CLI
+          pr_meta_raw = subprocess.check_output(
+              [
+                  "gh",
+                  "pr",
+                  "view",
+                  pr_number,
+                  "--repo",
+                  repo,
+                  "--json",
+                  "title,body,headRefOid,baseRefName,headRefName",
+              ],
+              text=True,
+          )
+          pr_meta = json.loads(pr_meta_raw)
+          pr_title = pr_meta.get("title", "")
+          pr_body = pr_meta.get("body", "") or "(No description provided)"
+          head_sha = (pr_meta.get("headRefOid", "") or "")[:7]
+
+          # Fetch pull request diff via GitHub CLI without checking out untrusted code
+          diff_text = subprocess.check_output(
+              ["gh", "pr", "diff", pr_number, "--repo", repo],
+              text=True,
+          )
+
+          if not diff_text.strip():
+              print("No diff changes found. Skipping review.")
+              sys.exit(0)
+
+          max_chars = 120000
+          truncated_note = ""
+          if len(diff_text) > max_chars:
+              diff_text = diff_text[:max_chars]
+              truncated_note = "\n\n*(Note: Diff was truncated due to length.)*"
+
+          prompt = f"""You are an expert senior software engineer reviewing a GitHub Pull Request on `{repo}`.
+
+          Pull Request: #{pr_number} - {pr_title}
+          Description:
+          {pr_body}
+
+          Review the following git diff and provide concise, actionable feedback in English.
+
+          Review guidelines:
+          - Focus on bugs, logic errors, security vulnerabilities (especially WebAuthn, Passkeys, session handling, CSRF protection, and origin/RP ID validation), race conditions, unhandled edge cases, and significant performance issues.
+          - Ignore minor formatting, nitpicks, or stylistic preferences unless they harm readability or maintainability.
+          - Reference specific file paths and line/function contexts when pointing out issues, and include concrete code suggestions where helpful.
+          - If the changes look solid and have no meaningful issues, briefly summarize what the PR does and state "LGTM 👍".
+          """
+
+          payload = {
+              "contents": [
+                  {
+                      "parts": [
+                          {"text": f"{prompt}\n\n```diff\n{diff_text}\n```{truncated_note}"}
+                      ]
+                  }
+              ]
+          }
+          payload_data = json.dumps(payload).encode("utf-8")
+
+          # Dynamically discover available stable gemini-*-flash models sorted newest-first
+          discovered_models = []
+          try:
+              list_req = urllib.request.Request(
+                  "https://generativelanguage.googleapis.com/v1beta/models?pageSize=100",
+                  headers={"x-goog-api-key": api_key},
+              )
+              with urllib.request.urlopen(list_req, timeout=30) as list_res:
+                  models_data = json.loads(list_res.read().decode("utf-8"))
+                  for m in models_data.get("models", []):
+                      name = m.get("name", "")
+                      methods = m.get("supportedGenerationMethods", [])
+                      if "generateContent" not in methods:
+                          continue
+                      match = re.match(r"^models/(gemini-(\d+)(?:\.(\d+))?-flash)$", name)
+                      if match:
+                          model_id = match.group(1)
+                          major = int(match.group(2))
+                          minor = int(match.group(3) or 0)
+                          discovered_models.append(((major, minor), model_id))
+              discovered_models.sort(key=lambda x: x[0], reverse=True)
+          except Exception as e:
+              print(f"Warning: ListModels discovery failed ({e}); using static fallbacks.", file=sys.stderr)
+
+          candidate_models = [m_id for _, m_id in discovered_models]
+          for fallback in (
+              "gemini-3.8-flash",
+              "gemini-3.7-flash",
+              "gemini-3.6-flash",
+              "gemini-3.5-flash",
+              model,
+          ):
+              if fallback and fallback not in candidate_models:
+                  candidate_models.append(fallback)
+          print(f"Candidate Gemini Flash models (newest first): {candidate_models}")
+
+          review_text = None
+          used_model = model
+          last_error = None
+
+          for candidate in candidate_models:
+              url = f"https://generativelanguage.googleapis.com/v1beta/models/{candidate}:generateContent"
+              for attempt in range(1, 4):
+                  req = urllib.request.Request(
+                      url,
+                      data=payload_data,
+                      headers={
+                          "Content-Type": "application/json",
+                          "x-goog-api-key": api_key,
+                      },
+                  )
+                  try:
+                      with urllib.request.urlopen(req, timeout=120) as res:
+                          body = json.loads(res.read().decode("utf-8"))
+                          review_text = body["candidates"][0]["content"]["parts"][0]["text"]
+                          used_model = candidate
+                          break
+                  except urllib.error.HTTPError as e:
+                      err_msg = e.read().decode("utf-8", errors="replace")
+                      last_error = f"Gemini API error ({e.code}) on {candidate}: {err_msg}"
+                      if e.code in (429, 500, 502, 503, 504) and attempt < 3:
+                          wait_sec = 5 * attempt
+                          print(
+                              f"Transient error ({e.code}) on {candidate} (attempt {attempt}/3). Retrying in {wait_sec}s...",
+                              file=sys.stderr,
+                          )
+                          time.sleep(wait_sec)
+                          continue
+                      print(last_error, file=sys.stderr)
+                      break
+              if review_text is not None:
+                  break
+
+          if review_text is None:
+              print(last_error or "Failed to obtain review from Gemini API.", file=sys.stderr)
+              sys.exit(1)
+
+          marker = "<!-- webauthndemo-gemini-review -->"
+          header = (
+              f"{marker}\n"
+              f"### 🤖 Gemini Code Review (`{used_model}` @ `{head_sha}`)\n\n"
+          )
+          full_comment = header + review_text
+
+          summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary_path:
+              with open(summary_path, "a", encoding="utf-8") as sf:
+                  sf.write(full_comment + "\n")
+
+          # Check for an existing review comment to update in-place
+          existing_comment_id = subprocess.check_output(
+              [
+                  "gh",
+                  "api",
+                  "--paginate",
+                  f"repos/{repo}/issues/{pr_number}/comments",
+                  "--jq",
+                  f'.[] | select(.body | contains("{marker}")) | .id',
+              ],
+              text=True,
+          ).strip().splitlines()
+          target_comment_id = existing_comment_id[0] if existing_comment_id else None
+
+          payload_bytes = json.dumps({"body": full_comment}).encode("utf-8")
+          if target_comment_id and not trigger_comment_id:
+              subprocess.run(
+                  [
+                      "gh",
+                      "api",
+                      "--method",
+                      "PATCH",
+                      f"repos/{repo}/issues/comments/{target_comment_id}",
+                      "--input",
+                      "-",
+                  ],
+                  input=payload_bytes,
+                  check=True,
+              )
+          else:
+              subprocess.run(
+                  [
+                      "gh",
+                      "api",
+                      "--method",
+                      "POST",
+                      f"repos/{repo}/issues/{pr_number}/comments",
+                      "--input",
+                      "-",
+                  ],
+                  input=payload_bytes,
+                  check=True,
+              )
+          EOF
