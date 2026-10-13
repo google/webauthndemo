@@ -13,6 +13,8 @@
 .git
 .gitignore
 .worktree/
+scripts/
+cloudbuild-*.yaml
 
 # Node.js dependencies:
 node_modules/
