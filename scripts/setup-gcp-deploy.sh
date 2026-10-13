@@ -14,26 +14,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Automates GCP project API enablement, IAM role assignment, and GitHub Actions
-# secret registration (GCP_SA_KEY) for deploying WebAuthnDemo to Google App Engine.
+# Automates GCP project API enablement, IAM role assignment, and Cloud Build
+# GitHub Trigger creation (deploy-to-staging and deploy-to-prod) for deploying
+# WebAuthnDemo to Google App Engine without exporting service account keys.
 #
 # Usage:
 #   ./scripts/setup-gcp-deploy.sh [options]
 #
 # Examples:
-#   # Provision try-webauthn and upload GCP_SA_KEY to google/webauthndemo:
 #   ./scripts/setup-gcp-deploy.sh --account agektmr@google.com
 
 set -euo pipefail
 
 PROJECT_ID="try-webauthn"
-SECRET_NAME="GCP_SA_KEY"
 GCLOUD_ACCOUNT=""
 REGION="us-central"
-FIRESTORE_LOCATION="nam5"
 SA_NAME="github-actions-deployer"
-GITHUB_REPO="google/webauthndemo"
-SKIP_GH_SECRETS=false
+REPO_OWNER="google"
+REPO_NAME="webauthndemo"
+SKIP_TRIGGERS=false
 
 usage() {
   cat <<EOF
@@ -41,13 +40,12 @@ Usage: $(basename "$0") [options]
 
 Optional:
   --project <PROJECT_ID>          Google Cloud Project ID (default: try-webauthn)
-  --secret-name <SECRET_NAME>     GitHub Secret name for the SA key (default: GCP_SA_KEY)
   --account <EMAIL>               gcloud account to use (e.g. agektmr@google.com)
   --region <REGION>               App Engine region (default: us-central)
-  --firestore-location <LOC>      Firestore location if creating DB (default: nam5)
   --sa-name <NAME>                Deployer service account name (default: github-actions-deployer)
-  --repo <OWNER/REPO>             GitHub repository (default: google/webauthndemo)
-  --skip-github-secrets           Only configure GCP APIs and IAM; do not create SA key or GitHub secrets
+  --repo-owner <OWNER>            GitHub repository owner (default: google)
+  --repo-name <NAME>              GitHub repository name (default: webauthndemo)
+  --skip-triggers                 Only configure GCP APIs and IAM; do not create Cloud Build triggers
   -h, --help                      Show this help message
 EOF
 }
@@ -58,10 +56,6 @@ while [[ $# -gt 0 ]]; do
       PROJECT_ID="$2"
       shift 2
       ;;
-    --secret-name)
-      SECRET_NAME="$2"
-      shift 2
-      ;;
     --account)
       GCLOUD_ACCOUNT="$2"
       shift 2
@@ -70,20 +64,20 @@ while [[ $# -gt 0 ]]; do
       REGION="$2"
       shift 2
       ;;
-    --firestore-location)
-      FIRESTORE_LOCATION="$2"
-      shift 2
-      ;;
     --sa-name)
       SA_NAME="$2"
       shift 2
       ;;
-    --repo)
-      GITHUB_REPO="$2"
+    --repo-owner)
+      REPO_OWNER="$2"
       shift 2
       ;;
-    --skip-github-secrets)
-      SKIP_GH_SECRETS=true
+    --repo-name)
+      REPO_NAME="$2"
+      shift 2
+      ;;
+    --skip-triggers)
+      SKIP_TRIGGERS=true
       shift
       ;;
     -h|--help)
@@ -103,10 +97,8 @@ if [[ -n "$GCLOUD_ACCOUNT" ]]; then
   GCLOUD_ARGS+=("--account=${GCLOUD_ACCOUNT}")
 fi
 
-TMP_KEY_FILE=""
 TMP_TOKEN_FILE=""
 cleanup() {
-  [[ -n "$TMP_KEY_FILE" ]] && rm -f "$TMP_KEY_FILE"
   [[ -n "$TMP_TOKEN_FILE" ]] && rm -f "$TMP_TOKEN_FILE"
 }
 trap cleanup EXIT
@@ -159,21 +151,13 @@ else
 fi
 
 SA_EMAIL="${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"
+SA_RESOURCE="projects/${PROJECT_ID}/serviceAccounts/${SA_EMAIL}"
 echo "==> [4/7] Ensuring deployer service account '${SA_EMAIL}' exists..."
 if ! gcloud iam service-accounts describe "$SA_EMAIL" "${GCLOUD_ARGS[@]}" >/dev/null 2>&1; then
-  if ! gcloud iam service-accounts create "$SA_NAME" \
-    --display-name="GitHub Actions App Engine Deployer" \
-    --description="Service account for deploying WebAuthnDemo via GitHub Actions" \
-    "${GCLOUD_ARGS[@]}"; then
-    echo "" >&2
-    echo "Error: Permission 'iam.serviceAccounts.create' denied on project '${PROJECT_ID}'." >&2
-    echo "If '${PROJECT_ID}' is a Google corporate project managed by Latchkey (go/latchkey)," >&2
-    echo "service accounts and IAM bindings must be declared via CL in Piper:" >&2
-    echo "  - iam_service_accounts.yaml (define '${SA_EMAIL}')" >&2
-    echo "  - iam_policy.yaml (grant deployer roles to 'serviceAccount:${SA_EMAIL}')" >&2
-    echo "  - org_policy_iam.disableServiceAccountKeyCreation.yaml (or Workload Identity Federation)" >&2
-    exit 1
-  fi
+  gcloud iam service-accounts create "$SA_NAME" \
+    --display-name="Cloud Build App Engine Deployer" \
+    --description="Service account for deploying WebAuthnDemo via Cloud Build Triggers" \
+    "${GCLOUD_ARGS[@]}"
 else
   echo "    Service account '${SA_EMAIL}' already exists."
 fi
@@ -186,6 +170,7 @@ DEPLOYER_ROLES=(
   "roles/iam.serviceAccountUser"
   "roles/storage.admin"
   "roles/artifactregistry.writer"
+  "roles/logging.logWriter"
 )
 
 for ROLE in "${DEPLOYER_ROLES[@]}"; do
@@ -227,26 +212,53 @@ else
   echo "    Staging bucket '${STAGING_BUCKET}' exists."
 fi
 
-if [[ "$SKIP_GH_SECRETS" == "true" ]]; then
-  echo "==> [7/7] Skipping GitHub secret generation (--skip-github-secrets)."
+if [[ "$SKIP_TRIGGERS" == "true" ]]; then
+  echo "==> [7/7] Skipping Cloud Build trigger creation (--skip-triggers)."
   echo "Done! GCP project '${PROJECT_ID}' is ready for App Engine deployment."
   exit 0
 fi
 
-echo "==> [7/7] Creating Service Account JSON key and uploading GitHub Secret (${SECRET_NAME})..."
-TMP_KEY_FILE=$(mktemp /tmp/webauthndemo-sa-key.XXXXXX.json)
+echo "==> [7/7] Ensuring Cloud Build GitHub triggers ('deploy-to-staging' and 'deploy-to-prod') exist..."
+create_or_check_trigger() {
+  local trigger_name="$1"
+  local branch_pattern="$2"
+  local build_config="$3"
+  local description="$4"
 
-if ! gcloud iam service-accounts keys create "$TMP_KEY_FILE" \
-  --iam-account="$SA_EMAIL" \
-  "${GCLOUD_ARGS[@]}"; then
-  echo "" >&2
-  echo "Error: Failed to create service account key for '${SA_EMAIL}'." >&2
-  echo "If your organization enforces 'constraints/iam.disableServiceAccountKeyCreation'," >&2
-  echo "either request a policy exception on project '${PROJECT_ID}' or configure Workload Identity Federation." >&2
-  exit 1
-fi
+  if gcloud builds triggers describe "$trigger_name" "${GCLOUD_ARGS[@]}" >/dev/null 2>&1; then
+    echo "    Trigger '${trigger_name}' already exists."
+    return 0
+  fi
 
-gh secret set "$SECRET_NAME" --repo "$GITHUB_REPO" < "$TMP_KEY_FILE"
+  echo "    Creating trigger '${trigger_name}' (${branch_pattern} -> ${build_config})..."
+  if ! gcloud builds triggers create github \
+    --name="$trigger_name" \
+    --description="$description" \
+    --repo-owner="$REPO_OWNER" \
+    --repo-name="$REPO_NAME" \
+    --branch-pattern="$branch_pattern" \
+    --build-config="$build_config" \
+    --service-account="$SA_RESOURCE" \
+    "${GCLOUD_ARGS[@]}"; then
+    echo "" >&2
+    echo "Error: Failed to create Cloud Build trigger '${trigger_name}'." >&2
+    echo "Please connect the GitHub repository '${REPO_OWNER}/${REPO_NAME}' to Cloud Build first at:" >&2
+    echo "  https://console.cloud.google.com/cloud-build/triggers;region=global/connect?project=${PROJECT_NUMBER}" >&2
+    echo "Then re-run: ./scripts/setup-gcp-deploy.sh" >&2
+    exit 1
+  fi
+}
 
-echo "Done! Successfully configured '${PROJECT_ID}' and updated GitHub Secret:"
-echo "  - ${SECRET_NAME} = (service account key for ${SA_EMAIL} in ${GITHUB_REPO})"
+create_or_check_trigger \
+  "deploy-to-staging" \
+  "^staging$" \
+  "cloudbuild-staging.yaml" \
+  "Deploy WebAuthnDemo staging (dev.yaml) on push to staging branch"
+
+create_or_check_trigger \
+  "deploy-to-prod" \
+  "^prod$" \
+  "cloudbuild-prod.yaml" \
+  "Deploy WebAuthnDemo production (prod.yaml) on push to prod branch"
+
+echo "Done! Cloud Build triggers 'deploy-to-staging' and 'deploy-to-prod' are configured on '${PROJECT_ID}'."
