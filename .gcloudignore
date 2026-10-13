@@ -13,6 +13,7 @@
 .git
 .gitignore
 .worktree/
+scripts/
 
 # Node.js dependencies:
 node_modules/

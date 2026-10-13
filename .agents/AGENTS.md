@@ -40,7 +40,7 @@ The frontend lives under `src/public/` and is built with TypeScript, Lit (`lit`)
     - `styles/style.scss` & `styles/style.js`: Application styles compiled into `dist/public/styles/style.css`.
     - `tsconfig.json`: Client-side TypeScript configuration used by `@rollup/plugin-typescript`.
 - `src/templates/`: Handlebars HTML views (`index.html`, `layouts/main.html`, and `partials/`).
-- `app.yaml` & `dev.yaml`: Google App Engine Standard (`nodejs24`) deployment manifests for production (`try-webauthn.appspot.com`) and development (`dev-dot-try-webauthn.appspot.com`).
+- `prod.yaml` & `dev.yaml`: Google App Engine Standard (`nodejs24`) deployment manifests for production (`try-webauthn.appspot.com`) and development (`dev-dot-try-webauthn.appspot.com`).
 
 ## Build, local development, and deployment
 
@@ -50,7 +50,7 @@ Always execute Node.js, `npm`, and `npx` commands through `mise` (`/usr/local/go
 - `npm run build:prod`: Cleans `./dist` and builds with `NODE_ENV:production` (disabling inline sourcemaps and copying `src/.env` if present).
 - `npm run emulator`: Starts local Firebase Firestore (`localhost:8081`) and Auth (`127.0.0.1:9099`) emulators for project `try-webauthn`, importing and exporting seed data from `./.data`.
 - `npm run dev`: Starts the compiled server locally (`NODE_ENV=localhost node dist/server.mjs`) on port `8080`.
-- `npm run deploy` / `npm run deploy:prod`: Deploys `dev.yaml` or `app.yaml` to Google App Engine (`--project=try-webauthn`).
+- `npm run deploy` / `npm run deploy:prod`: Deploys `dev.yaml` or `prod.yaml` to Google App Engine (`--project=try-webauthn`).
 
 ## Coding standards and Git worktree workflow
 
