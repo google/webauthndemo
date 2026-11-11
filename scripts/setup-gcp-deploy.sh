@@ -167,7 +167,6 @@ DEPLOYER_ROLES=(
   "roles/appengine.appAdmin"
   "roles/appengine.deployer"
   "roles/cloudbuild.builds.editor"
-  "roles/iam.serviceAccountUser"
   "roles/storage.admin"
   "roles/artifactregistry.writer"
   "roles/logging.logWriter"
@@ -203,6 +202,19 @@ for RUNTIME_SA in "$APPSPOT_SA" "$COMPUTE_SA"; do
     done
   fi
 done
+
+# Scope serviceAccountUser strictly to the App Engine default service account
+# rather than granting project-wide impersonation across all service accounts.
+if gcloud iam service-accounts describe "$APPSPOT_SA" "${GCLOUD_ARGS[@]}" >/dev/null 2>&1; then
+  echo "    Binding roles/iam.serviceAccountUser on ${APPSPOT_SA} -> serviceAccount:${SA_EMAIL}"
+  gcloud iam service-accounts add-iam-policy-binding "$APPSPOT_SA" \
+    --member="serviceAccount:${SA_EMAIL}" \
+    --role="roles/iam.serviceAccountUser" \
+    --condition=None \
+    "${GCLOUD_ARGS[@]}" >/dev/null
+else
+  echo "Warning: App Engine default service account '${APPSPOT_SA}' not found; skipping serviceAccountUser binding." >&2
+fi
 
 STAGING_BUCKET="gs://staging.${PROJECT_ID}.appspot.com"
 if ! gcloud storage buckets describe "$STAGING_BUCKET" "${GCLOUD_ARGS[@]}" >/dev/null 2>&1; then
