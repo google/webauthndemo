@@ -24,6 +24,7 @@ import {
 } from '../public/scripts/common';
 import { createHash } from 'crypto';
 import { getNow, csrfCheck, authzAPI } from './helper.mjs';
+import { sanitizeAuthenticationExtensions } from './fallback.mjs';
 import { 
   getCredentials,
   getCredential,
@@ -35,6 +36,7 @@ import {
   generateRegistrationOptions,
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
+  type AuthenticationExtensionsClientInputs,
   type AuthenticationResponseJSON,
   type RegistrationResponseJSON,
   type AuthenticatorSelectionCriteria,
@@ -341,12 +343,12 @@ router.post('/authRequest', csrfCheck, authzAPI, async (
   try {
     // const user = res.locals.user;
 
-    const requestOptions = req.body as WebAuthnAuthenticationObject;
+    const requestOptions = (req.body as WebAuthnAuthenticationObject) || {};
 
     const userVerification = requestOptions.userVerification || 'preferred';
     const timeout = requestOptions.customTimeout || WEBAUTHN_TIMEOUT;
     // const allowCredentials: PublicKeyCredentialDescriptor[] = [];
-    const extensions = requestOptions.extensions || {};
+    const extensions = sanitizeAuthenticationExtensions(requestOptions.extensions);
     const rpID = config.hostname;
 
     // // If `.allowCredentials` is not defined, leave `allowCredentials` an empty array.
@@ -373,7 +375,9 @@ router.post('/authRequest', csrfCheck, authzAPI, async (
       // allowCredentials,
       userVerification,
       rpID,
-      extensions,
+      // Cast allows draft/legacy extension keys (`crossDeviceFallbackUrl`, `txAuthSimple`)
+      // that `@simplewebauthn/server` passes through verbatim at runtime.
+      extensions: extensions as AuthenticationExtensionsClientInputs,
     });
 
     req.session.challenge = options.challenge;

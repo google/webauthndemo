@@ -17,21 +17,49 @@
 import { Snackbar } from '@material/mwc-snackbar';
 import { LinearProgress } from '@material/mwc-linear-progress';
 import { html, render } from 'lit';
+import type { WebAuthnOperationExceptionLike } from './common';
 
 const $: any = document.querySelector.bind(document);
 const BASE64_SLICE_LENGTH = 40;
 
 const snackbar = $('#snackbar') as Snackbar;
 
+function isWebAuthnOperationException(
+  error: unknown
+): error is WebAuthnOperationExceptionLike {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { name?: unknown }).name === 'WebAuthnOperationException' &&
+    typeof (error as { operationError?: unknown }).operationError === 'string'
+  );
+}
+
 function showPayload(
   payload: any
 ): void {
-  payload.id = payload.id.slice(0, BASE64_SLICE_LENGTH)+'...';
-  payload.rawId = payload.rawId.slice(0, BASE64_SLICE_LENGTH)+'...';
-  if (payload.response?.authData) {
-    payload.response.authData = payload.response.authData.slice(0, BASE64_SLICE_LENGTH)+'...';
-  }
-  $('#json-viewer').data = { payload };
+  const displayPayload =
+    payload && typeof payload === 'object'
+      ? {
+          ...payload,
+          ...(typeof payload.id === 'string' && payload.id.length > BASE64_SLICE_LENGTH
+            ? { id: payload.id.slice(0, BASE64_SLICE_LENGTH) + '...' }
+            : {}),
+          ...(typeof payload.rawId === 'string' && payload.rawId.length > BASE64_SLICE_LENGTH
+            ? { rawId: payload.rawId.slice(0, BASE64_SLICE_LENGTH) + '...' }
+            : {}),
+          ...(typeof payload.response?.authData === 'string' &&
+          payload.response.authData.length > BASE64_SLICE_LENGTH
+            ? {
+                response: {
+                  ...payload.response,
+                  authData: payload.response.authData.slice(0, BASE64_SLICE_LENGTH) + '...',
+                },
+              }
+            : {}),
+        }
+      : payload;
+  $('#json-viewer').data = { payload: displayPayload };
   $('#json-viewer').expandAll();
   $('#payload-viewer').show();
 };
@@ -95,4 +123,4 @@ const _fetch = async (
   }
 };
 
-export { html, render, $, showSnackbar, loading, _fetch };
+export { html, render, $, showSnackbar, loading, _fetch, isWebAuthnOperationException };

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<!--
+Copyright 2026 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Cross-Device Fallback — WebAuthn Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <link rel="shortcut icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/styles/style.css">
+</head>
+<body class="fallback-page">
+  <header class="fallback-header">
+    <div class="fallback-header__inner">
+      <a href="/" class="fallback-brand">
+        <svg class="fallback-brand__icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+          <path fill="currentColor" d="M12.65 10A5.99 5.99 0 0 0 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6a5.99 5.99 0 0 0 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+        </svg>
+        <span>WebAuthn Demo</span>
+      </a>
+      <span class="fallback-badge">Cross-Device Fallback</span>
+    </div>
+  </header>
+
+  <main class="fallback-main">
+    <section class="fallback-card fallback-hero" aria-labelledby="fallback-heading">
+      <div class="fallback-status-pill">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path fill="currentColor" d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+        <span>Fallback URL Reached (HTTP 200)</span>
+      </div>
+      <h1 id="fallback-heading">Cross-Device Fallback Authentication</h1>
+      <p class="fallback-lead">
+        You landed on the unauthenticated fallback endpoint for testing the draft
+        <code>crossDeviceFallbackUrl</code> WebAuthn extension
+        (<a href="https://github.com/w3c/webauthn/pull/2380" target="_blank" rel="noopener noreferrer">W3C WebAuthn PR #2380</a>).
+      </p>
+      <p class="fallback-desc">
+        In a hybrid cross-device authentication flow, a remote device (such as a phone or tablet)
+        opens this URL after user consent when no matching passkey is found on the device.
+        The initiating browser session should receive a
+        <code>WebAuthnOperationException</code> with
+        <code>operationError: "cross-device-fallback"</code>.
+      </p>
+      <div class="fallback-actions">
+        <a class="fallback-btn fallback-btn--primary" href="/">Open WebAuthn Demo</a>
+        <a class="fallback-btn fallback-btn--secondary" href="https://github.com/w3c/webauthn/pull/2380" target="_blank" rel="noopener noreferrer">Read Spec PR #2380</a>
+      </div>
+    </section>
+
+    <section class="fallback-card" aria-labelledby="details-heading">
+      <h2 id="details-heading">Request Details</h2>
+      <dl class="fallback-dl">
+        <dt>Endpoint URL</dt>
+        <dd><code>{{fallbackUrl}}</code></dd>
+        <dt>Relying Party ID (<code>rpId</code>)</dt>
+        <dd><code>{{hostname}}</code></dd>
+        <dt>Received At (UTC)</dt>
+        <dd><code>{{timestamp}}</code></dd>
+        <dt>Session State</dt>
+        <dd>
+          {{#if isSignedIn}}
+            Signed in (existing browser session detected)
+          {{else}}
+            Unauthenticated (no sign-in required for this landing page)
+          {{/if}}
+        </dd>
+        {{#if clientEnvironment}}
+        <dt>Client Environment</dt>
+        <dd>{{clientEnvironment}}</dd>
+        {{/if}}
+      </dl>
+    </section>
+
+    <section class="fallback-card" aria-labelledby="query-heading">
+      <div class="fallback-section-header">
+        <h2 id="query-heading">Query Parameters</h2>
+        <span class="fallback-count">{{queryParamCount}}</span>
+      </div>
+      {{#if hasQueryParams}}
+      <div class="fallback-table-wrap">
+        <table class="fallback-table">
+          <thead>
+            <tr>
+              <th scope="col">Parameter</th>
+              <th scope="col">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each queryParams}}
+            <tr>
+              <td><code>{{key}}</code></td>
+              <td><code>{{value}}</code>{{#if truncated}} <span class="fallback-note">(truncated)</span>{{/if}}</td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+      {{#if queryParamsTruncated}}
+      <p class="fallback-warning">
+        Additional query parameters ({{omittedQueryParamCount}}) were omitted for display safety.
+      </p>
+      {{/if}}
+      {{else}}
+      <p class="fallback-empty">
+        No query parameters were included in this request. To test passing out-of-band session state,
+        try <a href="/fallback?sessionId=demo-session-123&amp;source=hybrid"><code>{{fallbackUrl}}?sessionId=demo-session-123&amp;source=hybrid</code></a>.
+      </p>
+      {{/if}}
+    </section>
+
+    <section class="fallback-card fallback-security" aria-labelledby="security-heading">
+      <h2 id="security-heading">Security Notes (RFC 10027)</h2>
+      <ul>
+        <li>This endpoint responds with <code>Cache-Control: no-store</code>, <code>Referrer-Policy: no-referrer</code>, <code>X-Frame-Options: DENY</code>, and a strict Content Security Policy (zero external scripts).</li>
+        <li>All displayed query parameters are HTML-escaped and no automatic redirects are performed.</li>
+        <li>Production Relying Parties must not accept fallback authentication assertions unless the primary WebAuthn ceremony rejected with <code>WebAuthnOperationException</code> (<code>operationError === "cross-device-fallback"</code>), and should use short-lived, single-use session tokens per RFC 10027.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="fallback-footer">
+    <a href="/">WebAuthn Demo</a>
+    <span aria-hidden="true">&middot;</span>
+    <a href="https://github.com/google/webauthndemo" target="_blank" rel="noopener noreferrer">GitHub</a>
+  </footer>
+</body>
+</html>

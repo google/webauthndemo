@@ -15,6 +15,7 @@
  */
 
 import type {
+  AuthenticationExtensionsClientInputs,
   CredentialDeviceType,
   PublicKeyCredentialCreationOptionsJSON,
   PublicKeyCredentialRequestOptionsJSON,
@@ -28,6 +29,36 @@ export interface UserInfo {
   picture: string
 }
 
+/**
+ * Extended authentication extension inputs including draft/legacy extensions
+ * not yet typed in `@simplewebauthn/server`:
+ * - `txAuthSimple`: Simple Transaction Authorization extension
+ * - `crossDeviceFallbackUrl`: Cross-Device Fallback URL extension
+ *   (https://github.com/w3c/webauthn/pull/2380)
+ */
+export interface ExtendedAuthenticationExtensionsClientInputs
+  extends AuthenticationExtensionsClientInputs {
+  txAuthSimple?: string;
+  crossDeviceFallbackUrl?: string;
+}
+
+/**
+ * Error codes for `WebAuthnOperationException` per W3C WebAuthn PR #2380.
+ */
+export type WebAuthnOperationErrorCode = 'cross-device-fallback';
+
+/**
+ * Custom DOMException raised when a WebAuthn ceremony ends due to an
+ * operational condition (e.g., user consented to open the cross-device
+ * fallback URL on a roaming hybrid authenticator).
+ */
+export interface WebAuthnOperationExceptionLike {
+  readonly name: 'WebAuthnOperationException';
+  readonly operationError: WebAuthnOperationErrorCode | string;
+  readonly message: string;
+  readonly code?: number;
+}
+
 export interface WebAuthnRegistrationObject extends
   Omit<PublicKeyCredentialCreationOptionsJSON, 'rp' | 'pubKeyCredParams' | 'challenge' | 'excludeCredentials'> {
   credentialsToExclude?: string[]
@@ -35,7 +66,8 @@ export interface WebAuthnRegistrationObject extends
   abortTimeout?: number
 }
 
-export interface WebAuthnAuthenticationObject extends Omit<PublicKeyCredentialRequestOptionsJSON, 'challenge'> {
+export interface WebAuthnAuthenticationObject extends Omit<PublicKeyCredentialRequestOptionsJSON, 'challenge' | 'extensions'> {
+  extensions?: ExtendedAuthenticationExtensionsClientInputs
   customTimeout?: number
   abortTimeout?: number
 }

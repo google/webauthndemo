@@ -26,10 +26,11 @@ The frontend lives under `src/public/` and is built with TypeScript, Lit (`lit`)
 
 ## Directory structure
 
-- `src/server.mts`: Express server entry point, Handlebars view engine setup, Digital Asset Links (`/.well-known/assetlinks.json`), passkey endpoints (`/.well-known/passkey-endpoints`), and mounting of `/auth` and `/webauthn` routers.
+- `src/server.mts`: Express server entry point, Handlebars view engine setup, Digital Asset Links (`/.well-known/assetlinks.json`), passkey endpoints (`/.well-known/passkey-endpoints`), unauthenticated cross-device fallback landing page (`GET /fallback`), and mounting of `/auth` and `/webauthn` routers.
 - `src/libs/`: Server-side application modules compiled by `tsc --project ./src/tsconfig.json` into `dist/libs/*.mjs`:
     - `config.mts`: Environment configuration, Firebase Admin / Firestore initialization (switching automatically to local emulators when `NODE_ENV` is `localhost` or unset), and `express-session` setup.
     - `auth.mts`: Firebase Auth ID token verification (`POST /auth/verify`), session user info (`POST /auth/userInfo`), and sign-out (`POST /auth/signout`).
+    - `fallback.mts`: Query-parameter normalization, view-model construction, RFC 10027 privacy/security headers (`no-store`, `no-referrer`, strict CSP) for `GET /fallback`, and `crossDeviceFallbackUrl` extension sanitization for `/webauthn/authRequest`.
     - `webauthn.mts`: WebAuthn registration and authentication option generation and response verification (`/webauthn/registerRequest`, `/webauthn/registerResponse`, `/webauthn/signinRequest`, `/webauthn/signinResponse`), credential management routes, AAGUID lookup (`/webauthn/aaguids`), and Android APK key hash origin resolution.
     - `credential.mts`: Firestore CRUD operations for stored WebAuthn credentials.
     - `helper.mts`: CSRF header validation (`X-Requested-With`) and session authorization middleware.

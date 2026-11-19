@@ -14,8 +14,22 @@
  * limitations under the License.
  */
 
-import { html, render, $, showSnackbar, loading, _fetch } from './util';
-import { WebAuthnRegistrationObject, WebAuthnAuthenticationObject, UserInfo, AAGUIDs } from './common';
+import {
+  html,
+  render,
+  $,
+  showSnackbar,
+  loading,
+  _fetch,
+  isWebAuthnOperationException,
+} from './util';
+import {
+  ExtendedAuthenticationExtensionsClientInputs,
+  WebAuthnRegistrationObject,
+  WebAuthnAuthenticationObject,
+  UserInfo,
+  AAGUIDs,
+} from './common';
 import { base64url } from './base64url';
 import { MDCRipple } from '@material/ripple';
 import { initializeApp } from 'firebase/app';
@@ -198,6 +212,8 @@ const collectOptions = (
   const credProps = $('#switch-cred-props').checked || false;
   const tasSwitch = $('#switch-tx-auth-simple').checked || undefined;
   const tas = $('#tx-auth-simple').value.trim() || undefined;
+  const fallbackUrlSwitch = $('#switch-cross-device-fallback-url')?.checked || false;
+  const fallbackUrl = $('#cross-device-fallback-url')?.value.trim() || undefined;
   const customTimeout = parseInt($('#custom-timeout').value);
   // const abortTimeout = parseInt($('#abort-timeout').value);
 
@@ -228,13 +244,20 @@ const collectOptions = (
   
   // This is authentication
   } else {
+    const extensions: ExtendedAuthenticationExtensionsClientInputs = {};
+    if (txAuthSimple) {
+      extensions.txAuthSimple = txAuthSimple;
+    }
+    if (fallbackUrlSwitch && fallbackUrl) {
+      extensions.crossDeviceFallbackUrl = fallbackUrl;
+    }
     return {
       userVerification,
       hints,
-      extensions: { txAuthSimple },
+      extensions,
       customTimeout,
       // abortTimeout,
-    } as WebAuthnAuthenticationObject
+    } as WebAuthnAuthenticationObject;
   }
 }
 
@@ -846,7 +869,29 @@ const onAuthenticate = async (): Promise<void> => {
     listCredentials();
   } catch (e: any) {
     console.error(e);
-    showSnackbar(e.message);
+    const requestedFallbackUrl = opts.extensions?.crossDeviceFallbackUrl;
+    if (isWebAuthnOperationException(e)) {
+      const exceptionPayload = {
+        name: e.name,
+        operationError: e.operationError,
+        message: e.message || '',
+        ...(typeof e.code === 'number' ? { code: e.code } : {}),
+        ...(requestedFallbackUrl ? { crossDeviceFallbackUrl: requestedFallbackUrl } : {}),
+      };
+      const snackbarMessage =
+        e.operationError === 'cross-device-fallback'
+          ? 'Cross-device fallback opened (WebAuthnOperationException: cross-device-fallback).'
+          : `WebAuthnOperationException (${e.operationError})${e.message ? `: ${e.message}` : ''}`;
+      showSnackbar(snackbarMessage, exceptionPayload);
+    } else if (e?.name === 'SecurityError' && requestedFallbackUrl) {
+      showSnackbar(`SecurityError: ${e.message || 'Invalid crossDeviceFallbackUrl.'}`, {
+        name: e.name,
+        message: e.message || '',
+        crossDeviceFallbackUrl: requestedFallbackUrl,
+      });
+    } else {
+      showSnackbar(e?.message || e?.name || 'Authentication failed.');
+    }
   } finally {
     loading.stop();
   }
@@ -854,6 +899,23 @@ const onAuthenticate = async (): Promise<void> => {
 
 const onTxAuthSimpleSiwtch = async (): Promise<void> => {
   $('#tx-auth-simple').disabled = $('#switch-tx-auth-simple').checked;
+}
+
+const getDefaultFallbackUrl = (): string => `${window.location.origin}/fallback`;
+
+const onCrossDeviceFallbackUrlSwitch = (): void => {
+  const enabled = Boolean($('#switch-cross-device-fallback-url')?.checked);
+  const input = $('#cross-device-fallback-url');
+  if (!input) return;
+  input.disabled = !enabled;
+  if (enabled && !input.value.trim()) {
+    input.value = getDefaultFallbackUrl();
+  }
+};
+
+const fallbackUrlInput = $('#cross-device-fallback-url');
+if (fallbackUrlInput && !fallbackUrlInput.value) {
+  fallbackUrlInput.value = getDefaultFallbackUrl();
 }
 
 loading.start();
@@ -867,3 +929,4 @@ $('#user-icon').addEventListener('click', onUserIconClicked);
 $('#signout').addEventListener('click', onSignout);
 $('#save-user-info').addEventListener('click', onUserInfoUpdate);
 $('#switch-tx-auth-simple').addEventListener('click', onTxAuthSimpleSiwtch);
+$('#switch-cross-device-fallback-url')?.addEventListener('change', onCrossDeviceFallbackUrlSwitch);

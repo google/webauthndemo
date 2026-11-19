@@ -22,6 +22,10 @@ import { config, initializeSession } from './libs/config.mjs';
 import helmet from 'helmet';
 
 import { auth } from './libs/auth.mjs';
+import {
+  applyFallbackSecurityHeaders,
+  buildFallbackViewModel,
+} from './libs/fallback.mjs';
 import { webauthn } from './libs/webauthn.mjs';
 
 const views = config.views_root_file_path;
@@ -87,10 +91,23 @@ app.get('/', (req: Request, res: Response) => {
   return res.render('index.html');
 });
 
-// listen for requests :)
-app.listen(config.port || 8080, () => {
-  console.log(`Your app is listening on port ${config.port || 8080}`);
+app.get('/fallback', (req: Request, res: Response) => {
+  applyFallbackSecurityHeaders(res);
+  const viewModel = buildFallbackViewModel(
+    req,
+    config.origin,
+    config.hostname
+  );
+  return res.render('fallback.html', {
+    layout: false,
+    ...viewModel,
+  });
 });
 
 app.use('/auth', auth);
 app.use('/webauthn', webauthn);
+
+// listen for requests :)
+app.listen(config.port || 8080, () => {
+  console.log(`Your app is listening on port ${config.port || 8080}`);
+});
