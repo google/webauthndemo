@@ -115,6 +115,26 @@
     disabled
     outlined></mwc-textfield>
 </div>
+<div class="advanced-option">
+  <mwc-formfield
+    label="Cross-Device Fallback URL"
+    title="Includes the draft `crossDeviceFallbackUrl` extension (W3C WebAuthn PR #2380) in authentication (`navigator.credentials.get`) requests.">
+    <mwc-checkbox id="switch-cross-device-fallback-url"></mwc-checkbox>
+  </mwc-formfield>
+</div>
+<div class="advanced-option">
+  <mwc-textfield
+    id="cross-device-fallback-url"
+    type="url"
+    label="Fallback URL"
+    helper="Hybrid auth fallback (PR #2380)"
+    helperPersistent
+    disabled
+    outlined></mwc-textfield>
+  <div class="fallback-sidebar-link">
+    <a href="/fallback" target="_blank" rel="noopener noreferrer">Preview /fallback page</a>
+  </div>
+</div>
 <!-- <div class="advanced-option">
   <mwc-textfield
     id="abort-timeout"
